@@ -3,265 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfect AI Prompt Generator</title>
-    <link rel="stylesheet" href="style.css">
+    <title>PromptCraft - AI Prompt Generator</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#218d8d">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="AI Prompt Generator">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <div class="container">
-        <!-- Header with Theme Toggle -->
-        <header class="header">
-            <div class="flex justify-between items-center mb-16">
-                <h1>🎨 Perfect AI Prompt Generator</h1>
-                <button id="themeToggle" class="btn btn--outline btn--sm" title="Toggle theme">
-                    <span id="themeIcon">🌙</span>
-                </button>
-            </div>
-            <p class="header__subtitle">Generate professional AI prompts with enhanced brunette portrait mode</p>
-        </header>
+    <header>
+        <h1>PromptCraft</h1>
+        <div id="theme-toggle">
+            <span class="sun">☀️</span>
+            <span class="moon">🌙</span>
+        </div>
+    </header>
 
-        <main class="main">
-            <!-- Navigation Tabs -->
-            <div class="tab-navigation mb-24">
-                <button class="tab-btn active" data-tab="text-prompt">Text Prompt</button>
-                <button class="tab-btn" data-tab="image-prompt">Image to Prompt</button>
-                <button class="tab-btn" data-tab="portrait-generator">Brunette Portrait</button>
-                <button class="tab-btn" data-tab="history">History</button>
-            </div>
+    <nav>
+        <button id="text-prompt-tab" class="tab active">Text Prompt</button>
+        <button id="image-to-prompt-tab" class="tab">Image to Prompt</button>
+        <button id="history-tab" class="tab">History</button>
+    </nav>
 
-            <!-- Text Prompt Tab -->
-            <div id="text-prompt" class="tab-content active">
-                <div class="generator-layout">
-                    <!-- Configuration Panel -->
-                    <div class="config-panel">
-                        <div class="card">
-                            <div class="card__body">
-                                <h2>Prompt Configuration</h2>
-                                <!-- Prompt Type Selection -->
-                                <div class="settings-section">
-                                    <h3>Prompt Type</h3>
-                                    <div class="form-group">
-                                        <select id="promptType" class="form-control">
-                                            <option value="photography">Photography</option>
-                                            <option value="digital-art">Digital Art</option>
-                                            <option value="painting">Traditional Painting</option>
-                                            <option value="anime">Anime/Manga</option>
-                                            <option value="3d-render">3D Render</option>
-                                            <option value="logo">Logo Design</option>
-                                            <option value="character">Character Design</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <!-- Style & Mood -->
-                                <div class="settings-section">
-                                    <h3>Style & Mood</h3>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">Art Style</label>
-                                            <select id="artStyle" class="form-control">
-                                                <option value="">Select Style</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Emotion</label>
-                                            <select id="emotion" class="form-control">
-                                                <option value="">Select Emotion</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Atmosphere</label>
-                                            <select id="atmosphere" class="form-control">
-                                                <option value="">Select Atmosphere</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Visual Composition -->
-                                <div class="settings-section">
-                                    <h3>Visual Composition</h3>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">Background</label>
-                                            <select id="background" class="form-control">
-                                                <option value="">Select Background</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Lighting</label>
-                                            <select id="lighting" class="form-control">
-                                                <option value="">Select Lighting</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Camera Angle</label>
-                                            <select id="cameraAngle" class="form-control">
-                                                <option value="">Select Angle</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Color Palette</label>
-                                            <select id="colorPalette" class="form-control">
-                                                <option value="">Select Palette</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Composition</label>
-                                            <select id="composition" class="form-control">
-                                                <option value="">Select Composition</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Quality Tags -->
-                                <div class="settings-section">
-                                    <h3>Quality & Enhancement Tags</h3>
-                                    <div class="checkbox-grid">
-                                        <div class="checkbox-group">
-                                            <h4>Quality Tags</h4>
-                                            <div id="qualityTags" class="checkbox-list"></div>
-                                        </div>
-                                        <div class="checkbox-group">
-                                            <h4>Emphasis Tags</h4>
-                                            <div id="emphasisTags" class="checkbox-list"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Custom Parameters -->
-                                <div class="settings-section">
-                                    <h3>Custom Parameters</h3>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label class="form-label">Subject/Inspiration</label>
-                                            <input type="text" id="inspiration" class="form-control" placeholder="e.g., a wise old wizard">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Location/Setting</label>
-                                            <input type="text" id="location" class="form-control" placeholder="e.g., ancient library">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Pose/Action</label>
-                                            <input type="text" id="pose" class="form-control" placeholder="e.g., reading a glowing book">
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="form-label">Additional Options</label>
-                                            <input type="text" id="additionalOptions" class="form-control" placeholder="e.g., magical particles, floating books">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Custom Base Prompt</label>
-                                        <textarea id="customPrompt" class="form-control" rows="3" placeholder="Enter your base prompt or leave empty to generate from selections..."></textarea>
-                                    </div>
-                                </div>
-                                <!-- Action Buttons -->
-                                <div class="action-buttons">
-                                    <button id="generateBtn" class="btn btn--primary btn--lg">
-                                        ✨ Generate Enhanced Prompts
-                                    </button>
-                                    <button id="resetBtn" class="btn btn--outline">
-                                        🔄 Reset Form
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Results Panel -->
-                    <div class="results-panel">
-                        <div class="card">
-                            <div class="card__body">
-                                <div class="results-header">
-                                    <h2>Generated Prompts</h2>
-                                    <button id="copyAllBtn" class="btn btn--secondary" disabled>
-                                        📋 Copy All
-                                    </button>
-                                </div>
-                                <div id="resultsContainer" class="results-container">
-                                    <div class="empty-state">
-                                        <p>Configure your settings and click "Generate Enhanced Prompts" to create professional AI prompts.</p>
-                                        <div class="empty-state__features">
-                                            <div class="feature-item">
-                                                <span class="feature-icon">🎯</span>
-                                                Generate 5 unique variations
-                                            </div>
-                                            <div class="feature-item">
-                                                <span class="feature-icon">✨</span>
-                                                Professional formatting
-                                            </div>
-                                            <div class="feature-item">
-                                                <span class="feature-icon">📋</span>
-                                                One-click copy to clipboard
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <main>
+        <!-- Text Prompt Tab -->
+        <section id="text-prompt-content" class="tab-content active">
+            <div class="form-group">
+                <label for="prompt-type">Prompt Type:</label>
+                <select id="prompt-type">
+                    <option value="photography">Photography</option>
+                    <option value="digital-art">Digital Art</option>
+                    <option value="painting">Painting</option>
+                    <option value="illustration">Illustration</option>
+                </select>
             </div>
 
-            <!-- Image to Prompt Tab -->
-            <div id="image-prompt" class="tab-content">
-                <div class="card">
-                    <div class="card__body">
-                        <h2>Image to Prompt Generator</h2>
-                        <div class="image-upload-area" id="imageUpload">
-                            <div class="upload-placeholder">
-                                <p>📷 Drop an image here or click to upload</p>
-                                <input type="file" id="imageInput" accept="image/*" style="display: none;">
-                            </div>
-                        </div>
-                        <div id="imageAnalysisResult" class="image-analysis-result hidden"></div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="art-style">Art Style:</label>
+                <select id="art-style">
+                    <option value="realistic">Realistic</option>
+                    <option value="abstract">Abstract</option>
+                    <option value="minimalist">Minimalist</option>
+                    <option value="cyberpunk">Cyberpunk</option>
+                    <option value="impressionist">Impressionist</option>
+                </select>
             </div>
 
-            <!-- Brunette Portrait Generator Tab (New) -->
-            <div id="portrait-generator" class="tab-content">
-                <div class="card">
-                    <div class="card__body">
-                        <h2>Brunette Portrait Generator (C2P_AI)</h2>
-                        <p>Enter a concept or use shortcuts (n: new random, v: variant, np: portrait photo, etc.)</p>
-                        <div class="form-group">
-                            <input type="text" id="conceptInput" class="form-control" placeholder="Enter concept or shortcut...">
-                            <button id="generatePortraitBtn" class="btn btn--primary btn--lg mt-8">Generate Prompts</button>
-                        </div>
-                        <div id="portraitResults" class="results-container"></div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="mood">Mood:</label>
+                <select id="mood">
+                    <option value="bright">Bright</option>
+                    <option value="dark">Dark</option>
+                    <option value="mysterious">Mysterious</option>
+                    <option value="serene">Serene</option>
+                    <option value="dramatic">Dramatic</option>
+                </select>
             </div>
 
-            <!-- History Tab -->
-            <div id="history" class="tab-content">
-                <div class="card">
-                    <div class="card__body">
-                        <div class="history-header">
-                            <h2>Prompt History</h2>
-                            <div class="history-actions">
-                                <input type="search" id="historySearch" class="form-control" placeholder="Search prompts..." style="width: 200px;">
-                                <button id="exportHistoryBtn" class="btn btn--secondary">
-                                    📥 Export History
-                                </button>
-                                <button id="clearHistoryBtn" class="btn btn--outline">
-                                    🗑️ Clear All
-                                </button>
-                            </div>
-                        </div>
-                        <div id="historyContainer" class="history-container">
-                            <div class="empty-state">
-                                <p>No prompts generated yet. Start creating prompts to build your history!</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label for="composition">Composition:</label>
+                <select id="composition">
+                    <option value="centered">Centered</option>
+                    <option value="rule-of-thirds">Rule of Thirds</option>
+                    <option value="symmetrical">Symmetrical</option>
+                    <option value="dynamic">Dynamic</option>
+                </select>
             </div>
-        </main>
-    </div>
-    <!-- Toast Notifications -->
-    <div id="toast" class="toast"></div>
+
+            <div class="form-group">
+                <label for="custom-subject">Custom Subject:</label>
+                <input type="text" id="custom-subject" placeholder="e.g., Cyberpunk Cityscape">
+            </div>
+
+            <div class="form-group">
+                <label for="custom-location">Custom Location:</label>
+                <input type="text" id="custom-location" placeholder="e.g., Neon District">
+            </div>
+
+            <div class="form-group">
+                <label for="custom-pose">Custom Pose/Action:</label>
+                <input type="text" id="custom-pose" placeholder="e.g., Flying through the clouds">
+            </div>
+
+            <button id="generate-prompts-btn">Generate Enhanced Prompts</button>
+
+            <div id="prompts-container"></div>
+        </section>
+
+        <!-- Image to Prompt Tab -->
+        <section id="image-to-prompt-content" class="tab-content">
+            <div id="drop-area">
+                <p>Drag & drop an image here or click to browse</p>
+                <input type="file" id="image-upload" accept="image/*">
+            </div>
+            <div id="image-preview"></div>
+            <button id="analyze-image-btn" disabled>Analyze Image</button>
+            <div id="image-prompt-result"></div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="history-content" class="tab-content">
+            <div class="history-controls">
+                <input type="text" id="search-history" placeholder="Search history...">
+                <button id="export-history">Export History</button>
+            </div>
+            <div id="history-list"></div>
+        </section>
+    </main>
+
     <script src="app.js"></script>
 </body>
 </html>
