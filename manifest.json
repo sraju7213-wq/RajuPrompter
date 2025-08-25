@@ -1,20 +1,25 @@
 {
-  "name": "AI Prompt Generator",
-  "short_name": "AI Prompt Gen",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#6c5ce7",
-  "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+    "name": "Perfect AI Prompt Generator",
+    "short_name": "PromptGen",
+    "description": "Professional AI prompt generation tool with brunette portrait mode",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#fcfcf9",
+    "theme_color": "#218d8d",
+    "orientation": "portrait-primary",
+    "categories": ["productivity", "graphics", "design"],
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
 }
