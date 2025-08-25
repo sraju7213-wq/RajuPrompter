@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced AI Prompt Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1><i class="fas fa-brain"></i> Advanced AI Prompt Generator</h1>
+            <p>Generate smarter prompts with AI-powered suggestions</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel - Input & Controls -->
+            <div class="left-panel">
+                <div class="input-section">
+                    <label for="prompt-input">Prompt Context:</label>
+                    <textarea id="prompt-input" placeholder="Describe what you want to generate..."></textarea>
+                    
+                    <div class="controls">
+                        <button id="generate-btn" class="btn primary"><i class="fas fa-bolt"></i> Generate Prompt</button>
+                        <button id="save-btn" class="btn secondary"><i class="fas fa-save"></i> Save Prompt</button>
+                        <button id="clear-btn" class="btn danger"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+
+                <!-- Smart Suggestions -->
+                <div class="suggestions-section">
+                    <h3><i class="fas fa-lightbulb"></i> Smart Suggestions</h3>
+                    <div id="suggestions-container" class="suggestions-grid"></div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Output & Library -->
+            <div class="right-panel">
+                <!-- Generated Prompt Output -->
+                <div class="output-section">
+                    <h3><i class="fas fa-file-alt"></i> Generated Prompt</h3>
+                    <div id="output-container" class="output-area">
+                        <p>Your generated prompt will appear here...</p>
+                    </div>
+                    <button id="copy-btn" class="btn copy-btn"><i class="fas fa-copy"></i> Copy to Clipboard</button>
+                </div>
+
+                <!-- Prompt Library -->
+                <div class="library-section">
+                    <div class="library-header">
+                        <h3><i class="fas fa-book"></i> Prompt Library</h3>
+                        <div class="library-controls">
+                            <input type="text" id="search-library" placeholder="Search prompts...">
+                            <select id="category-filter">
+                                <option value="all">All Categories</option>
+                                <option value="creative">Creative</option>
+                                <option value="technical">Technical</option>
+                                <option value="business">Business</option>
+                                <option value="educational">Educational</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="library-container" class="library-grid"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p>Generating your prompt...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
