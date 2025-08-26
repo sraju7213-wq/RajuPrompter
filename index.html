@@ -1,0 +1,75 @@
+
+<!doctype html>
+<html lang="en" class="theme-dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>PromptSmith — TFJS Prompt Generator</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <!-- TensorFlow.js + models (CDN). For offline, replace with local copies. -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.16.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="brand">🎛️ PromptSmith <span class="badge">TFJS</span></div>
+      <div class="toolbar">
+        <select id="theme" title="Theme">
+          <option value="theme-light">Light</option>
+          <option value="theme-dark" selected>Dark</option>
+        </select>
+        <select id="platform" title="Platform">
+          <option value="midjourney">Midjourney</option>
+          <option value="stablediffusion">Stable Diffusion</option>
+          <option value="flux">Flux</option>
+          <option value="naturallanguage">Natural Language</option>
+        </select>
+        <select id="aspect" title="Aspect"></select>
+        <label class="row small"><input type="checkbox" id="negToggle" checked/> Include negatives</label>
+        <button id="copyBtn" class="btn">Copy</button>
+        <button id="saveBtn" class="btn primary">Download .txt</button>
+      </div>
+    </header>
+
+    <main class="grid">
+      <aside class="sidebar">
+        <h3 class="section-title">Image → Prompt</h3>
+        <input type="file" id="file" accept="image/*" class="btn" />
+        <div class="row"><button id="analyzeBtn" class="btn">Analyze</button><span id="status" class="small"></span></div>
+        <img id="preview" alt="preview" style="max-width:100%; border-radius:12px; margin-top:8px;"/>
+        <div class="tags" id="tags"></div>
+        <hr/>
+        <h3 class="section-title">Generators</h3>
+        <div class="row">
+          <button class="btn" data-gen="portrait">Portrait</button>
+          <button class="btn" data-gen="nature">Nature</button>
+          <button class="btn" data-gen="surprise">Surprise</button>
+        </div>
+        <hr/>
+        <h3 class="section-title">History</h3>
+        <div id="history" class="small"></div>
+      </aside>
+
+      <section class="panel">
+        <h3 class="section-title">Prompt Builder</h3>
+        <textarea id="prompt" placeholder="Write or generate your prompt here…" rows="8" style="width:100%;"></textarea>
+        <div class="row small" style="margin-top:8px;">The output below is formatted for your chosen platform.</div>
+        <hr/>
+        <div><strong>Final</strong><br/><pre id="final"></pre></div>
+        <div class=""><strong>Negative</strong><br/><pre id="negOut"></pre></div>
+      </section>
+    </main>
+
+    <footer class="row small" style="margin-top:12px; justify-content:space-between;">
+      <div>UI layout and theme inspired by your provided files.</div>
+      <div>© 2025 PromptSmith — Replace TFJS CDN tags with local files for fully offline use.</div>
+    </footer>
+  </div>
+
+  <script src="js/advanced-library.js"></script>
+  <script src="js/rules.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
