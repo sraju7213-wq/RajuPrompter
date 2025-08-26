@@ -1,4 +1,0 @@
-Rule_ID,Category,Rule_Name,Description,Rule_Text,Examples,When_To_Use,Platform
-RULE_001,Platform Optimization,Midjourney Parameters,Essential parameters for Midjourney,"Use --ar for aspect ratio, --s for stylize (100-1000), --q for quality (1-2)",--ar 16:9 --s 750 --q 2,All Midjourney prompts,Midjourney
-RULE_002,Prompt Structure,Subject First Priority,Place main subject at beginning of prompt,"Start with subject, then action, then environment, then style","Portrait of woman, smiling, in garden, impressionist style",All prompts with clear subject focus,All
-RULE_003,Quality Enhancement,Quality Modifier Balance,Use 2-3 quality modifiers maximum,Combine technical + artistic + platform-specific modifiers,"masterpiece, ultra detailed, sharp focus",When highest quality is needed,All
