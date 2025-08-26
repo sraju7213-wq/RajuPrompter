@@ -1,0 +1,123 @@
+
+AI Prompt Generator — Detailed Requirements List
+===============================================
+
+1. UI REQUIREMENTS
+------------------
+🧱 Design Consistency
+- Do not alter the UI structure or layout — use index.html and style.css as-is.
+- Maintain 3-pane layout:
+  • Left Sidebar → Random generators, Word Library, Saved Prompts
+  • Main Area → Tabs: Manual, Templates, Image-to-Prompt
+  • Right Panel → Preview, Advanced Settings, Actions, History
+
+🎨 Theming
+- Include 6 themes:
+  • Dark Professional
+  • Cyberpunk Neon
+  • Light Modern
+  • Warm Autumn
+  • Ocean Blue
+  • Pastel Dreams
+
+2. PROMPT GENERATION FUNCTIONALITY
+----------------------------------
+🧰 Manual Prompt Builder
+- Editable textarea
+- Drag and drop word bank items
+- Real-time word count and preview
+- Syntax corrections and optimization
+
+🧬 Smart Prompt Engine
+- 3000+ word/phrase library, 500 prompt templates
+- Rules engine handles:
+  • Prompt structure: quality → subject → action → environment → lighting → camera → style → color
+  • Grammar: comma handling, order enforcement, duplicate filtering
+  • Prompt scoring (length, structure, detail level)
+
+3. WORD LIBRARY PANEL
+---------------------
+- Categories (with tabs):
+  • Subjects
+  • Styles
+  • Qualities
+  • Lighting
+  • Colors
+- Populate dynamically via advanced-library.js
+- Support drag-to-insert into prompt builder
+
+4. RANDOM PROMPT GENERATORS
+---------------------------
+- Buttons: Portrait 👤, Nature 🌿, Fantasy 🐉, Sci-Fi 🚀, Abstract 🎨, Surprise 🎲
+- Each generates a full prompt following structural rules
+- Reflect current platform and settings
+
+5. IMAGE-TO-PROMPT GENERATOR
+----------------------------
+- Upload image via upload-zone
+- Use TensorFlow.js:
+  • Mobilenet (classification)
+  • COCO-SSD (object detection)
+- Auto-generate:
+  • Subjects
+  • Objects
+  • Color palette
+  • Complete smart prompt
+- Allow transfer of result to main prompt builder
+
+6. PLATFORM-SPECIFIC PROMPT FORMATTING
+--------------------------------------
+- Platforms:
+  • Midjourney
+  • Stable Diffusion
+  • Flux AI
+  • DALL·E
+  • Natural Language
+- Apply platform-specific formatting:
+  • Midjourney → --ar, --stylize, --seed
+  • SD → Positive / Negative / CFG / Sampler
+  • Flux → Ratio, guidance
+  • DALL·E → natural sentence
+
+7. ADVANCED SETTINGS PANEL
+--------------------------
+- Aspect Ratio
+- Quality slider
+- Stylization slider
+- All tied to preview output and logic
+
+8. STORAGE & HISTORY
+--------------------
+🧠 History
+- Auto-store recent prompts
+- Click to restore
+
+💾 Saved Prompts
+- Manual save with name + description
+- Display and reuse
+
+9. ACTIONS
+----------
+- Copy to clipboard
+- Export to .txt
+- Share via URL hash
+- Clear all
+
+10. TEMPLATE TAB
+----------------
+- Category filters:
+  • Portrait
+  • Landscape
+  • Digital Art
+  • Photography
+  • Fantasy
+- Grid layout of saved prompt cards
+- Click to apply to builder
+
+11. FUTURE-PROOF FEATURES (Optional/Future)
+-------------------------------------------
+- PWA support
+- Speech-to-prompt
+- Drag-drop prompt rearranging
+- AI prompt rating / scoring
+- Image generation preview (via API or local model)
