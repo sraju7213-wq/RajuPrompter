@@ -552,6 +552,19 @@
     </style>
 </head>
 <body>
+    <script src="advanced-library.js"></script>
+<script>
+  // expose functions globally if needed later
+  window.generatePrompt = generatePrompt;
+  window.generateAdvanced = generateAdvanced;
+  window.copyPrompt = copyPrompt;
+  window.clearPrompt = clearPrompt;
+  window.saveToLibrary = saveToLibrary;
+  window.exportPrompt = exportPrompt;
+  window.toggleTag = toggleTag;
+  window.toggleFeature = toggleFeature;
+</script>
+
     <!-- Header -->
     <header class="header">
         <div class="header-content">
