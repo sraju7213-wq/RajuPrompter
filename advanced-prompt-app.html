@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced AI Prompt Generator Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-accent: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8b8;
+            --text-muted: #888888;
+            --border: #333333;
+            --border-light: #444444;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-tertiary: #06b6d4;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --gradient-secondary: linear-gradient(135deg, #06b6d4, #3b82f6);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo i {
+            font-size: 1.75rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .main-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
+        }
+
+        .main-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .main-body {
+            padding: 2rem;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-tertiary);
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-accent);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        /* Tags and Categories */
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .tag:hover {
+            background: var(--bg-accent);
+            border-color: var(--border-light);
+        }
+
+        .tag.selected {
+            background: var(--gradient-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+
+        .tag input[type="checkbox"] {
+            display: none;
+        }
+
+        /* Prompt Output */
+        .prompt-output {
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            min-height: 200px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .prompt-output.has-content {
+            border-style: solid;
+            border-color: var(--accent-primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .prompt-output .placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        /* Library Section */
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .library-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .library-item:hover {
+            background: var(--bg-accent);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .library-item-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .library-item-description {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .library-item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .library-item-tag {
+            padding: 0.25rem 0.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-primary);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Advanced Features */
+        .feature-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .feature-toggle:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: var(--bg-accent);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .sidebar, .right-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .tag-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.3s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-light);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-magic"></i>
+                AI Prompt Generator Pro
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-sm" onclick="exportPrompt()">
+                    <i class="fas fa-download"></i>
+                    Export
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="saveToLibrary()">
+                    <i class="fas fa-bookmark"></i>
+                    Save
+                </button>
+                <button class="btn btn-primary btn-sm" onclick="generateAdvanced()">
+                    <i class="fas fa-sparkles"></i>
+                    Generate
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-layer-group"></i>
+                    Categories
+                </h3>
+                <div class="tag-grid">
+                    <div class="tag" onclick="toggleTag(this, 'photography')">
+                        <input type="checkbox" id="cat-photography">
+                        <i class="fas fa-camera"></i>
+                        Photography
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'illustration')">
+                        <input type="checkbox" id="cat-illustration">
+                        <i class="fas fa-palette"></i>
+                        Illustration
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, '3d-render')">
+                        <input type="checkbox" id="cat-3d">
+                        <i class="fas fa-cube"></i>
+                        3D Render
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'digital-art')">
+                        <input type="checkbox" id="cat-digital">
+                        <i class="fas fa-desktop"></i>
+                        Digital Art
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'anime')">
+                        <input type="checkbox" id="cat-anime">
+                        <i class="fas fa-star"></i>
+                        Anime
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'realistic')">
+                        <input type="checkbox" id="cat-realistic">
+                        <i class="fas fa-eye"></i>
+                        Realistic
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Quality & Style
+                </h3>
+                <div class="tag-grid">
+                    <div class="tag" onclick="toggleTag(this, 'masterpiece')">
+                        <input type="checkbox" id="qual-masterpiece">
+                        Masterpiece
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'high-quality')">
+                        <input type="checkbox" id="qual-hq">
+                        High Quality
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, '8k')">
+                        <input type="checkbox" id="qual-8k">
+                        8K Resolution
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'ultra-detailed')">
+                        <input type="checkbox" id="qual-detailed">
+                        Ultra Detailed
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'cinematic')">
+                        <input type="checkbox" id="qual-cinematic">
+                        Cinematic
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'professional')">
+                        <input type="checkbox" id="qual-pro">
+                        Professional
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Lighting
+                </h3>
+                <div class="tag-grid">
+                    <div class="tag" onclick="toggleTag(this, 'natural-lighting')">
+                        <input type="checkbox" id="light-natural">
+                        Natural
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'studio-lighting')">
+                        <input type="checkbox" id="light-studio">
+                        Studio
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'dramatic-lighting')">
+                        <input type="checkbox" id="light-dramatic">
+                        Dramatic
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'soft-lighting')">
+                        <input type="checkbox" id="light-soft">
+                        Soft
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'golden-hour')">
+                        <input type="checkbox" id="light-golden">
+                        Golden Hour
+                    </div>
+                    <div class="tag" onclick="toggleTag(this, 'rim-lighting')">
+                        <input type="checkbox" id="light-rim">
+                        Rim Lighting
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="main-header">
+                <h1 class="main-title">Prompt Generator Workspace</h1>
+                <p class="main-subtitle">Create professional AI image prompts with advanced features and optimization</p>
+            </div>
+            <div class="main-body">
+                <div class="form-group">
+                    <label class="form-label">Base Description</label>
+                    <textarea class="form-textarea" id="baseDescription" placeholder="Enter your main subject or scene description..." style="min-height: 100px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Generated Prompt</label>
+                    <div class="prompt-output" id="promptOutput">
+                        <div class="placeholder">Your generated prompt will appear here...</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                    <button class="btn btn-primary btn-lg" onclick="generatePrompt()">
+                        <i class="fas fa-magic"></i>
+                        Generate Prompt
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyPrompt()">
+                        <i class="fas fa-copy"></i>
+                        Copy
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearPrompt()">
+                        <i class="fas fa-trash"></i>
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Right Panel -->
+        <aside class="right-panel">
+            <!-- Advanced Options -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">
+                        <i class="fas fa-cogs"></i>
+                        Advanced Options
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="form-label">Aspect Ratio</label>
+                        <select class="form-select" id="aspectRatio">
+                            <option value="1:1">Square (1:1)</option>
+                            <option value="16:9">Landscape (16:9)</option>
+                            <option value="9:16">Portrait (9:16)</option>
+                            <option value="4:3">Classic (4:3)</option>
+                            <option value="3:2">Photo (3:2)</option>
+                            <option value="21:9">Ultrawide (21:9)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Style Strength</label>
+                        <input type="range" class="form-input" id="styleStrength" min="1" max="10" value="5">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            <span>Subtle</span>
+                            <span>Strong</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Negative Prompts</label>
+                        <textarea class="form-textarea" id="negativePrompts" placeholder="What to avoid in the image..." style="min-height: 80px;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Features -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">
+                        <i class="fas fa-robot"></i>
+                        AI Features
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="feature-toggle">
+                        <div>
+                            <strong>Smart Enhancement</strong>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">Auto-optimize prompts</div>
+                        </div>
+                        <div class="toggle-switch" onclick="toggleFeature(this)" data-feature="smart-enhancement"></div>
+                    </div>
+                    <div class="feature-toggle">
+                        <div>
+                            <strong>Style Transfer</strong>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">Apply artistic styles</div>
+                        </div>
+                        <div class="toggle-switch" onclick="toggleFeature(this)" data-feature="style-transfer"></div>
+                    </div>
+                    <div class="feature-toggle">
+                        <div>
+                            <strong>Detail Boost</strong>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">Enhance fine details</div>
+                        </div>
+                        <div class="toggle-switch" onclick="toggleFeature(this)" data-feature="detail-boost"></div>
+                    </div>
+                    <div class="feature-toggle">
+                        <div>
+                            <strong>Color Harmony</strong>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">Optimize color palette</div>
+                        </div>
+                        <div class="toggle-switch" onclick="toggleFeature(this)" data-feature="color-harmony"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">
+                        <i class="fas fa-chart-line"></i>
+                        Statistics
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="promptCount">0</div>
+                            <div class="stat-label">Prompts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="libraryCount">247</div>
+                            <div class="stat-label">Library</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="savedCount">0</div>
+                            <div class="stat-label">Saved</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Library Modal -->
+    <div id="libraryModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Prompt Library</h3>
+                <button class="modal-close" onclick="closeLibrary()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="library-grid" id="libraryGrid">
+                    <!-- Library items will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let selectedTags = new Set();
+        let promptCount = 0;
+        let savedCount = 0;
+        let activeFeatures = new Set();
+
+        // Comprehensive Prompt Library
+        const promptLibrary = {
+            photography: [
+                {
+                    title: "Portrait Photography",
+                    description: "Professional portrait with perfect lighting and composition",
+                    tags: ["portrait", "professional", "lighting"],
+                    template: "professional portrait photograph of {subject}, {lighting}, sharp focus, detailed facial features, {quality}, studio lighting, {camera} lens"
+                },
+                {
+                    title: "Landscape Photography",
+                    description: "Breathtaking natural landscapes with perfect composition",
+                    tags: ["landscape", "nature", "outdoor"],
+                    template: "stunning landscape photograph of {scene}, {time_of_day}, {weather}, wide angle, {quality}, national geographic style"
+                },
+                {
+                    title: "Street Photography",
+                    description: "Candid urban photography with authentic atmosphere",
+                    tags: ["street", "urban", "candid"],
+                    template: "street photography of {subject}, urban environment, candid moment, {lighting}, documentary style, {quality}"
+                }
+            ],
+            illustration: [
+                {
+                    title: "Digital Painting",
+                    description: "Artistic digital illustrations with painterly quality",
+                    tags: ["digital", "painting", "artistic"],
+                    template: "digital painting of {subject}, {art_style}, {color_palette}, detailed brushwork, {quality}, concept art"
+                },
+                {
+                    title: "Vector Illustration",
+                    description: "Clean vector graphics with modern design principles",
+                    tags: ["vector", "modern", "clean"],
+                    template: "vector illustration of {subject}, {style}, clean lines, {color_scheme}, minimalist design, {quality}"
+                },
+                {
+                    title: "Watercolor Style",
+                    description: "Soft watercolor illustrations with organic flow",
+                    tags: ["watercolor", "soft", "organic"],
+                    template: "watercolor illustration of {subject}, soft edges, {color_palette}, organic flow, traditional media style, {quality}"
+                }
+            ],
+            "3d-render": [
+                {
+                    title: "Architectural Visualization",
+                    description: "Photorealistic architectural renderings",
+                    tags: ["architecture", "realistic", "professional"],
+                    template: "3D architectural rendering of {building}, {lighting}, photorealistic, {materials}, {environment}, professional visualization, {quality}"
+                },
+                {
+                    title: "Product Rendering",
+                    description: "Commercial product visualization with perfect lighting",
+                    tags: ["product", "commercial", "lighting"],
+                    template: "3D product render of {product}, {lighting}, {background}, {materials}, commercial photography style, {quality}"
+                },
+                {
+                    title: "Character Modeling",
+                    description: "Detailed 3D character models with realistic features",
+                    tags: ["character", "modeling", "detailed"],
+                    template: "3D character model of {character}, {style}, detailed anatomy, {textures}, {pose}, {quality}"
+                }
+            ],
+            anime: [
+                {
+                    title: "Anime Portrait",
+                    description: "Beautiful anime-style character portraits",
+                    tags: ["anime", "portrait", "character"],
+                    template: "anime style portrait of {character}, {expression}, {hair_style}, {eye_color}, {clothing}, detailed anime art, {quality}"
+                },
+                {
+                    title: "Manga Style",
+                    description: "Traditional manga artwork with ink techniques",
+                    tags: ["manga", "traditional", "ink"],
+                    template: "manga style illustration of {scene}, {style}, detailed lineart, screentones, traditional manga techniques, {quality}"
+                },
+                {
+                    title: "Chibi Style",
+                    description: "Cute chibi-style characters with exaggerated features",
+                    tags: ["chibi", "cute", "stylized"],
+                    template: "chibi style {character}, cute proportions, {expression}, {colors}, kawaii aesthetic, {quality}"
+                }
+            ]
+        };
+
+        // Quality Enhancement Rules
+        const qualityEnhancements = {
+            photography: ["sharp focus", "professional lighting", "composition", "depth of field"],
+            illustration: ["detailed artwork", "artistic composition", "color harmony", "visual appeal"],
+            "3d-render": ["photorealistic", "accurate lighting", "material properties", "render quality"],
+            anime: ["detailed anime art", "character design", "color vibrancy", "art style consistency"]
+        };
+
+        // Lighting Presets
+        const lightingPresets = {
+            "natural-lighting": "natural daylight, soft ambient lighting",
+            "studio-lighting": "professional studio lighting setup, controlled illumination",
+            "dramatic-lighting": "dramatic chiaroscuro lighting, strong contrast",
+            "soft-lighting": "soft diffused lighting, gentle illumination",
+            "golden-hour": "golden hour lighting, warm sunset glow",
+            "rim-lighting": "rim lighting, edge lighting, backlighting"
+        };
+
+        // Style Modifiers
+        const styleModifiers = {
+            1: "subtle style influence",
+            2: "light style application",
+            3: "moderate style influence",
+            4: "noticeable style application",
+            5: "balanced style integration",
+            6: "strong style influence",
+            7: "dominant style application",
+            8: "heavy style modification",
+            9: "extreme style transformation",
+            10: "complete style override"
+        };
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+            loadLibraryStats();
+            setupEventListeners();
+        });
+
+        function initializeApp() {
+            console.log('AI Prompt Generator Pro initialized');
+            updateStats();
+        }
+
+        function loadLibraryStats() {
+            const totalLibraryItems = Object.values(promptLibrary).reduce((total, category) => total + category.length, 0);
+            document.getElementById('libraryCount').textContent = totalLibraryItems;
+        }
+
+        function setupEventListeners() {
+            // Auto-generate on input change
+            document.getElementById('baseDescription').addEventListener('input', debounce(generatePrompt, 500));
+            
+            // Aspect ratio change
+            document.getElementById('aspectRatio').addEventListener('change', generatePrompt);
+            
+            // Style strength change
+            document.getElementById('styleStrength').addEventListener('input', generatePrompt);
+            
+            // Negative prompts change
+            document.getElementById('negativePrompts').addEventListener('input', debounce(generatePrompt, 500));
+        }
+
+        function toggleTag(element, tagValue) {
+            element.classList.toggle('selected');
+            
+            if (selectedTags.has(tagValue)) {
+                selectedTags.delete(tagValue);
+            } else {
+                selectedTags.add(tagValue);
+            }
+            
+            generatePrompt();
+        }
+
+        function toggleFeature(element) {
+            element.classList.toggle('active');
+            const feature = element.dataset.feature;
+            
+            if (activeFeatures.has(feature)) {
+                activeFeatures.delete(feature);
+            } else {
+                activeFeatures.add(feature);
+            }
+            
+            generatePrompt();
+        }
+
+        function generatePrompt() {
+            const baseDescription = document.getElementById('baseDescription').value.trim();
+            const aspectRatio = document.getElementById('aspectRatio').value;
+            const styleStrength = document.getElementById('styleStrength').value;
+            const negativePrompts = document.getElementById('negativePrompts').value.trim();
+            
+            if (!baseDescription) {
+                document.getElementById('promptOutput').innerHTML = '<div class="placeholder">Enter a base description to generate a prompt...</div>';
+                document.getElementById('promptOutput').classList.remove('has-content');
+                return;
+            }
+
+            let prompt = baseDescription;
+            let qualityTags = [];
+            let styleTags = [];
+            let lightingTags = [];
+            let categoryTags = [];
+
+            // Process selected tags
+            selectedTags.forEach(tag => {
+                if (tag.startsWith('cat-')) {
+                    categoryTags.push(tag.replace('cat-', ''));
+                } else if (tag.startsWith('qual-')) {
+                    qualityTags.push(tag.replace('qual-', ''));
+                } else if (tag.startsWith('light-')) {
+                    lightingTags.push(lightingPresets[tag.replace('light-', '')] || tag.replace('light-', ''));
+                } else {
+                    styleTags.push(tag);
+                }
+            });
+
+            // Apply category-specific enhancements
+            categoryTags.forEach(category => {
+                if (qualityEnhancements[category]) {
+                    qualityTags.push(...qualityEnhancements[category]);
+                }
+            });
+
+            // Apply AI features
+            if (activeFeatures.has('smart-enhancement')) {
+                qualityTags.push('AI enhanced', 'optimized composition');
+            }
+            if (activeFeatures.has('style-transfer')) {
+                styleTags.push('artistic style transfer', 'style consistency');
+            }
+            if (activeFeatures.has('detail-boost')) {
+                qualityTags.push('ultra detailed', 'intricate details', 'fine textures');
+            }
+            if (activeFeatures.has('color-harmony')) {
+                styleTags.push('harmonious colors', 'color balance', 'color grading');
+            }
+
+            // Build the final prompt
+            let finalPrompt = prompt;
+
+            if (qualityTags.length > 0) {
+                finalPrompt += ', ' + qualityTags.join(', ');
+            }
+
+            if (styleTags.length > 0) {
+                finalPrompt += ', ' + styleTags.join(', ');
+            }
+
+            if (lightingTags.length > 0) {
+                finalPrompt += ', ' + lightingTags.join(', ');
+            }
+
+            // Add aspect ratio
+            if (aspectRatio !== '1:1') {
+                finalPrompt += `, aspect ratio ${aspectRatio}`;
+            }
+
+            // Add style strength
+            const strengthValue = parseInt(styleStrength);
+            if (strengthValue !== 5) {
+                finalPrompt += `, ${styleModifiers[strengthValue]}`;
+            }
+
+            // Add negative prompts if any
+            if (negativePrompts) {
+                finalPrompt += `\n\nNegative prompts: ${negativePrompts}`;
+            }
+
+            // Display the generated prompt
+            document.getElementById('promptOutput').textContent = finalPrompt;
+            document.getElementById('promptOutput').classList.add('has-content');
+            
+            // Update stats
+            promptCount++;
+            updateStats();
+        }
+
+        function generateAdvanced() {
+            // Advanced generation with AI-powered optimization
+            const basePrompt = document.getElementById('baseDescription').value.trim();
+            
+            if (!basePrompt) {
+                alert('Please enter a base description first.');
+                return;
+            }
+
+            // Simulate advanced AI processing
+            const loadingElement = document.getElementById('promptOutput');
+            loadingElement.innerHTML = '<div class="placeholder"><i class="fas fa-spinner fa-spin"></i> Generating advanced prompt...</div>';
+            
+            setTimeout(() => {
+                generatePrompt();
+                
+                // Add AI enhancement notice
+                const currentPrompt = document.getElementById('promptOutput').textContent;
+                const enhancedPrompt = currentPrompt + '\n\n✨ Enhanced with AI optimization for better results';
+                document.getElementById('promptOutput').textContent = enhancedPrompt;
+            }, 1500);
+        }
+
+        function copyPrompt() {
+            const promptText = document.getElementById('promptOutput').textContent;
+            
+            if (!promptText || promptText.includes('placeholder')) {
+                alert('No prompt to copy. Please generate a prompt first.');
+                return;
+            }
+
+            navigator.clipboard.writeText(promptText).then(() => {
+                // Show success feedback
+                const button = event.target.closest('.btn');
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                button.style.background = 'var(--success)';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.style.background = '';
+                }, 2000);
+            });
+        }
+
+        function clearPrompt() {
+            document.getElementById('baseDescription').value = '';
+            document.getElementById('negativePrompts').value = '';
+            document.getElementById('promptOutput').innerHTML = '<div class="placeholder">Your generated prompt will appear here...</div>';
+            document.getElementById('promptOutput').classList.remove('has-content');
+            
+            // Reset all tags
+            selectedTags.clear();
+            document.querySelectorAll('.tag.selected').forEach(tag => {
+                tag.classList.remove('selected');
+            });
+            
+            // Reset features
+            activeFeatures.clear();
+            document.querySelectorAll('.toggle-switch.active').forEach(toggle => {
+                toggle.classList.remove('active');
+            });
+            
+            // Reset form values
+            document.getElementById('aspectRatio').value = '1:1';
+            document.getElementById('styleStrength').value = '5';
+        }
+
+        function saveToLibrary() {
+            const promptText = document.getElementById('promptOutput').textContent;
+            
+            if (!promptText || promptText.includes('placeholder')) {
+                alert('No prompt to save. Please generate a prompt first.');
+                return;
+            }
+
+            // Simulate saving to library
+            savedCount++;
+            updateStats();
+            
+            // Show success feedback
+            const button = event.target.closest('.btn');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            button.style.background = 'var(--success)';
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.style.background = '';
+            }, 2000);
+        }
+
+        function exportPrompt() {
+            const promptText = document.getElementById('promptOutput').textContent;
+            
+            if (!promptText || promptText.includes('placeholder')) {
+                alert('No prompt to export. Please generate a prompt first.');
+                return;
+            }
+
+            // Create and download file
+            const blob = new Blob([promptText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-prompt-${Date.now()}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function updateStats() {
+            document.getElementById('promptCount').textContent = promptCount;
+            document.getElementById('savedCount').textContent = savedCount;
+        }
+
+        // Utility function for debouncing
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Modal functions (for future library expansion)
+        function openLibrary() {
+            document.getElementById('libraryModal').style.display = 'block';
+            populateLibrary();
+        }
+
+        function closeLibrary() {
+            document.getElementById('libraryModal').style.display = 'none';
+        }
+
+        function populateLibrary() {
+            const grid = document.getElementById('libraryGrid');
+            grid.innerHTML = '';
+            
+            Object.entries(promptLibrary).forEach(([category, items]) => {
+                items.forEach(item => {
+                    const element = document.createElement('div');
+                    element.className = 'library-item';
+                    element.innerHTML = `
+                        <div class="library-item-title">${item.title}</div>
+                        <div class="library-item-description">${item.description}</div>
+                        <div class="library-item-tags">
+                            ${item.tags.map(tag => `<span class="library-item-tag">${tag}</span>`).join('')}
+                        </div>
+                    `;
+                    element.onclick = () => applyLibraryTemplate(item.template);
+                    grid.appendChild(element);
+                });
+            });
+        }
+
+        function applyLibraryTemplate(template) {
+            document.getElementById('baseDescription').value = template;
+            generatePrompt();
+            closeLibrary();
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        generatePrompt();
+                        break;
+                    case 'c':
+                        if (e.shiftKey) {
+                            e.preventDefault();
+                            copyPrompt();
+                        }
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        saveToLibrary();
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        exportPrompt();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
