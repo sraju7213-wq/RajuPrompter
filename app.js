@@ -237,6 +237,12 @@ function initializeApp() {
     // Load saved data
     loadFromStorage();
 
+    // Load shared prompt from URL if present
+    const sharedPrompt = new URLSearchParams(window.location.search).get('prompt');
+    if (sharedPrompt) {
+        setPrompt(sharedPrompt);
+    }
+
     // Setup event listeners
     setupEventListeners();
 
@@ -327,6 +333,13 @@ function setupEventListeners() {
         }
     });
 
+    // Template category filters
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('template-category-btn')) {
+            filterTemplates(e.target.dataset.category);
+        }
+    });
+
     // Action buttons
     const copyBtn = document.getElementById('copy-prompt');
     if (copyBtn) {
@@ -341,6 +354,50 @@ function setupEventListeners() {
     const saveBtn = document.getElementById('save-prompt');
     if (saveBtn) {
         saveBtn.addEventListener('click', savePrompt);
+    }
+
+    const suggestionBtn = document.getElementById('get-suggestions');
+    if (suggestionBtn) {
+        suggestionBtn.addEventListener('click', getAISuggestions);
+    }
+
+    const exportTxtBtn = document.getElementById('export-txt');
+    if (exportTxtBtn) {
+        exportTxtBtn.addEventListener('click', exportToTxt);
+    }
+
+    const exportTopBtn = document.getElementById('export-btn');
+    if (exportTopBtn) {
+        exportTopBtn.addEventListener('click', exportToTxt);
+    }
+
+    const shareBtn = document.getElementById('share-prompt');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', sharePrompt);
+    }
+
+    const collaborateBtn = document.getElementById('collaboration-btn');
+    if (collaborateBtn) {
+        collaborateBtn.addEventListener('click', sharePrompt);
+    }
+
+    const imageUpload = document.getElementById('image-upload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', handleImageUpload);
+    }
+
+    const useGeneratedPromptBtn = document.getElementById('use-generated-prompt');
+    if (useGeneratedPromptBtn) {
+        useGeneratedPromptBtn.addEventListener('click', function() {
+            const text = document.getElementById('generated-prompt-text').value;
+            if (text) setPrompt(text);
+            switchTab('manual');
+        });
+    }
+
+    const batchBtn = document.getElementById('generate-batch');
+    if (batchBtn) {
+        batchBtn.addEventListener('click', generateBatch);
     }
 
     console.log('✅ Event listeners configured');
@@ -451,6 +508,7 @@ function setPrompt(prompt) {
         updatePromptPreview();
         updateWordCount();
         updateQualityScore();
+        getAISuggestions();
     }
 }
 
@@ -595,6 +653,7 @@ function initializeTemplates() {
             const templateCard = document.createElement('div');
             templateCard.className = 'template-card';
             templateCard.dataset.template = `${category}_${index}`;
+            templateCard.dataset.category = category;
 
             templateCard.innerHTML = `
                 <h4>${template.name}</h4>
@@ -605,6 +664,8 @@ function initializeTemplates() {
             templateGrid.appendChild(templateCard);
         });
     });
+
+    filterTemplates('all');
 }
 
 function applyTemplate(templateId) {
@@ -636,6 +697,134 @@ function applyTemplate(templateId) {
 
         setPrompt(prompt);
         switchTab('manual');
+    }
+}
+
+function filterTemplates(category) {
+    document.querySelectorAll('.template-category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category);
+    });
+    document.querySelectorAll('.template-card').forEach(card => {
+        const cardCat = card.dataset.category;
+        card.style.display = (category === 'all' || cardCat === category) ? '' : 'none';
+    });
+}
+
+function getAISuggestions() {
+    const suggestions = [];
+    const text = currentPrompt.toLowerCase();
+    if (!text.match(/light/)) suggestions.push('Add lighting description for better mood');
+    if (!text.match(/style/)) suggestions.push('Specify art style to refine the look');
+    if (!text.match(/color/)) suggestions.push('Mention color palette for richer output');
+    if (!text.match(/mood/)) suggestions.push('Include mood keywords to set the tone');
+    if (suggestions.length === 0) suggestions.push('Prompt looks good! Try adding more details.');
+    const container = document.getElementById('ai-suggestions');
+    container.innerHTML = '';
+    suggestions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = `<i class="fas fa-lightbulb"></i><span>${s}</span>`;
+        container.appendChild(div);
+    });
+}
+
+function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const img = document.getElementById('uploaded-img');
+        img.src = ev.target.result;
+        document.getElementById('image-analysis').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+
+    const tags = [
+        getRandomWord('subjects', 'people'),
+        getRandomWord('styles', 'artistic_styles'),
+        getRandomWord('lighting', 'natural')
+    ];
+    const tagContainer = document.getElementById('analysis-tags');
+    tagContainer.innerHTML = '';
+    tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = t;
+        tagContainer.appendChild(span);
+    });
+    document.getElementById('generated-prompt-text').value = tags.join(', ');
+}
+
+function generateBatch() {
+    const base = document.getElementById('batch-base-prompt').value.trim();
+    const count = parseInt(document.getElementById('batch-count').value, 10);
+    const type = document.getElementById('variation-type').value;
+    const results = document.getElementById('batch-results');
+    results.innerHTML = '';
+    if (!base) return;
+    for (let i = 0; i < count; i++) {
+        let variation = base;
+        switch (type) {
+            case 'style':
+                variation += ', ' + getRandomWord('styles', 'artistic_styles');
+                break;
+            case 'lighting':
+                variation += ', ' + getRandomWord('lighting', 'qualities');
+                break;
+            case 'composition':
+                variation += ', ' + getRandomWord('composition', 'framing');
+                break;
+            case 'color':
+                variation += ', ' + getRandomWord('colors', 'warm');
+                break;
+            default:
+                const funcs = [
+                    () => getRandomWord('styles', 'artistic_styles'),
+                    () => getRandomWord('lighting', 'qualities'),
+                    () => getRandomWord('composition', 'framing'),
+                    () => getRandomWord('colors', 'warm')
+                ];
+                variation += ', ' + funcs[Math.floor(Math.random()*funcs.length)]();
+        }
+        const div = document.createElement('div');
+        div.className = 'batch-item';
+        div.textContent = variation;
+        div.addEventListener('click', () => {
+            setPrompt(variation);
+            switchTab('manual');
+        });
+        results.appendChild(div);
+    }
+}
+
+function exportToTxt() {
+    if (!currentPrompt) {
+        alert('No prompt to export!');
+        return;
+    }
+    const blob = new Blob([currentPrompt], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'prompt.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function sharePrompt() {
+    if (!currentPrompt) {
+        alert('No prompt to share!');
+        return;
+    }
+    const url = `${window.location.origin}${window.location.pathname}?prompt=${encodeURIComponent(currentPrompt)}`;
+    if (navigator.share) {
+        navigator.share({ text: currentPrompt, url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('Share link copied to clipboard!');
+        });
     }
 }
 
