@@ -250,29 +250,27 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="image-analysis" id="image-analysis" style="display: none;">
-                        <div class="uploaded-image">
-                            <h3>Uploaded Image</h3>
+                        <div class="uploaded-image" id="preview-container" style="display: none;">
+                            <h3>Image Preview</h3>
                             <div class="image-container">
                                 <img id="uploaded-img" src="" alt="Uploaded image">
                             </div>
                         </div>
+                    </div>
 
-                        <div class="analysis-results">
-                            <h3>AI Analysis Results</h3>
-                            <div class="analysis-tags" id="analysis-tags">
-                                <!-- AI-detected tags -->
-                            </div>
+                    <div class="analysis-results" id="analysis-results" style="display: none;">
+                        <h3>AI Analysis Results</h3>
+                        <div class="analysis-tags" id="analysis-tags">
+                            <!-- AI-detected tags -->
+                        </div>
 
-                            <div class="generated-prompt">
-                                <label>Generated Prompt:</label>
-                                <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
-                                <button class="btn btn--primary" id="use-generated-prompt">
-                                    <i class="fas fa-check"></i> Use This Prompt
-                                </button>
-                            </div>
+                        <div class="generated-prompt">
+                            <label>Generated Prompt:</label>
+                            <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
+                            <button class="btn btn--primary" id="use-generated-prompt">
+                                <i class="fas fa-check"></i> Use This Prompt
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -434,6 +432,9 @@
         </div>
     </div>
 
+    <!-- Open-source libraries for image analysis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js" integrity="sha512-AAtvAU1ms5P0R2l9KeTtZL1NVr7DiIP9N6byjHgNsx3Rp3XIan+FJxuxMxDPZWS9Vyuk3F7S3w7Dnk3a1BMK9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
