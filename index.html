@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body data-theme="dark_professional">
+<body data-theme="cyberpunk_neon">
     <!-- Enhanced Header with Modern Features -->
     <header class="header">
         <div class="header-left">
@@ -24,20 +24,20 @@
             <div class="platform-selector">
                 <label for="platform-select"><i class="fas fa-cogs"></i> Platform:</label>
                 <select id="platform-select" class="form-control">
+                    <option value="natural_language" selected>Natural Language</option>
                     <option value="midjourney">Midjourney v6.1</option>
                     <option value="stable_diffusion">Stable Diffusion XL</option>
                     <option value="flux_ai">Flux AI Pro</option>
                     <option value="dall_e">DALL-E 3</option>
-                    <option value="natural_language">Natural Language</option>
                 </select>
             </div>
 
             <div class="theme-selector">
                 <label for="theme-select"><i class="fas fa-palette"></i> Theme:</label>
                 <select id="theme-select" class="form-control">
+                    <option value="cyberpunk_neon" selected>Cyberpunk Neon</option>
                     <option value="dark_professional">Dark Professional</option>
                     <option value="light_modern">Light Modern</option>
-                    <option value="cyberpunk_neon">Cyberpunk Neon</option>
                     <option value="warm_autumn">Warm Autumn</option>
                     <option value="ocean_blue">Ocean Blue</option>
                     <option value="pastel_dreams">Pastel Dreams</option>
@@ -268,7 +268,7 @@
                         <div class="generated-prompt">
                             <div class="output-header">
                                 <span>Output</span>
-                                <label class="nl-option"><input type="checkbox" id="natural-language-toggle"> Natural Language</label>
+                                <label class="nl-option"><input type="checkbox" id="natural-language-toggle" checked> Natural Language</label>
                             </div>
                             <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
                             <button class="btn btn--primary" id="use-generated-prompt">
@@ -435,9 +435,9 @@
         </div>
     </div>
 
-    <!-- Open-source libraries for image analysis -->
+    <!-- Open-source libraries for image analysis and text generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js" integrity="sha512-AAtvAU1ms5P0R2l9KeTtZL1NVr7DiIP9N6byjHgNsx3Rp3XIan+FJxuxMxDPZWS9Vyuk3F7S3w7Dnk3a1BMK9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.1/dist/transformers.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

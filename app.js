@@ -2,12 +2,13 @@
 console.log('🚀 AI Prompt Generator v2.0 Starting...');
 
 // Global state
-let currentPlatform = 'midjourney';
-let currentTheme = 'dark_professional';
+let currentPlatform = 'natural_language';
+let currentTheme = 'cyberpunk_neon';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
-let imageClassifier = null;
+let textGenerator = null;
+let imageCaptioner = null;
 let lastImageTags = [];
 let lastColorHex = '';
 
@@ -110,45 +111,20 @@ const wordLibrary = {
     }
 };
 
-// Template Data
-const promptTemplates = {
-    portrait: [
-        {
-            name: 'Professional Portrait',
-            template: 'Professional portrait of {subject}, {expression}, {lighting} lighting, shot with professional camera, {style} style',
-            category: 'portrait'
-        },
-        {
-            name: 'Artistic Portrait',
-            template: 'Artistic portrait photograph, {subject} with {emotion} expression, {composition}, {lighting}, {color_palette} colors',
-            category: 'portrait'
-        }
-    ],
-    landscape: [
-        {
-            name: 'Scenic Landscape',
-            template: 'Breathtaking landscape of {location}, {time_of_day}, {weather}, {foreground} in foreground, {artistic_style} style',
-            category: 'landscape'
-        },
-        {
-            name: 'Dramatic Nature',
-            template: 'Epic {natural_feature}, {dramatic_weather}, {powerful_lighting}, {composition}, {color_mood} colors',
-            category: 'landscape'
-        }
-    ],
-    digital_art: [
-        {
-            name: 'Fantasy Character',
-            template: '{character_type}, {fantasy_setting}, {magical_elements}, {art_style}, {color_scheme}, highly detailed',
-            category: 'digital_art'
-        },
-        {
-            name: 'Sci-Fi Concept',
-            template: 'Futuristic {concept}, {technology_elements}, {environment}, {lighting_effects}, concept art style',
-            category: 'digital_art'
-        }
-    ]
-};
+// Template Data - programmatically generate 10 templates per category
+const templateCategories = ['portrait', 'landscape', 'digital_art', 'photography', 'fantasy', 'abstract', 'character', 'architecture', 'concept_art'];
+const promptTemplates = {};
+templateCategories.forEach(cat => {
+    promptTemplates[cat] = Array.from({ length: 10 }, (_, i) => ({
+        name: `${titleCase(cat)} Template ${i + 1}`,
+        template: `Detailed ${cat.replace(/_/g, ' ')} of {subject}, {style} style, {lighting} lighting, {mood} mood, {composition}, ultra detailed` ,
+        category: cat
+    }));
+});
+
+function titleCase(str) {
+    return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 // Platform configurations
 const platformData = {
@@ -239,6 +215,9 @@ function initializeApp() {
 
     // Load saved data
     loadFromStorage();
+
+    // Apply default theme if none loaded
+    applyTheme(currentTheme);
 
     // Load shared prompt from URL if present
     const sharedPrompt = new URLSearchParams(window.location.search).get('prompt');
@@ -355,6 +334,11 @@ function setupEventListeners() {
         clearBtn.addEventListener('click', clearPrompt);
     }
 
+    const optimizeBtn = document.getElementById('optimize-prompt');
+    if (optimizeBtn) {
+        optimizeBtn.addEventListener('click', optimizePrompt);
+    }
+
     const saveBtn = document.getElementById('save-prompt');
     if (saveBtn) {
         saveBtn.addEventListener('click', savePrompt);
@@ -378,6 +362,11 @@ function setupEventListeners() {
     const shareBtn = document.getElementById('share-prompt');
     if (shareBtn) {
         shareBtn.addEventListener('click', sharePrompt);
+    }
+
+    const analyzeBtn = document.getElementById('analyze-prompt');
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', deepAnalyzePrompt);
     }
 
     const collaborateBtn = document.getElementById('collaboration-btn');
@@ -413,16 +402,22 @@ function setupEventListeners() {
 }
 
 function initImageAnalyzer() {
-    if (typeof ml5 === 'undefined') {
-        console.warn('ml5.js not loaded; image analysis disabled');
+    if (typeof window.transformers === 'undefined') {
+        console.warn('Transformers.js not loaded; image analysis disabled');
         return;
     }
-    ml5.imageClassifier('MobileNet')
-        .then(cls => {
-            imageClassifier = cls;
-            console.log('📸 Image classifier ready');
+    window.transformers.pipeline('image-to-text', 'Xenova/blip-image-captioning-large')
+        .then(model => {
+            imageCaptioner = model;
+            console.log('📸 Image captioner ready');
         })
-        .catch(err => console.error('Image classifier load error', err));
+        .catch(err => console.error('Image captioner load error', err));
+    window.transformers.pipeline('text-generation', 'Xenova/gpt2')
+        .then(model => {
+            textGenerator = model;
+            console.log('📝 Text generator ready');
+        })
+        .catch(err => console.error('Text generator load error', err));
 }
 
 // Random prompt generators
@@ -452,8 +447,7 @@ function generateRandomPrompt(category) {
             prompt = generateSurprisePrompt();
     }
 
-    setPrompt(prompt);
-    addToHistory(prompt);
+    setPrompt(prompt).then(() => addToHistory(currentPrompt));
 }
 
 function generatePortraitPrompt() {
@@ -522,11 +516,22 @@ function getRandomWord(category, subcategory) {
 }
 
 // UI Update Functions
-function setPrompt(prompt) {
-    currentPrompt = prompt;
+async function setPrompt(prompt) {
     const textarea = document.getElementById('prompt-textarea');
+    if (!prompt) {
+        currentPrompt = '';
+        if (textarea) {
+            textarea.value = '';
+            updatePromptPreview();
+            updateWordCount();
+            updateQualityScore();
+            getAISuggestions();
+        }
+        return;
+    }
+    currentPrompt = await expandPrompt(prompt, 700);
     if (textarea) {
-        textarea.value = prompt;
+        textarea.value = currentPrompt;
         updatePromptPreview();
         updateWordCount();
         updateQualityScore();
@@ -539,11 +544,7 @@ function addWordToPrompt(word) {
     if (textarea) {
         const currentText = textarea.value;
         const newText = currentText ? currentText + ', ' + word : word;
-        textarea.value = newText;
-        currentPrompt = newText;
-        updatePromptPreview();
-        updateWordCount();
-        updateQualityScore();
+        setPrompt(newText);
     }
 }
 
@@ -766,28 +767,21 @@ function handleImageUpload(e) {
     reader.readAsDataURL(file);
 }
 
-function analyzeImage(img) {
+async function analyzeImage(img) {
     const tags = [];
     const tagContainer = document.getElementById('analysis-tags');
     tagContainer.innerHTML = '';
 
-    const finalize = () => {
-        addColorTags(img, tags);
-    };
-
-    if (imageClassifier) {
-        imageClassifier.classify(img)
-            .then(results => {
-                results.slice(0, 3).forEach(r => tags.push(r.label));
-                finalize();
-            })
-            .catch(err => {
-                console.error('classification error', err);
-                finalize();
-            });
-    } else {
-        finalize();
+    if (imageCaptioner) {
+        try {
+            const result = await imageCaptioner(img);
+            const caption = result[0].generated_text || '';
+            caption.split(/[,\s]+/).forEach(t => { if (t) tags.push(t); });
+        } catch (err) {
+            console.error('captioning error', err);
+        }
     }
+    addColorTags(img, tags);
 }
 
 function addColorTags(img, tags) {
@@ -820,14 +814,15 @@ function rgbToHex(r, g, b) {
     return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
-function updateGeneratedPrompt() {
+async function updateGeneratedPrompt() {
     const textarea = document.getElementById('generated-prompt-text');
     if (!textarea) return;
     const useNatural = document.getElementById('natural-language-toggle')?.checked;
-    const prompt = useNatural
+    const base = useNatural
         ? generateNaturalLanguageDescription(lastImageTags, lastColorHex)
         : generateDetailedPrompt(lastImageTags, lastColorHex);
-    textarea.value = prompt;
+    const expanded = await expandPrompt(base, 700);
+    textarea.value = expanded;
 }
 
 function generateDetailedPrompt(tags, colorHex) {
@@ -892,6 +887,58 @@ function generateBatch() {
         });
         results.appendChild(div);
     }
+}
+
+async function expandPrompt(base, minLength) {
+    let result = base || '';
+    if (textGenerator) {
+        const needed = Math.max(0, Math.ceil((minLength - result.length) / 4));
+        if (needed > 0) {
+            try {
+                const gen = await textGenerator(result, { max_new_tokens: needed });
+                result = gen[0].generated_text;
+            } catch (e) {
+                console.error('text generation error', e);
+            }
+        }
+    }
+    while (result.length < minLength) {
+        result += `, ${getRandomWord('styles', 'visual_styles')} ${getRandomWord('lighting', 'qualities')} lighting`;
+    }
+    return result;
+}
+
+async function optimizePrompt() {
+    const textarea = document.getElementById('prompt-textarea');
+    if (!textarea) return;
+    const base = textarea.value.trim();
+    if (!base) return;
+    const optimized = await expandPrompt(base, 700);
+    textarea.value = optimized;
+    currentPrompt = optimized;
+    updatePromptPreview();
+    updateWordCount();
+    updateQualityScore();
+    getAISuggestions();
+}
+
+async function deepAnalyzePrompt() {
+    if (!currentPrompt) {
+        alert('No prompt to analyze!');
+        return;
+    }
+    let analysis = '';
+    if (textGenerator) {
+        try {
+            const res = await textGenerator(`Provide improvements for this image generation prompt: ${currentPrompt}`, { max_new_tokens: 100 });
+            analysis = res[0].generated_text;
+        } catch (e) {
+            analysis = 'Analysis failed.';
+        }
+    } else {
+        analysis = 'Consider adding more details about lighting, style, color, mood, and composition.';
+    }
+    alert(analysis);
 }
 
 function exportToTxt() {
@@ -1133,8 +1180,8 @@ function loadFromStorage() {
         const stored = localStorage.getItem('aiPromptGenerator');
         if (stored) {
             const data = JSON.parse(stored);
-            currentPlatform = data.currentPlatform || 'midjourney';
-            currentTheme = data.currentTheme || 'dark_professional';
+            currentPlatform = data.currentPlatform || 'natural_language';
+            currentTheme = data.currentTheme || 'cyberpunk_neon';
             promptHistory = data.promptHistory || [];
             savedPrompts = data.savedPrompts || [];
 

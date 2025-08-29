@@ -26,6 +26,8 @@ This package contains everything you need to deploy a fully functional AI Prompt
 - **AI Suggestions**: Smart recommendations for prompt improvement
 - **Batch Generation**: Create multiple prompt variations
  - **Image-to-Prompt**: Upload and analyze images with natural language toggle
+- **Local Transformers AI**: Free text generation and image captioning without API keys
+- **Auto-Optimize**: One-click expansion to 700+ character prompts
 - **Real-time Quality Scoring**: 0-100% prompt assessment
 - **History & Saving**: Persistent prompt history and favorites
 - **Export Options**: Copy, save, and share functionality
