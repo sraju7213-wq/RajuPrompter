@@ -7,7 +7,7 @@ let currentTheme = 'dark_professional';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
-let imageClassifier = null;
+// Backend image analyzer - no client-side model needed
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -406,16 +406,7 @@ function setupEventListeners() {
 }
 
 function initImageAnalyzer() {
-    if (typeof ml5 === 'undefined') {
-        console.warn('ml5.js not loaded; image analysis disabled');
-        return;
-    }
-    ml5.imageClassifier('MobileNet')
-        .then(cls => {
-            imageClassifier = cls;
-            console.log('📸 Image classifier ready');
-        })
-        .catch(err => console.error('Image classifier load error', err));
+    console.log('📸 Image analysis ready via backend service');
 }
 
 // Random prompt generators
@@ -752,14 +743,14 @@ function handleImageUpload(e) {
         img.onload = () => {
             document.getElementById('preview-container').style.display = 'block';
             document.getElementById('analysis-results').style.display = 'none';
-            analyzeImage(img);
+            analyzeImage(file, img);
         };
         img.src = ev.target.result;
     };
     reader.readAsDataURL(file);
 }
 
-function analyzeImage(img) {
+function analyzeImage(file, img) {
     const tags = [];
     const tagContainer = document.getElementById('analysis-tags');
     tagContainer.innerHTML = '';
@@ -768,19 +759,27 @@ function analyzeImage(img) {
         addColorTags(img, tags);
     };
 
-    if (imageClassifier) {
-        imageClassifier.classify(img)
-            .then(results => {
-                results.slice(0, 3).forEach(r => tags.push(r.label));
-                finalize();
-            })
-            .catch(err => {
-                console.error('classification error', err);
-                finalize();
-            });
-    } else {
-        finalize();
-    }
+    const formData = new FormData();
+    formData.append('image', file);
+
+    fetch('/api/analyze', {
+        method: 'POST',
+        body: formData
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.caption) {
+                data.caption.split(/[,\n]/).forEach(part => {
+                    const tag = part.trim();
+                    if (tag) tags.push(tag);
+                });
+            }
+            finalize();
+        })
+        .catch(err => {
+            console.error('analysis error', err);
+            finalize();
+        });
 }
 
 function addColorTags(img, tags) {

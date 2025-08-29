@@ -43,6 +43,13 @@ This package contains everything you need to deploy a fully functional AI Prompt
 
 Before deploying, you can test locally:
 
+### Start the Captioning Backend
+```bash
+npm install
+node server.js
+```
+This launches an Express service at `http://localhost:3000/api/analyze` which uses the open-source `Xenova/blip-image-captioning-large` model via `@xenova/transformers`. Routing image analysis through this backend yields richer and more stable captions than the previous in-browser classifier.
+
 ### Using Python:
 ```bash
 python -m http.server 8000
