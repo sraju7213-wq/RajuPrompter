@@ -7,6 +7,7 @@ let currentTheme = 'dark_professional';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
+let imageClassifier = null;
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -249,6 +250,7 @@ function initializeApp() {
     // Initialize UI
     initializeWordBank();
     initializeTemplates();
+    initImageAnalyzer();
     updatePromptPreview();
     updatePlatformBadge();
 
@@ -401,6 +403,19 @@ function setupEventListeners() {
     }
 
     console.log('✅ Event listeners configured');
+}
+
+function initImageAnalyzer() {
+    if (typeof ml5 === 'undefined') {
+        console.warn('ml5.js not loaded; image analysis disabled');
+        return;
+    }
+    ml5.imageClassifier('MobileNet')
+        .then(cls => {
+            imageClassifier = cls;
+            console.log('📸 Image classifier ready');
+        })
+        .catch(err => console.error('Image classifier load error', err));
 }
 
 // Random prompt generators
@@ -734,18 +749,48 @@ function handleImageUpload(e) {
     const reader = new FileReader();
     reader.onload = function(ev) {
         const img = document.getElementById('uploaded-img');
+        img.onload = () => {
+            document.getElementById('image-analysis').style.display = 'flex';
+            analyzeImage(img);
+        };
         img.src = ev.target.result;
-        document.getElementById('image-analysis').style.display = 'flex';
     };
     reader.readAsDataURL(file);
+}
 
-    const tags = [
-        getRandomWord('subjects', 'people'),
-        getRandomWord('styles', 'artistic_styles'),
-        getRandomWord('lighting', 'natural')
-    ];
+function analyzeImage(img) {
+    const tags = [];
     const tagContainer = document.getElementById('analysis-tags');
     tagContainer.innerHTML = '';
+
+    const finalize = () => {
+        addColorTags(img, tags);
+    };
+
+    if (imageClassifier) {
+        imageClassifier.classify(img)
+            .then(results => {
+                results.slice(0, 3).forEach(r => tags.push(r.label));
+                finalize();
+            })
+            .catch(err => {
+                console.error('classification error', err);
+                finalize();
+            });
+    } else {
+        finalize();
+    }
+}
+
+function addColorTags(img, tags) {
+    try {
+        const colorThief = new ColorThief();
+        const color = colorThief.getColor(img);
+        if (color) tags.push(`rgb(${color.join(',')}) dominant color`);
+    } catch (err) {
+        console.warn('Color extraction failed', err);
+    }
+    const tagContainer = document.getElementById('analysis-tags');
     tags.forEach(t => {
         const span = document.createElement('span');
         span.className = 'tag';
