@@ -750,7 +750,8 @@ function handleImageUpload(e) {
     reader.onload = function(ev) {
         const img = document.getElementById('uploaded-img');
         img.onload = () => {
-            document.getElementById('image-analysis').style.display = 'flex';
+            document.getElementById('preview-container').style.display = 'block';
+            document.getElementById('analysis-results').style.display = 'none';
             analyzeImage(img);
         };
         img.src = ev.target.result;
@@ -783,21 +784,41 @@ function analyzeImage(img) {
 }
 
 function addColorTags(img, tags) {
+    let colorHex = '';
     try {
         const colorThief = new ColorThief();
         const color = colorThief.getColor(img);
-        if (color) tags.push(`rgb(${color.join(',')}) dominant color`);
+        if (color) {
+            colorHex = rgbToHex(color[0], color[1], color[2]);
+            tags.push(`dominant color ${colorHex}`);
+        }
     } catch (err) {
         console.warn('Color extraction failed', err);
     }
     const tagContainer = document.getElementById('analysis-tags');
+    tagContainer.innerHTML = '';
     tags.forEach(t => {
         const span = document.createElement('span');
         span.className = 'tag';
         span.textContent = t;
         tagContainer.appendChild(span);
     });
-    document.getElementById('generated-prompt-text').value = tags.join(', ');
+    const prompt = generateDetailedPrompt(tags, colorHex);
+    document.getElementById('generated-prompt-text').value = prompt;
+    document.getElementById('analysis-results').style.display = 'block';
+}
+
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function generateDetailedPrompt(tags, colorHex) {
+    const subject = tags[0] || 'scene';
+    const extras = tags.slice(1).join(', ');
+    const style = getRandomWord('styles', 'visual_styles');
+    const lighting = getRandomWord('lighting', 'qualities');
+    const mood = getRandomWord('moods', 'positive');
+    return `a ${style} ${subject}${extras ? ', ' + extras : ''}, ${lighting} lighting, ${mood} mood, ${colorHex} tones, highly detailed, 4k`;
 }
 
 function generateBatch() {
