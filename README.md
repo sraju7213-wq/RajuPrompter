@@ -25,7 +25,7 @@ This package contains everything you need to deploy a fully functional AI Prompt
 ### 🚀 Additional Modern Features:
 - **AI Suggestions**: Smart recommendations for prompt improvement
 - **Batch Generation**: Create multiple prompt variations
-- **Image-to-Prompt**: Upload and analyze images (UI ready)
+ - **Image-to-Prompt**: Upload and analyze images with natural language toggle
 - **Real-time Quality Scoring**: 0-100% prompt assessment
 - **History & Saving**: Persistent prompt history and favorites
 - **Export Options**: Copy, save, and share functionality

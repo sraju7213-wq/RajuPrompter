@@ -7,6 +7,9 @@ let currentTheme = 'dark_professional';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
+let imageClassifier = null;
+let lastImageTags = [];
+let lastColorHex = '';
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -237,12 +240,19 @@ function initializeApp() {
     // Load saved data
     loadFromStorage();
 
+    // Load shared prompt from URL if present
+    const sharedPrompt = new URLSearchParams(window.location.search).get('prompt');
+    if (sharedPrompt) {
+        setPrompt(sharedPrompt);
+    }
+
     // Setup event listeners
     setupEventListeners();
 
     // Initialize UI
     initializeWordBank();
     initializeTemplates();
+    initImageAnalyzer();
     updatePromptPreview();
     updatePlatformBadge();
 
@@ -327,6 +337,13 @@ function setupEventListeners() {
         }
     });
 
+    // Template category filters
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('template-category-btn')) {
+            filterTemplates(e.target.dataset.category);
+        }
+    });
+
     // Action buttons
     const copyBtn = document.getElementById('copy-prompt');
     if (copyBtn) {
@@ -343,7 +360,69 @@ function setupEventListeners() {
         saveBtn.addEventListener('click', savePrompt);
     }
 
+    const suggestionBtn = document.getElementById('get-suggestions');
+    if (suggestionBtn) {
+        suggestionBtn.addEventListener('click', getAISuggestions);
+    }
+
+    const exportTxtBtn = document.getElementById('export-txt');
+    if (exportTxtBtn) {
+        exportTxtBtn.addEventListener('click', exportToTxt);
+    }
+
+    const exportTopBtn = document.getElementById('export-btn');
+    if (exportTopBtn) {
+        exportTopBtn.addEventListener('click', exportToTxt);
+    }
+
+    const shareBtn = document.getElementById('share-prompt');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', sharePrompt);
+    }
+
+    const collaborateBtn = document.getElementById('collaboration-btn');
+    if (collaborateBtn) {
+        collaborateBtn.addEventListener('click', sharePrompt);
+    }
+
+    const imageUpload = document.getElementById('image-upload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', handleImageUpload);
+    }
+
+    const naturalToggle = document.getElementById('natural-language-toggle');
+    if (naturalToggle) {
+        naturalToggle.addEventListener('change', updateGeneratedPrompt);
+    }
+
+    const useGeneratedPromptBtn = document.getElementById('use-generated-prompt');
+    if (useGeneratedPromptBtn) {
+        useGeneratedPromptBtn.addEventListener('click', function() {
+            const text = document.getElementById('generated-prompt-text').value;
+            if (text) setPrompt(text);
+            switchTab('manual');
+        });
+    }
+
+    const batchBtn = document.getElementById('generate-batch');
+    if (batchBtn) {
+        batchBtn.addEventListener('click', generateBatch);
+    }
+
     console.log('✅ Event listeners configured');
+}
+
+function initImageAnalyzer() {
+    if (typeof ml5 === 'undefined') {
+        console.warn('ml5.js not loaded; image analysis disabled');
+        return;
+    }
+    ml5.imageClassifier('MobileNet')
+        .then(cls => {
+            imageClassifier = cls;
+            console.log('📸 Image classifier ready');
+        })
+        .catch(err => console.error('Image classifier load error', err));
 }
 
 // Random prompt generators
@@ -451,6 +530,7 @@ function setPrompt(prompt) {
         updatePromptPreview();
         updateWordCount();
         updateQualityScore();
+        getAISuggestions();
     }
 }
 
@@ -595,6 +675,7 @@ function initializeTemplates() {
             const templateCard = document.createElement('div');
             templateCard.className = 'template-card';
             templateCard.dataset.template = `${category}_${index}`;
+            templateCard.dataset.category = category;
 
             templateCard.innerHTML = `
                 <h4>${template.name}</h4>
@@ -605,6 +686,8 @@ function initializeTemplates() {
             templateGrid.appendChild(templateCard);
         });
     });
+
+    filterTemplates('all');
 }
 
 function applyTemplate(templateId) {
@@ -636,6 +719,209 @@ function applyTemplate(templateId) {
 
         setPrompt(prompt);
         switchTab('manual');
+    }
+}
+
+function filterTemplates(category) {
+    document.querySelectorAll('.template-category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category);
+    });
+    document.querySelectorAll('.template-card').forEach(card => {
+        const cardCat = card.dataset.category;
+        card.style.display = (category === 'all' || cardCat === category) ? '' : 'none';
+    });
+}
+
+function getAISuggestions() {
+    const suggestions = [];
+    const text = currentPrompt.toLowerCase();
+    if (!text.match(/light/)) suggestions.push('Add lighting description for better mood');
+    if (!text.match(/style/)) suggestions.push('Specify art style to refine the look');
+    if (!text.match(/color/)) suggestions.push('Mention color palette for richer output');
+    if (!text.match(/mood/)) suggestions.push('Include mood keywords to set the tone');
+    if (suggestions.length === 0) suggestions.push('Prompt looks good! Try adding more details.');
+    const container = document.getElementById('ai-suggestions');
+    container.innerHTML = '';
+    suggestions.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'suggestion-item';
+        div.innerHTML = `<i class="fas fa-lightbulb"></i><span>${s}</span>`;
+        container.appendChild(div);
+    });
+}
+
+function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const img = document.getElementById('uploaded-img');
+        img.onload = () => {
+            document.getElementById('preview-container').style.display = 'block';
+            document.getElementById('analysis-results').style.display = 'none';
+            analyzeImage(img);
+        };
+        img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function analyzeImage(img) {
+    const tags = [];
+    const tagContainer = document.getElementById('analysis-tags');
+    tagContainer.innerHTML = '';
+
+    const finalize = () => {
+        addColorTags(img, tags);
+    };
+
+    if (imageClassifier) {
+        imageClassifier.classify(img)
+            .then(results => {
+                results.slice(0, 3).forEach(r => tags.push(r.label));
+                finalize();
+            })
+            .catch(err => {
+                console.error('classification error', err);
+                finalize();
+            });
+    } else {
+        finalize();
+    }
+}
+
+function addColorTags(img, tags) {
+    let colorHex = '';
+    try {
+        const colorThief = new ColorThief();
+        const color = colorThief.getColor(img);
+        if (color) {
+            colorHex = rgbToHex(color[0], color[1], color[2]);
+            tags.push(`dominant color ${colorHex}`);
+        }
+    } catch (err) {
+        console.warn('Color extraction failed', err);
+    }
+    const tagContainer = document.getElementById('analysis-tags');
+    tagContainer.innerHTML = '';
+    tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = t;
+        tagContainer.appendChild(span);
+    });
+    lastImageTags = tags.filter(t => !t.startsWith('dominant color'));
+    lastColorHex = colorHex;
+    updateGeneratedPrompt();
+    document.getElementById('analysis-results').style.display = 'block';
+}
+
+function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+
+function updateGeneratedPrompt() {
+    const textarea = document.getElementById('generated-prompt-text');
+    if (!textarea) return;
+    const useNatural = document.getElementById('natural-language-toggle')?.checked;
+    const prompt = useNatural
+        ? generateNaturalLanguageDescription(lastImageTags, lastColorHex)
+        : generateDetailedPrompt(lastImageTags, lastColorHex);
+    textarea.value = prompt;
+}
+
+function generateDetailedPrompt(tags, colorHex) {
+    const subject = tags[0] || 'scene';
+    const extras = tags.slice(1).join(', ');
+    const style = getRandomWord('styles', 'visual_styles');
+    const lighting = getRandomWord('lighting', 'qualities');
+    const mood = getRandomWord('moods', 'positive');
+    let prompt = `a ${style} ${subject}${extras ? ', ' + extras : ''}, ${lighting} lighting, ${mood} mood`;
+    if (colorHex) prompt += `, ${colorHex} tones`;
+    return prompt + ', highly detailed, 4k';
+}
+
+function generateNaturalLanguageDescription(tags, colorHex) {
+    const primary = tags[0] || 'a scene';
+    const extras = tags.slice(1).join(', ');
+    let sentence = `The image shows ${primary}`;
+    if (extras) sentence += `, ${extras}`;
+    if (colorHex) sentence += ` with dominant ${colorHex} tones`;
+    sentence += `.`;
+    sentence += ` It features ${getRandomWord('lighting', 'qualities')} lighting and evokes a ${getRandomWord('moods', 'positive')} mood.`;
+    return sentence;
+}
+
+function generateBatch() {
+    const base = document.getElementById('batch-base-prompt').value.trim();
+    const count = parseInt(document.getElementById('batch-count').value, 10);
+    const type = document.getElementById('variation-type').value;
+    const results = document.getElementById('batch-results');
+    results.innerHTML = '';
+    if (!base) return;
+    for (let i = 0; i < count; i++) {
+        let variation = base;
+        switch (type) {
+            case 'style':
+                variation += ', ' + getRandomWord('styles', 'artistic_styles');
+                break;
+            case 'lighting':
+                variation += ', ' + getRandomWord('lighting', 'qualities');
+                break;
+            case 'composition':
+                variation += ', ' + getRandomWord('composition', 'framing');
+                break;
+            case 'color':
+                variation += ', ' + getRandomWord('colors', 'warm');
+                break;
+            default:
+                const funcs = [
+                    () => getRandomWord('styles', 'artistic_styles'),
+                    () => getRandomWord('lighting', 'qualities'),
+                    () => getRandomWord('composition', 'framing'),
+                    () => getRandomWord('colors', 'warm')
+                ];
+                variation += ', ' + funcs[Math.floor(Math.random()*funcs.length)]();
+        }
+        const div = document.createElement('div');
+        div.className = 'batch-item';
+        div.textContent = variation;
+        div.addEventListener('click', () => {
+            setPrompt(variation);
+            switchTab('manual');
+        });
+        results.appendChild(div);
+    }
+}
+
+function exportToTxt() {
+    if (!currentPrompt) {
+        alert('No prompt to export!');
+        return;
+    }
+    const blob = new Blob([currentPrompt], {type: 'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'prompt.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function sharePrompt() {
+    if (!currentPrompt) {
+        alert('No prompt to share!');
+        return;
+    }
+    const url = `${window.location.origin}${window.location.pathname}?prompt=${encodeURIComponent(currentPrompt)}`;
+    if (navigator.share) {
+        navigator.share({ text: currentPrompt, url });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showNotification('Share link copied to clipboard!');
+        });
     }
 }
 
