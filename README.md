@@ -9,6 +9,7 @@ This package contains everything you need to deploy a fully functional AI Prompt
 - **`index.html`** - Complete HTML structure (renamed from enhanced_index.html)
 - **`app.js`** - Full JavaScript functionality (renamed from enhanced_app.js)  
 - **`style.css`** - Complete CSS styling (renamed from enhanced_style.css)
+- **`classicpg/`** - Mini prompt generator
 - **`word_library.csv`** - Word database (optional)
 - **`deployment-guide.md`** - Step-by-step deployment instructions
 

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latina AI Art Prompt Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Latina AI Art Prompt Generator</h1>
+            <p class="subtitle">Professional prompt generator specialized in creating stunning Latina woman portraits</p>
+        </header>
+
+        <main class="main-content">
+            <!-- Input Section -->
+            <section class="input-section card">
+                <div class="card__body">
+                    <h2>Generate Prompts</h2>
+                    <div class="form-group">
+                        <label for="promptInput" class="form-label">
+                            Enter your idea, description, or use commands (n, v, np, nl, ni, nd, nc, i, A)
+                        </label>
+                        <textarea 
+                            id="promptInput" 
+                            class="form-control prompt-input" 
+                            rows="4" 
+                            placeholder="Type your prompt idea here, or use commands like 'n' for new random prompt, 'v' for variant, 'np' for portrait..."
+                        ></textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="generateBtn" class="btn btn--primary">
+                            <span class="btn-text">Generate Prompts</span>
+                            <span class="loading-spinner hidden">⟳</span>
+                        </button>
+                        <button id="clearBtn" class="btn btn--secondary">Clear</button>
+                        <button id="randomBtn" class="btn btn--outline">Random Prompt</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Commands Help -->
+            <section class="commands-help card">
+                <div class="card__body">
+                    <h3>Quick Commands</h3>
+                    <div class="commands-grid">
+                        <div class="command-item">
+                            <code>n</code>
+                            <span>New random prompt</span>
+                        </div>
+                        <div class="command-item">
+                            <code>v</code>
+                            <span>Variant of previous</span>
+                        </div>
+                        <div class="command-item">
+                            <code>np</code>
+                            <span>Portrait photo</span>
+                        </div>
+                        <div class="command-item">
+                            <code>nl</code>
+                            <span>Landscape prompt</span>
+                        </div>
+                        <div class="command-item">
+                            <code>ni</code>
+                            <span>Illustration</span>
+                        </div>
+                        <div class="command-item">
+                            <code>nd</code>
+                            <span>Drawing</span>
+                        </div>
+                        <div class="command-item">
+                            <code>nc</code>
+                            <span>Wildlife photography</span>
+                        </div>
+                        <div class="command-item">
+                            <code>i</code>
+                            <span>Illustration art</span>
+                        </div>
+                        <div class="command-item">
+                            <code>A</code>
+                            <span>Anime style</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Output Section -->
+            <section class="output-section" id="outputSection" style="display: none;">
+                <div class="prompts-container">
+                    <!-- Simple Prompt -->
+                    <div class="prompt-box card">
+                        <div class="card__header">
+                            <h3>Simple Prompt</h3>
+                            <span class="prompt-meta">50-70 words</span>
+                        </div>
+                        <div class="card__body">
+                            <div class="code-container">
+                                <pre id="simplePrompt" class="prompt-code"></pre>
+                                <button class="copy-btn" data-target="simplePrompt" aria-label="Copy simple prompt">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Prompt -->
+                    <div class="prompt-box card">
+                        <div class="card__header">
+                            <h3>Detailed Prompt</h3>
+                            <span class="prompt-meta">200+ words</span>
+                        </div>
+                        <div class="card__body">
+                            <div class="code-container">
+                                <pre id="detailedPrompt" class="prompt-code"></pre>
+                                <button class="copy-btn" data-target="detailedPrompt" aria-label="Copy detailed prompt">
+                                    📋
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- History Section -->
+            <section class="history-section card" id="historySection" style="display: none;">
+                <div class="card__header">
+                    <h3>Prompt History</h3>
+                    <button id="clearHistoryBtn" class="btn btn--sm btn--outline">Clear History</button>
+                </div>
+                <div class="card__body">
+                    <div id="historyContainer" class="history-container">
+                        <!-- History items will be inserted here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Favorites Section -->
+            <section class="favorites-section card" id="favoritesSection" style="display: none;">
+                <div class="card__header">
+                    <h3>Favorite Prompts</h3>
+                    <button id="exportFavoritesBtn" class="btn btn--sm btn--outline">Export Favorites</button>
+                </div>
+                <div class="card__body">
+                    <div id="favoritesContainer" class="favorites-container">
+                        <!-- Favorite items will be inserted here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
