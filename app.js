@@ -406,6 +406,13 @@ function setupEventListeners() {
         });
     }
 
+    // Listen for messages from the Hugging Face iframe
+    window.addEventListener('message', function(e) {
+        if (e.origin === 'https://huggingface.co' && typeof e.data === 'string') {
+            console.log('HF Image to Prompt:', e.data);
+        }
+    });
+
     console.log('✅ Event listeners configured');
 }
 
@@ -771,8 +778,30 @@ function handleImageUpload(e) {
             analyzeImage(img);
         };
         img.src = ev.target.result;
+        // Send to Hugging Face API
+        const base64Image = ev.target.result.split(',')[1];
+        fetchHFPrompt(base64Image).then(prompt => {
+            if (prompt) {
+                console.log('HF API prompt:', prompt);
+            }
+        });
     };
     reader.readAsDataURL(file);
+}
+
+async function fetchHFPrompt(imageBase64) {
+    try {
+        const res = await fetch('https://hf.space/embed/ovi054/image-to-prompt/+/api/predict/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: [imageBase64] })
+        });
+        const result = await res.json();
+        return result.data ? result.data[0] : '';
+    } catch (err) {
+        console.error('HF API error', err);
+        return '';
+    }
 }
 
 async function analyzeImage(img) {
