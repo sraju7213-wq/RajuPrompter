@@ -1,35 +1,12 @@
 // Chota Dhamakaa Prompt Generator - JavaScript
 
-let currentTheme = 'cyberpunk_neon';
-const themes = {
-    dark_professional: { primary: '#3b82f6', background: '#0f172a' },
-    light_modern: { primary: '#0ea5e9', background: '#ffffff' },
-    cyberpunk_neon: { primary: '#00ff88', background: '#000000' },
-    warm_autumn: { primary: '#d97706', background: '#1c1917' },
-    ocean_blue: { primary: '#0284c7', background: '#082f49' },
-    pastel_dreams: { primary: '#a855f7', background: '#fefce8' },
-    forest_green: { primary: '#059669', background: '#022c22' },
-    sunset_gradient: { primary: '#f59e0b', background: '#431407' }
-};
-
-function applyTheme(themeName) {
-    currentTheme = themeName;
-    document.body.setAttribute('data-theme', themeName);
-    if (themes[themeName]) {
-        document.documentElement.style.setProperty('--theme-primary', themes[themeName].primary);
-        document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
-    }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
+    const parentTheme = window.parent?.document?.body?.getAttribute('data-theme');
+    if (parentTheme) {
+        document.body.setAttribute('data-theme', parentTheme);
+    }
     console.log('DOM loaded, initializing app...');
 
-    const themeSelect = document.getElementById('theme-select');
-    if (themeSelect) {
-        themeSelect.addEventListener('change', e => applyTheme(e.target.value));
-        applyTheme(themeSelect.value);
-    }
-    
     // Data templates and settings
     const promptData = {
         promptTemplates: {
@@ -440,7 +417,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
+    document.querySelectorAll('.command-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (promptInput) {
+                promptInput.value = btn.dataset.command || '';
+            }
+            generatePrompts();
+        });
+    });
+
     if (promptInput) {
         promptInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
