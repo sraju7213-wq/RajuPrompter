@@ -1216,3 +1216,15 @@ body {
   height: 80vh;
   border: none;
 }
+
+/* Hugging Face Image to Prompt embed */
+#hf-image-to-prompt-container {
+  all: initial;
+  display: block;
+}
+
+#hf-image-to-prompt-container iframe {
+  width: 100%;
+  height: 500px;
+  border: none;
+}
