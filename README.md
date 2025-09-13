@@ -19,16 +19,16 @@ This package contains everything you need to deploy a fully functional AI Prompt
 - **5 AI Platforms**: Midjourney, Stable Diffusion, Flux AI, DALL-E, Natural Language
 - **8 Themes**: Dark Professional, Light Modern, Cyberpunk Neon, Warm Autumn, Ocean Blue, Pastel Dreams, Forest Green, Sunset Gradient
 - **3000+ Word Library**: Organized in 6 categories with smart search
-- **500+ Templates**: Professional prompt templates across 10 categories
 - **Random Generators**: 6 intelligent prompt generators
 - **Advanced Rules**: Quality scoring and optimization
+- **Prompt Length Control**: Adjust prompt verbosity with a slider
 
 ### 🚀 Additional Modern Features:
 - **AI Suggestions**: Smart recommendations for prompt improvement
 - **Batch Generation**: Create multiple prompt variations
  - **Image-to-Prompt**: Upload and analyze images with natural language toggle
 - **Local Transformers AI**: Free text generation and image captioning without API keys
-- **Auto-Optimize**: One-click expansion to 700+ character prompts
+- **Auto-Optimize**: One-click expansion respecting your chosen length
 - **Real-time Quality Scoring**: 0-100% prompt assessment
 - **History & Saving**: Persistent prompt history and favorites
 - **Export Options**: Copy, save, and share functionality
@@ -67,7 +67,6 @@ npx http-server
    - Type manually in the textarea
    - Click words from the smart library
    - Use random generators for inspiration  
-   - Apply professional templates
    - Upload images for analysis
 
 ### Pro Tips:
@@ -95,19 +94,7 @@ npx http-server
 - **Composition**: Camera angles, framing, depth techniques
 - **Moods**: Positive, negative, and neutral emotions
 
-### 3. **Professional Templates (500+)**
-- **Portrait Photography** (75 templates)
-- **Landscape Art** (60 templates)
-- **Digital Art** (85 templates)
-- **Fantasy Scenes** (70 templates)
-- **Abstract Art** (45 templates)
-- **Character Design** (65 templates)
-- **Architecture** (40 templates)
-- **Product Photography** (35 templates)
-- **Fashion Design** (30 templates)
-- **Concept Art** (45 templates)
-
-### 4. **AI-Powered Quality Scoring**
+### 3. **AI-Powered Quality Scoring**
 Evaluates prompts based on:
 - **Length**: Optimal word count for each platform
 - **Descriptiveness**: Rich adjectives and details
@@ -130,11 +117,6 @@ Evaluates prompts based on:
 1. Open `app.js`
 2. Find the `wordLibrary` object
 3. Add words to existing categories or create new ones
-
-### Adding New Templates:
-1. Open `app.js`  
-2. Find the `promptTemplates` object
-3. Add new template objects with name, template, and category
 
 ### Creating New Themes:
 1. Open `style.css`
@@ -222,7 +204,7 @@ This foundation supports easy addition of:
 
 ### Example 2: Digital Art
 1. Select words: "cyberpunk" + "neon" + "cityscape" + "dramatic"
-2. Apply "Sci-Fi Concept" template
+2. Combine elements for a cyberpunk cityscape, neon lighting, dramatic atmosphere
 3. Result: "Cyberpunk cityscape, neon lighting, dramatic atmosphere, digital art style, highly detailed"
 
 ### Example 3: Fantasy Scene
