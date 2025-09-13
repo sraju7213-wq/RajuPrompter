@@ -398,6 +398,14 @@ function setupEventListeners() {
         batchBtn.addEventListener('click', generateBatch);
     }
 
+    const miniLink = document.getElementById('mini-generator-link');
+    if (miniLink) {
+        miniLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            switchTab('mini-generator');
+        });
+    }
+
     console.log('✅ Event listeners configured');
 }
 
