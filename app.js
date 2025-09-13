@@ -7,6 +7,7 @@ let currentTheme = 'cyberpunk_neon';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
+let promptDetailLevel = 'basic';
 let textGenerator = null;
 let imageCaptioner = null;
 let lastImageTags = [];
@@ -259,6 +260,35 @@ function setupEventListeners() {
         themeSelect.addEventListener('change', function(e) {
             applyTheme(e.target.value);
             console.log('🎨 Theme changed to:', e.target.value);
+        });
+    }
+
+    // Detail level selector
+    const detailSelect = document.getElementById('detail-level');
+    if (detailSelect) {
+        detailSelect.addEventListener('change', function(e) {
+            promptDetailLevel = e.target.value;
+            console.log('📏 Detail level set to:', promptDetailLevel);
+        });
+    }
+
+    // Generate prompt button
+    const generateBtn = document.getElementById('generate-prompt');
+    if (generateBtn) {
+        generateBtn.addEventListener('click', function() {
+            const options = {
+                subject: document.getElementById('subject-input').value.trim(),
+                style: document.getElementById('style-input').value.trim(),
+                mood: document.getElementById('mood-input').value.trim(),
+                lighting: document.getElementById('lighting-input').value.trim(),
+                accessories: document.getElementById('accessories-input').value
+                    .split(',')
+                    .map(s => s.trim())
+                    .filter(Boolean),
+                detailLevel: promptDetailLevel
+            };
+            const prompt = generatePrompt(options);
+            setPrompt(prompt);
         });
     }
 
@@ -515,6 +545,46 @@ function getRandomWord(category, subcategory) {
     return words[Math.floor(Math.random() * words.length)];
 }
 
+// Prompt generation helpers
+/**
+ * Build prompt fragments based on options and detail level
+ * @param {Object} options
+ * @param {string} options.subject
+ * @param {string} [options.style]
+ * @param {string} [options.mood]
+ * @param {string} [options.lighting]
+ * @param {string[]} [options.accessories]
+ * @param {string} options.detailLevel
+ * @returns {string[]} fragments
+ */
+function generatePromptFragments(options) {
+    const fragments = [];
+    if (options.subject) fragments.push(options.subject);
+    if (options.detailLevel !== 'basic') {
+        if (options.style) fragments.push(`in ${options.style}`);
+        if (options.mood) fragments.push(`${options.mood} mood`);
+    }
+    if (options.detailLevel === 'advanced') {
+        if (options.lighting) fragments.push(`${options.lighting} lighting`);
+        if (options.accessories && options.accessories.length) {
+            const acc = options.accessories.slice(0, 5); // limit keywords
+            fragments.push(`with ${acc.join(', ')}`);
+        }
+    }
+    return fragments;
+}
+
+/** Combine fragments into final prompt string */
+function assemblePrompt(fragments) {
+    return fragments.filter(Boolean).join(', ');
+}
+
+/** Generate prompt based on user selections */
+function generatePrompt(options) {
+    const fragments = generatePromptFragments(options);
+    return assemblePrompt(fragments);
+}
+
 // UI Update Functions
 async function setPrompt(prompt) {
     const textarea = document.getElementById('prompt-textarea');
@@ -529,7 +599,7 @@ async function setPrompt(prompt) {
         }
         return;
     }
-    currentPrompt = await expandPrompt(prompt, 700);
+    currentPrompt = prompt;
     if (textarea) {
         textarea.value = currentPrompt;
         updatePromptPreview();
@@ -821,8 +891,7 @@ async function updateGeneratedPrompt() {
     const base = useNatural
         ? generateNaturalLanguageDescription(lastImageTags, lastColorHex)
         : generateDetailedPrompt(lastImageTags, lastColorHex);
-    const expanded = await expandPrompt(base, 700);
-    textarea.value = expanded;
+    textarea.value = base;
 }
 
 function generateDetailedPrompt(tags, colorHex) {

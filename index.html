@@ -173,10 +173,29 @@
                         </div>
                     </div>
 
+                    <div class="prompt-options">
+                        <div class="option-row">
+                            <label for="detail-level">Detail:</label>
+                            <select id="detail-level" class="form-control">
+                                <option value="basic" selected>Basic</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                        <div class="option-row">
+                            <input id="subject-input" class="form-control" placeholder="Subject" />
+                            <input id="style-input" class="form-control" placeholder="Style" />
+                            <input id="mood-input" class="form-control" placeholder="Mood" />
+                            <input id="lighting-input" class="form-control" placeholder="Lighting" />
+                            <input id="accessories-input" class="form-control" placeholder="Accessories" />
+                            <button class="btn btn--sm btn--primary" id="generate-prompt">Generate</button>
+                        </div>
+                    </div>
+
                     <div class="prompt-editor">
-                        <textarea 
-                            id="prompt-textarea" 
-                            class="prompt-textarea" 
+                        <textarea
+                            id="prompt-textarea"
+                            class="prompt-textarea"
                             placeholder="Describe your vision... (or use voice input, drag words, or apply templates)"
                             rows="8"
                         ></textarea>
