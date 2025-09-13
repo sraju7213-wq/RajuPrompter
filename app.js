@@ -195,6 +195,14 @@ const themes = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM loaded, initializing app...');
     initializeApp();
+
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+    }
 });
 
 function initializeApp() {
