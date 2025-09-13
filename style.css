@@ -514,6 +514,31 @@ body {
   position: relative;
 }
 
+/* Prompt builder options */
+.prompt-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.prompt-options .option-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.prompt-options label {
+  font-weight: 500;
+  color: var(--theme-text-secondary);
+}
+
+.prompt-options input,
+.prompt-options select {
+  flex: 1 1 150px;
+}
+
 .prompt-textarea {
   width: 100%;
   min-height: 200px;
