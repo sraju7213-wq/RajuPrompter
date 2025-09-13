@@ -11,6 +11,7 @@ let textGenerator = null;
 let imageCaptioner = null;
 let lastImageTags = [];
 let lastColorHex = '';
+let desiredPromptLength = 300;
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -111,20 +112,6 @@ const wordLibrary = {
     }
 };
 
-// Template Data - programmatically generate 10 templates per category
-const templateCategories = ['portrait', 'landscape', 'digital_art', 'photography', 'fantasy', 'abstract', 'character', 'architecture', 'concept_art'];
-const promptTemplates = {};
-templateCategories.forEach(cat => {
-    promptTemplates[cat] = Array.from({ length: 10 }, (_, i) => ({
-        name: `${titleCase(cat)} Template ${i + 1}`,
-        template: `Detailed ${cat.replace(/_/g, ' ')} of {subject}, {style} style, {lighting} lighting, {mood} mood, {composition}, ultra detailed` ,
-        category: cat
-    }));
-});
-
-function titleCase(str) {
-    return str.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-}
 
 // Platform configurations
 const platformData = {
@@ -230,7 +217,6 @@ function initializeApp() {
 
     // Initialize UI
     initializeWordBank();
-    initializeTemplates();
     initImageAnalyzer();
     updatePromptPreview();
     updatePlatformBadge();
@@ -259,6 +245,21 @@ function setupEventListeners() {
         themeSelect.addEventListener('change', function(e) {
             applyTheme(e.target.value);
             console.log('🎨 Theme changed to:', e.target.value);
+        });
+    }
+
+    const lengthSlider = document.getElementById('prompt-length');
+    if (lengthSlider) {
+        const updateLength = (val) => {
+            desiredPromptLength = parseInt(val);
+            const label = document.getElementById('prompt-length-display');
+            if (label) {
+                label.textContent = val <= 200 ? 'Short' : val <= 400 ? 'Medium' : 'Long';
+            }
+        };
+        updateLength(lengthSlider.value);
+        lengthSlider.addEventListener('input', (e) => {
+            updateLength(e.target.value);
         });
     }
 
@@ -304,22 +305,6 @@ function setupEventListeners() {
             const tabName = e.target.closest('.tab').dataset.tab;
             switchTab(tabName);
             console.log('🗂️ Switched to tab:', tabName);
-        }
-    });
-
-    // Template cards
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.template-card')) {
-            const templateName = e.target.closest('.template-card').dataset.template;
-            applyTemplate(templateName);
-            console.log('📋 Applied template:', templateName);
-        }
-    });
-
-    // Template category filters
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('template-category-btn')) {
-            filterTemplates(e.target.dataset.category);
         }
     });
 
@@ -544,7 +529,7 @@ async function setPrompt(prompt) {
         }
         return;
     }
-    currentPrompt = await expandPrompt(prompt, 700);
+    currentPrompt = await expandPrompt(prompt, desiredPromptLength);
     if (textarea) {
         textarea.value = currentPrompt;
         updatePromptPreview();
@@ -679,75 +664,6 @@ function switchWordCategory(category) {
     });
 }
 
-// Template system
-function initializeTemplates() {
-    const templateGrid = document.getElementById('template-grid');
-    if (!templateGrid) return;
-
-    templateGrid.innerHTML = '';
-
-    Object.entries(promptTemplates).forEach(([category, templates]) => {
-        templates.forEach((template, index) => {
-            const templateCard = document.createElement('div');
-            templateCard.className = 'template-card';
-            templateCard.dataset.template = `${category}_${index}`;
-            templateCard.dataset.category = category;
-
-            templateCard.innerHTML = `
-                <h4>${template.name}</h4>
-                <p>${template.category} template</p>
-                <div class="template-preview">${template.template}</div>
-            `;
-
-            templateGrid.appendChild(templateCard);
-        });
-    });
-
-    filterTemplates('all');
-}
-
-function applyTemplate(templateId) {
-    const [category, index] = templateId.split('_');
-    const template = promptTemplates[category]?.[parseInt(index)];
-
-    if (template) {
-        let prompt = template.template;
-
-        // Replace placeholders with random words
-        prompt = prompt.replace(/{([^}]+)}/g, (match, placeholder) => {
-            // Try to find appropriate words for the placeholder
-            if (placeholder.includes('subject')) {
-                return getRandomWord('subjects', 'people');
-            } else if (placeholder.includes('style') || placeholder.includes('art')) {
-                return getRandomWord('styles', 'artistic_styles');
-            } else if (placeholder.includes('lighting') || placeholder.includes('light')) {
-                return getRandomWord('lighting', 'natural');
-            } else if (placeholder.includes('color')) {
-                return getRandomWord('colors', 'warm');
-            } else if (placeholder.includes('mood') || placeholder.includes('emotion')) {
-                return getRandomWord('moods', 'positive');
-            } else if (placeholder.includes('composition') || placeholder.includes('camera')) {
-                return getRandomWord('composition', 'camera_angles');
-            } else {
-                return getRandomWord('subjects', 'objects');
-            }
-        });
-
-        setPrompt(prompt);
-        switchTab('manual');
-    }
-}
-
-function filterTemplates(category) {
-    document.querySelectorAll('.template-category-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.category === category);
-    });
-    document.querySelectorAll('.template-card').forEach(card => {
-        const cardCat = card.dataset.category;
-        card.style.display = (category === 'all' || cardCat === category) ? '' : 'none';
-    });
-}
-
 function getAISuggestions() {
     const suggestions = [];
     const text = currentPrompt.toLowerCase();
@@ -778,24 +694,37 @@ function handleImageUpload(e) {
             analyzeImage(img);
         };
         img.src = ev.target.result;
-        // Send to Hugging Face API
         const base64Image = ev.target.result.split(',')[1];
-        fetchHFPrompt(base64Image).then(prompt => {
-            if (prompt) {
-                console.log('HF API prompt:', prompt);
-            }
-        });
+        const status = document.getElementById('upload-status');
+        if (status) status.textContent = 'Analyzing image...';
+        fetchHFPrompt(base64Image)
+            .then(prompt => {
+                if (status) status.textContent = prompt ? '' : 'Failed to analyze image.';
+                if (prompt) console.log('HF API prompt:', prompt);
+            })
+            .catch(() => {
+                if (status) status.textContent = 'Failed to analyze image.';
+            });
     };
     reader.readAsDataURL(file);
 }
 
 async function fetchHFPrompt(imageBase64) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
     try {
         const res = await fetch('https://hf.space/embed/ovi054/image-to-prompt/+/api/predict/', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ data: [imageBase64] })
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ data: [imageBase64] }),
+            mode: 'cors',
+            signal: controller.signal
         });
+        clearTimeout(timeout);
+        if (!res.ok) throw new Error('Network response was not ok');
         const result = await res.json();
         return result.data ? result.data[0] : '';
     } catch (err) {
@@ -858,7 +787,7 @@ async function updateGeneratedPrompt() {
     const base = useNatural
         ? generateNaturalLanguageDescription(lastImageTags, lastColorHex)
         : generateDetailedPrompt(lastImageTags, lastColorHex);
-    const expanded = await expandPrompt(base, 700);
+    const expanded = await expandPrompt(base, desiredPromptLength);
     textarea.value = expanded;
 }
 
@@ -950,7 +879,7 @@ async function optimizePrompt() {
     if (!textarea) return;
     const base = textarea.value.trim();
     if (!base) return;
-    const optimized = await expandPrompt(base, 700);
+    const optimized = await expandPrompt(base, desiredPromptLength);
     textarea.value = optimized;
     currentPrompt = optimized;
     updatePromptPreview();
@@ -1038,6 +967,11 @@ function applyTheme(themeName) {
     if (themes[themeName]) {
         document.documentElement.style.setProperty('--theme-primary', themes[themeName].primary);
         document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
+    }
+
+    const themeSelect = document.getElementById('theme-select');
+    if (themeSelect) {
+        themeSelect.value = themeName;
     }
 
     saveToStorage();
