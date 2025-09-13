@@ -1140,3 +1140,82 @@ body {
   height: 500px;
   border: none;
 }
+
+/* Mobile navigation button */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--theme-text);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Workspace title */
+.workspace-title {
+  font-size: 1.75rem;
+}
+
+/* Mobile First Approach */
+@media screen and (max-width: 480px) {
+  body {
+    padding: 60px 12px 12px 12px;
+  }
+
+  .header {
+    height: 60px;
+    padding: 0 var(--space-md);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+  }
+
+  .logo h1 {
+    font-size: 1.5rem;
+  }
+
+  .header-right .btn,
+  .header-center select,
+  .header-center label {
+    min-height: 44px;
+  }
+
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+  }
+
+  .workspace-title {
+    font-size: 1.5rem;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .sidebar.show {
+    display: block;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    background: var(--theme-surface);
+    z-index: 999;
+    padding: var(--space-lg);
+  }
+}
+
+@media screen and (orientation: landscape) {
+  .header {
+    height: 50px;
+  }
+}

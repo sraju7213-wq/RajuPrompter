@@ -195,6 +195,14 @@ const themes = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM loaded, initializing app...');
     initializeApp();
+
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (menuToggle && sidebar) {
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+    }
 });
 
 function initializeApp() {
@@ -220,6 +228,14 @@ function initializeApp() {
     initImageAnalyzer();
     updatePromptPreview();
     updatePlatformBadge();
+
+    // Ensure the mini generator iframe adopts the current theme once it's loaded
+    const miniFrame = document.querySelector('.mini-frame');
+    if (miniFrame) {
+        miniFrame.addEventListener('load', () => {
+            syncMiniGeneratorTheme(currentTheme);
+        });
+    }
 
     console.log('🚀 App initialized successfully!');
 }
@@ -969,12 +985,29 @@ function applyTheme(themeName) {
         document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
     }
 
+    // Mirror theme changes inside the Chota Dhamakaa iframe
+    syncMiniGeneratorTheme(themeName);
+
     const themeSelect = document.getElementById('theme-select');
     if (themeSelect) {
         themeSelect.value = themeName;
     }
 
     saveToStorage();
+}
+
+// Apply theme variables to the embedded Chota Dhamakaa mini generator
+function syncMiniGeneratorTheme(themeName) {
+    const miniFrame = document.querySelector('.mini-frame');
+    if (!miniFrame || !miniFrame.contentDocument) return;
+
+    const miniDoc = miniFrame.contentDocument;
+    miniDoc.body.setAttribute('data-theme', themeName);
+
+    if (themes[themeName]) {
+        miniDoc.documentElement.style.setProperty('--theme-primary', themes[themeName].primary);
+        miniDoc.documentElement.style.setProperty('--theme-background', themes[themeName].background);
+    }
 }
 
 // Action functions
