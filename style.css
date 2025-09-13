@@ -1209,3 +1209,14 @@ body {
   margin-bottom: var(--space-sm);
   cursor: pointer;
 }
+
+/* Perplexity mini embed */
+.perplexity-mini {
+  margin: var(--space-lg) 0;
+}
+
+.perplexity-mini iframe {
+  width: 100%;
+  height: 600px;
+  border: 0;
+}
