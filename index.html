@@ -52,9 +52,6 @@
             <button class="btn btn--outline" id="collaboration-btn">
                 <i class="fas fa-users"></i> Collaborate
             </button>
-            <button class="btn btn--primary" id="export-btn">
-                <i class="fas fa-download"></i> Export
-            </button>
             <a class="btn btn--outline" id="mini-generator-link" href="#">
                 <i class="fas fa-bolt"></i> Chota Dhamakaa
             </a>
@@ -360,9 +357,12 @@
             <div class="panel-section">
                 <h3><i class="fas fa-tools"></i> Actions</h3>
                 <div class="action-buttons">
-                    <button class="btn btn--primary btn--full-width" id="copy-prompt">
-                        <i class="fas fa-copy"></i> Copy to Clipboard
-                    </button>
+                    <div class="copy-action">
+                        <button class="btn neon-copy-btn" id="copy-prompt">
+                            <i class="fas fa-copy"></i> Copy to Clipboard
+                        </button>
+                        <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
+                    </div>
                     <button class="btn btn--secondary btn--full-width" id="save-prompt">
                         <i class="fas fa-save"></i> Save Prompt
                     </button>
