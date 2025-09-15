@@ -347,24 +347,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Copy function
-    function copyToClipboard(targetId) {
+    function copyToClipboard(targetId, button) {
         const element = document.getElementById(targetId);
         if (!element) return;
-        
+
         const text = element.textContent;
-        
+        const feedback = button?.nextElementSibling;
+        const originalHTML = button?.innerHTML;
+
+        const showCopied = () => {
+            if (button) {
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            }
+            if (feedback) {
+                feedback.textContent = 'Copied!';
+                feedback.classList.add('show');
+                setTimeout(() => feedback.classList.remove('show'), 2000);
+            }
+        };
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('Copied to clipboard!');
-            }).catch(() => {
-                fallbackCopy(text);
+            navigator.clipboard.writeText(text).then(showCopied).catch(() => {
+                fallbackCopy(text, showCopied);
             });
         } else {
-            fallbackCopy(text);
+            fallbackCopy(text, showCopied);
         }
     }
-    
-    function fallbackCopy(text) {
+
+    function fallbackCopy(text, callback) {
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
@@ -373,15 +389,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         try {
             document.execCommand('copy');
-            showToast('Copied to clipboard!');
         } catch (err) {
-            showToast('Failed to copy');
+            console.error('Fallback copy failed', err);
         }
-        
+
         document.body.removeChild(textArea);
+        if (typeof callback === 'function') callback();
     }
     
     // Event listeners
@@ -439,10 +455,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Copy button event listener
     document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('copy-btn')) {
+        const btn = e.target.closest('.copy-btn');
+        if (btn) {
             e.preventDefault();
-            const target = e.target.dataset.target;
-            copyToClipboard(target);
+            const target = btn.dataset.target;
+            copyToClipboard(target, btn);
         }
     });
     
