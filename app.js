@@ -347,10 +347,6 @@ function setupEventListeners() {
         exportTxtBtn.addEventListener('click', exportToTxt);
     }
 
-    const exportTopBtn = document.getElementById('export-btn');
-    if (exportTopBtn) {
-        exportTopBtn.addEventListener('click', exportToTxt);
-    }
 
     const shareBtn = document.getElementById('share-prompt');
     if (shareBtn) {

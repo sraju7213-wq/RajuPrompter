@@ -55,9 +55,6 @@ working_html = '''<!DOCTYPE html>
             <button class="btn btn--outline" id="collaboration-btn">
                 <i class="fas fa-users"></i> Collaborate
             </button>
-            <button class="btn btn--primary" id="export-btn">
-                <i class="fas fa-download"></i> Export
-            </button>
         </div>
     </header>
 
