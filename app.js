@@ -988,9 +988,16 @@ function copyToClipboard() {
         return;
     }
 
-    navigator.clipboard.writeText(currentPrompt).then(() => {
-        showNotification('Prompt copied to clipboard!');
-    }).catch(() => {
+    const feedback = document.getElementById('copy-feedback');
+    const showCopied = () => {
+        if (feedback) {
+            feedback.textContent = 'Copied!';
+            feedback.classList.add('show');
+            setTimeout(() => feedback.classList.remove('show'), 2000);
+        }
+    };
+
+    navigator.clipboard.writeText(currentPrompt).then(showCopied).catch(() => {
         // Fallback for older browsers
         const textArea = document.createElement('textarea');
         textArea.value = currentPrompt;
@@ -998,7 +1005,7 @@ function copyToClipboard() {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        showNotification('Prompt copied to clipboard!');
+        showCopied();
     });
 }
 

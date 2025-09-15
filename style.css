@@ -640,6 +640,46 @@ body {
   transform: none;
 }
 
+/* Neon Copy Button */
+.copy-action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.neon-copy-btn {
+  flex: 1;
+  background: var(--theme-secondary);
+  color: var(--theme-primary);
+  border: 2px solid var(--theme-primary);
+  box-shadow: 0 0 10px var(--theme-primary), inset 0 0 6px var(--theme-primary);
+  transition: background var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.neon-copy-btn:hover {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+  box-shadow: 0 0 15px var(--theme-primary);
+}
+
+.neon-copy-btn:active {
+  transform: scale(0.97);
+}
+
+.copy-feedback {
+  color: var(--theme-primary);
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.copy-feedback.show {
+  opacity: 1;
+}
+
 /* Form Controls */
 .form-control {
   width: 100%;
