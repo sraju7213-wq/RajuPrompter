@@ -1,19 +1,20 @@
 /* Upload zone styling */
 
 .upload-zone {
-  border: 2px dashed var(--theme-border);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.03);
-  padding: var(--space-lg);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: clamp(1.25rem, 3vw, 2rem);
   text-align: center;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
   position: relative;
 }
 
 .upload-zone:focus-within,
 .upload-zone:hover {
   border-color: var(--theme-primary);
-  background: rgba(0, 255, 136, 0.08);
+  background: rgba(29, 185, 84, 0.15);
+  transform: translateY(-2px);
 }
 
 .upload-zone input[type='file'] {
@@ -27,34 +28,38 @@
 
 .upload-content {
   display: grid;
-  gap: var(--space-xs);
+  gap: var(--space-sm);
   cursor: pointer;
 }
 
-.upload-content h3 {
-  font-size: var(--text-lg);
+.upload-placeholder {
+  display: grid;
+  gap: var(--space-xs);
+  place-items: center;
+  color: var(--theme-text);
 }
 
-.upload-content p {
-  color: var(--theme-text-muted);
-  font-size: var(--text-sm);
-}
-
-.upload-icon {
-  font-size: 2.5rem;
+.upload-placeholder i {
+  font-size: 2.75rem;
   color: var(--theme-primary);
+}
+
+.upload-placeholder p {
+  font-size: var(--text-md);
+  font-weight: 600;
 }
 
 .upload-button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  margin-inline: auto;
-  padding: 0.6rem var(--space-md);
-  border-radius: var(--radius-pill);
+  padding: 0.65rem var(--space-lg);
+  border-radius: 14px;
   background: var(--theme-primary);
   color: var(--theme-secondary);
-  font-weight: 600;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .analysis-results,
@@ -62,9 +67,9 @@
   display: grid;
   gap: var(--space-sm);
   padding: var(--space-md);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--theme-border);
-  background: rgba(255, 255, 255, 0.03);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 @media (min-width: 64rem) {

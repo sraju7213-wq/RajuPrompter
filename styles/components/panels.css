@@ -1,8 +1,8 @@
 /* Specialized panels and layout components */
 
 .prompt-preview {
-  border-radius: var(--radius-md);
-  border: 1px solid var(--theme-border);
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   padding: var(--space-md);
   min-height: 160px;
@@ -27,9 +27,9 @@
   display: grid;
   gap: var(--space-2xs);
   padding-inline: var(--space-sm);
-  padding-block: 0.4rem;
-  border-radius: var(--radius-pill);
-  border: 1px solid var(--theme-border);
+  padding-block: 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   min-width: 100px;
   text-align: center;
@@ -91,46 +91,29 @@
 
 .hf-embed {
   margin-top: var(--space-lg);
-  border-radius: var(--radius-lg);
+  border-radius: 20px;
   overflow: hidden;
-  border: 1px solid var(--theme-border);
-  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
 }
 
 .mini-frame {
   width: 100%;
   border: none;
   min-height: 60vh;
-  border-radius: var(--radius-lg);
-  background: var(--theme-surface);
+  border-radius: 20px;
+  background: rgba(24, 24, 24, 0.85);
 }
 
 @media (min-width: 48rem) {
   .action-toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: start;
-  }
-
-  .action-toolbar > *:not(.more-actions) {
-    grid-column: span 1;
-  }
-
-  .copy-action {
-    grid-row: 1 / span 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 64rem) {
   .action-toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .action-toolbar > * {
-    width: auto;
-  }
-
-  .copy-action {
-    grid-row: auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
