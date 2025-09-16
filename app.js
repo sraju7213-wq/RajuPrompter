@@ -13,6 +13,13 @@ let lastImageTags = [];
 let lastColorHex = '';
 let desiredPromptLength = 300;
 
+const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])';
+let lastFocusedElement = null;
+let activeModal = null;
+let activeDrawer = null;
+let disclosureResizeTimer = null;
+
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
     subjects: {
@@ -195,23 +202,22 @@ const themes = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM loaded, initializing app...');
     initializeApp();
-
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('show');
-        });
-    }
+    setupResponsiveEnhancements();
 });
 
 function initializeApp() {
     console.log('🎯 Initializing AI Prompt Generator...');
 
     // Load saved data
-    loadFromStorage();
+    const hasStoredData = loadFromStorage();
 
-    // Apply default theme if none loaded
+    // Respect system color preference on first load
+    if (!hasStoredData) {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        currentTheme = prefersDark ? 'dark_professional' : 'light_modern';
+    }
+
+    // Apply theme
     applyTheme(currentTheme);
 
     // Load shared prompt from URL if present
@@ -228,8 +234,23 @@ function initializeApp() {
     initImageAnalyzer();
     updatePromptPreview();
     updatePlatformBadge();
+    updateActionStates();
 
     console.log('🚀 App initialized successfully!');
+}
+
+function setupResponsiveEnhancements() {
+    setupDrawer();
+    setupThemeChips();
+    setupDisclosures();
+    setupHeaderShortcuts();
+    setupModalControls();
+    document.querySelectorAll('.tab-content').forEach(content => {
+        if (!content.classList.contains('active')) {
+            content.setAttribute('hidden', '');
+        }
+    });
+    updateDisclosureStates();
 }
 
 function setupEventListeners() {
@@ -337,6 +358,11 @@ function setupEventListeners() {
         saveBtn.addEventListener('click', savePrompt);
     }
 
+    const confirmSaveBtn = document.getElementById('confirm-save');
+    if (confirmSaveBtn) {
+        confirmSaveBtn.addEventListener('click', confirmSavePrompt);
+    }
+
     const suggestionBtn = document.getElementById('get-suggestions');
     if (suggestionBtn) {
         suggestionBtn.addEventListener('click', getAISuggestions);
@@ -403,6 +429,226 @@ function setupEventListeners() {
     });
 
     console.log('✅ Event listeners configured');
+}
+
+function setupDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const menuToggle = document.getElementById('menu-toggle');
+    const scrim = document.getElementById('scrim');
+    const drawerClose = document.getElementById('drawer-close');
+
+    if (!drawer || !menuToggle || !scrim) {
+        return;
+    }
+
+    drawer.setAttribute('aria-hidden', 'true');
+    scrim.hidden = true;
+    menuToggle.setAttribute('aria-expanded', 'false');
+
+    menuToggle.addEventListener('click', (event) => {
+        event.preventDefault();
+        if (drawer.getAttribute('aria-hidden') === 'false') {
+            closeDrawer();
+        } else {
+            openDrawer();
+        }
+    });
+
+    drawerClose?.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeDrawer();
+    });
+
+    scrim.addEventListener('click', closeDrawer);
+
+    drawer.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closeDrawer();
+        }
+    });
+}
+
+function openDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const scrim = document.getElementById('scrim');
+    const menuToggle = document.getElementById('menu-toggle');
+    if (!drawer || !scrim || !menuToggle) return;
+
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    drawer.setAttribute('aria-hidden', 'false');
+    scrim.hidden = false;
+    menuToggle.setAttribute('aria-expanded', 'true');
+    activeDrawer = drawer;
+
+    const focusTarget = drawer.querySelector(FOCUSABLE_SELECTOR);
+    if (focusTarget) {
+        focusTarget.focus();
+    }
+}
+
+function closeDrawer() {
+    const drawer = document.getElementById('mobile-drawer');
+    const scrim = document.getElementById('scrim');
+    const menuToggle = document.getElementById('menu-toggle');
+    if (!drawer || !scrim || !menuToggle) return;
+
+    drawer.setAttribute('aria-hidden', 'true');
+    scrim.hidden = true;
+    menuToggle.setAttribute('aria-expanded', 'false');
+    activeDrawer = null;
+
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+    }
+}
+
+function setupHeaderShortcuts() {
+    document.querySelectorAll('[data-header-collaborate], [data-drawer-collaborate]').forEach(button => {
+        button.addEventListener('click', () => {
+            sharePrompt();
+            closeDrawer();
+        });
+    });
+
+    document.querySelectorAll('[data-header-mini], [data-drawer-mini]').forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault();
+            switchTab('mini-generator');
+            closeDrawer();
+        });
+    });
+
+    document.querySelectorAll('[data-drawer-tab]').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const tabName = event.currentTarget.dataset.drawerTab;
+            if (tabName) {
+                switchTab(tabName);
+            }
+            closeDrawer();
+        });
+    });
+}
+
+function setupThemeChips() {
+    document.querySelectorAll('.theme-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const theme = chip.dataset.theme;
+            if (theme) {
+                applyTheme(theme);
+            }
+        });
+    });
+}
+
+function setupDisclosures() {
+    document.querySelectorAll('details[data-breakpoint]').forEach(detail => {
+        detail.dataset.userExpanded = detail.open ? 'true' : 'false';
+        detail.addEventListener('toggle', () => {
+            detail.dataset.userExpanded = detail.open ? 'true' : 'false';
+        });
+    });
+
+    window.addEventListener('resize', () => {
+        clearTimeout(disclosureResizeTimer);
+        disclosureResizeTimer = setTimeout(() => {
+            updateDisclosureStates();
+            if (window.innerWidth >= DISCLOSURE_BREAKPOINTS.md && activeDrawer) {
+                closeDrawer();
+            }
+        }, 150);
+    });
+}
+
+function updateDisclosureStates() {
+    const width = window.innerWidth;
+    document.querySelectorAll('details[data-breakpoint]').forEach(detail => {
+        const breakpoint = detail.dataset.breakpoint;
+        const threshold = DISCLOSURE_BREAKPOINTS[breakpoint] || 0;
+        if (width >= threshold) {
+            if (!detail.open) {
+                detail.open = true;
+            }
+            detail.dataset.userExpanded = 'true';
+        } else {
+            if (detail.dataset.userExpanded !== 'true') {
+                detail.open = false;
+            }
+            if (!detail.open) {
+                detail.dataset.userExpanded = 'false';
+            }
+        }
+    });
+}
+
+function setupModalControls() {
+    document.querySelectorAll('[data-modal-close]').forEach(button => {
+        button.addEventListener('click', () => {
+            if (activeModal) {
+                closeModalElement(activeModal);
+            }
+        });
+    });
+
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModalElement(modal);
+            }
+        });
+
+        modal.addEventListener('keydown', (event) => {
+            if (event.key === 'Tab') {
+                const focusable = modal.querySelectorAll(FOCUSABLE_SELECTOR);
+                if (focusable.length === 0) {
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            }
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (activeModal) {
+                event.preventDefault();
+                closeModalElement(activeModal);
+            } else if (activeDrawer) {
+                event.preventDefault();
+                closeDrawer();
+            }
+        }
+    });
+}
+
+function openModalElement(modal) {
+    if (!modal) return;
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    modal.classList.remove('hidden');
+    activeModal = modal;
+    const focusTarget = modal.querySelector(FOCUSABLE_SELECTOR);
+    if (focusTarget) {
+        focusTarget.focus();
+    }
+}
+
+function closeModalElement(modal) {
+    if (!modal) return;
+    modal.classList.add('hidden');
+    if (activeModal === modal) {
+        activeModal = null;
+    }
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+        lastFocusedElement.focus();
+    }
 }
 
 function initImageAnalyzer() {
@@ -580,6 +826,30 @@ function updateWordCount() {
     if (wordCountMetric) {
         wordCountMetric.textContent = wordCount;
     }
+
+    updateActionStates();
+}
+
+function updateActionStates() {
+    const hasPrompt = Boolean(currentPrompt && currentPrompt.trim().length);
+    const saveBtn = document.getElementById('save-prompt');
+    const copyBtn = document.getElementById('copy-prompt');
+
+    if (saveBtn) {
+        if (hasPrompt) {
+            saveBtn.removeAttribute('disabled');
+        } else {
+            saveBtn.setAttribute('disabled', 'disabled');
+        }
+    }
+
+    if (copyBtn) {
+        if (hasPrompt) {
+            copyBtn.removeAttribute('disabled');
+        } else {
+            copyBtn.setAttribute('disabled', 'disabled');
+        }
+    }
 }
 
 function updateQualityScore() {
@@ -649,10 +919,9 @@ function switchWordCategory(category) {
 
     // Update tab states
     document.querySelectorAll('.category-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.dataset.category === category) {
-            tab.classList.add('active');
-        }
+        const isActive = tab.dataset.category === category;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     // Clear and populate word bank
@@ -692,12 +961,16 @@ function handleImageUpload(e) {
     const reader = new FileReader();
     reader.onload = function(ev) {
         const img = document.getElementById('uploaded-img');
-        img.onload = () => {
-            document.getElementById('preview-container').style.display = 'block';
-            document.getElementById('analysis-results').style.display = 'none';
-            analyzeImage(img);
-        };
-        img.src = ev.target.result;
+        const previewContainer = document.getElementById('preview-container');
+        const analysisResults = document.getElementById('analysis-results');
+        if (img) {
+            img.onload = () => {
+                if (previewContainer) previewContainer.hidden = false;
+                if (analysisResults) analysisResults.hidden = true;
+                analyzeImage(img);
+            };
+            img.src = ev.target.result;
+        }
         const base64Image = ev.target.result.split(',')[1];
         const status = document.getElementById('upload-status');
         if (status) status.textContent = 'Analyzing image...';
@@ -777,7 +1050,10 @@ function addColorTags(img, tags) {
     lastImageTags = tags.filter(t => !t.startsWith('dominant color'));
     lastColorHex = colorHex;
     updateGeneratedPrompt();
-    document.getElementById('analysis-results').style.display = 'block';
+    const analysisResults = document.getElementById('analysis-results');
+    if (analysisResults) {
+        analysisResults.hidden = false;
+    }
 }
 
 function rgbToHex(r, g, b) {
@@ -946,21 +1222,18 @@ function sharePrompt() {
 function switchTab(tabName) {
     // Update tab buttons
     document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.dataset.tab === tabName) {
-            tab.classList.add('active');
-        }
+        const isActive = tab.dataset.tab === tabName;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
+        const isActive = content.id === `${tabName}-tab`;
+        content.classList.toggle('active', isActive);
+        content.toggleAttribute('hidden', !isActive);
     });
 
-    const targetContent = document.getElementById(`${tabName}-tab`);
-    if (targetContent) {
-        targetContent.classList.add('active');
-    }
 }
 
 // Theme system
@@ -978,12 +1251,38 @@ function applyTheme(themeName) {
         themeSelect.value = themeName;
     }
 
+    document.querySelectorAll('.theme-chip').forEach(chip => {
+        const isActive = chip.dataset.theme === themeName;
+        chip.classList.toggle('is-active', isActive);
+        chip.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    });
+
     saveToStorage();
 }
 
 // Action functions
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise((resolve, reject) => {
+        try {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            resolve();
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
 function copyToClipboard() {
-    if (!currentPrompt) {
+    if (!currentPrompt || !currentPrompt.trim()) {
         alert('No prompt to copy!');
         return;
     }
@@ -997,15 +1296,8 @@ function copyToClipboard() {
         }
     };
 
-    navigator.clipboard.writeText(currentPrompt).then(showCopied).catch(() => {
-        // Fallback for older browsers
-        const textArea = document.createElement('textarea');
-        textArea.value = currentPrompt;
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        showCopied();
+    copyTextToClipboard(currentPrompt).then(showCopied).catch(() => {
+        alert('Unable to copy prompt automatically. Please copy manually.');
     });
 }
 
@@ -1014,28 +1306,71 @@ function clearPrompt() {
 }
 
 function savePrompt() {
-    if (!currentPrompt) {
+    if (!currentPrompt || !currentPrompt.trim()) {
+        alert('No prompt to save!');
+        return;
+    }
+    const modal = document.getElementById('save-modal');
+    if (!modal) return;
+
+    const nameInput = document.getElementById('prompt-name');
+    const descriptionInput = document.getElementById('prompt-description');
+    const tagsInput = document.getElementById('prompt-tags');
+
+    const defaultName = currentPrompt.split(/\s+/).slice(0, 6).join(' ');
+    if (nameInput) {
+        nameInput.value = defaultName ? defaultName : `Prompt ${savedPrompts.length + 1}`;
+    }
+    if (descriptionInput) {
+        descriptionInput.value = '';
+    }
+    if (tagsInput) {
+        tagsInput.value = '';
+    }
+
+    openModalElement(modal);
+    if (nameInput) {
+        requestAnimationFrame(() => nameInput.focus());
+    }
+}
+
+function confirmSavePrompt() {
+    if (!currentPrompt || !currentPrompt.trim()) {
         alert('No prompt to save!');
         return;
     }
 
-    const name = prompt('Enter a name for this prompt:');
-    if (name) {
-        const savedPrompt = {
-            name: name,
-            prompt: currentPrompt,
-            platform: currentPlatform,
-            timestamp: Date.now()
-        };
+    const nameInput = document.getElementById('prompt-name');
+    const descriptionInput = document.getElementById('prompt-description');
+    const tagsInput = document.getElementById('prompt-tags');
+    const modal = document.getElementById('save-modal');
 
-        savedPrompts.unshift(savedPrompt);
-        if (savedPrompts.length > 50) {
-            savedPrompts = savedPrompts.slice(0, 50);
-        }
+    const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : `Prompt ${savedPrompts.length + 1}`;
+    const description = descriptionInput ? descriptionInput.value.trim() : '';
+    const tags = tagsInput && tagsInput.value
+        ? tagsInput.value.split(',').map(tag => tag.trim()).filter(Boolean)
+        : [];
 
-        saveToStorage();
-        updateSavedPromptsDisplay();
-        showNotification('Prompt saved successfully!');
+    const savedPrompt = {
+        name,
+        description,
+        tags,
+        prompt: currentPrompt,
+        platform: currentPlatform,
+        timestamp: Date.now()
+    };
+
+    savedPrompts.unshift(savedPrompt);
+    if (savedPrompts.length > 50) {
+        savedPrompts = savedPrompts.slice(0, 50);
+    }
+
+    saveToStorage();
+    updateSavedPromptsDisplay();
+    showNotification('Prompt saved successfully!');
+
+    if (modal) {
+        closeModalElement(modal);
     }
 }
 
@@ -1061,20 +1396,55 @@ function updateHistoryDisplay() {
 
     historyContainer.innerHTML = '';
 
-    promptHistory.slice(0, 5).forEach(item => {
-        const historyElement = document.createElement('div');
-        historyElement.className = 'history-item';
-        historyElement.innerHTML = `
-            <div class="history-item-time">${formatTimestamp(item.timestamp)}</div>
-            <div class="history-item-text">${item.prompt.substring(0, 100)}...</div>
-        `;
+    if (!promptHistory.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'Generated prompts will appear here.';
+        historyContainer.appendChild(empty);
+        return;
+    }
 
-        historyElement.addEventListener('click', () => {
-            setPrompt(item.prompt);
-            switchTab('manual');
+    promptHistory.slice(0, 5).forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'prompt-card';
+
+        const meta = document.createElement('div');
+        meta.className = 'prompt-card__meta';
+        const time = document.createElement('span');
+        time.textContent = formatTimestamp(item.timestamp);
+        const platformLabel = document.createElement('span');
+        platformLabel.textContent = platformData[item.platform]?.name || 'Manual';
+        meta.append(time, platformLabel);
+
+        const text = document.createElement('p');
+        text.className = 'prompt-card__text';
+        const snippet = item.prompt.length > 140 ? `${item.prompt.slice(0, 140)}…` : item.prompt;
+        text.textContent = snippet;
+
+        const actions = document.createElement('div');
+        actions.className = 'prompt-card__actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'btn btn--sm btn--secondary';
+        useBtn.textContent = 'Use';
+        useBtn.addEventListener('click', () => {
+            setPrompt(item.prompt).then(() => switchTab('manual'));
         });
 
-        historyContainer.appendChild(historyElement);
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn btn--sm btn--outline';
+        copyBtn.textContent = 'Copy';
+        copyBtn.addEventListener('click', () => {
+            copyTextToClipboard(item.prompt)
+                .then(() => showNotification('Prompt copied to clipboard!'))
+                .catch(() => alert('Unable to copy prompt automatically.'));
+        });
+
+        actions.append(useBtn, copyBtn);
+        card.append(meta, text, actions);
+        historyContainer.appendChild(card);
     });
 }
 
@@ -1084,20 +1454,78 @@ function updateSavedPromptsDisplay() {
 
     savedContainer.innerHTML = '';
 
-    savedPrompts.slice(0, 5).forEach(item => {
-        const savedElement = document.createElement('div');
-        savedElement.className = 'saved-prompt-item';
-        savedElement.innerHTML = `
-            <div class="saved-prompt-name">${item.name}</div>
-            <div class="saved-prompt-text">${item.prompt.substring(0, 80)}...</div>
-        `;
+    if (!savedPrompts.length) {
+        const empty = document.createElement('p');
+        empty.className = 'empty-state';
+        empty.textContent = 'Save prompts to build your personal library.';
+        savedContainer.appendChild(empty);
+        return;
+    }
 
-        savedElement.addEventListener('click', () => {
-            setPrompt(item.prompt);
-            switchTab('manual');
+    savedPrompts.slice(0, 5).forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'saved-prompt';
+
+        const meta = document.createElement('div');
+        meta.className = 'saved-prompt__meta';
+        const name = document.createElement('span');
+        name.textContent = item.name || 'Untitled Prompt';
+        const timestamp = document.createElement('span');
+        timestamp.textContent = formatTimestamp(item.timestamp);
+        meta.append(name, timestamp);
+
+        const text = document.createElement('p');
+        text.className = 'saved-prompt__text';
+        const snippet = item.prompt.length > 160 ? `${item.prompt.slice(0, 160)}…` : item.prompt;
+        text.textContent = snippet;
+
+        const actions = document.createElement('div');
+        actions.className = 'prompt-card__actions';
+
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'btn btn--sm btn--secondary';
+        useBtn.textContent = 'Use';
+        useBtn.addEventListener('click', () => {
+            setPrompt(item.prompt).then(() => switchTab('manual'));
         });
 
-        savedContainer.appendChild(savedElement);
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn btn--sm btn--outline';
+        copyBtn.textContent = 'Copy';
+        copyBtn.addEventListener('click', () => {
+            copyTextToClipboard(item.prompt)
+                .then(() => showNotification('Prompt copied to clipboard!'))
+                .catch(() => alert('Unable to copy prompt automatically.'));
+        });
+
+        actions.append(useBtn, copyBtn);
+        card.append(meta);
+
+        if (item.description) {
+            const description = document.createElement('p');
+            description.className = 'saved-prompt__text';
+            description.textContent = item.description;
+            card.append(description);
+        }
+
+        card.append(text);
+
+        if (Array.isArray(item.tags) && item.tags.length) {
+            const tagList = document.createElement('div');
+            tagList.className = 'analysis-tags';
+            item.tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = 'tag';
+                span.textContent = tag;
+                tagList.appendChild(span);
+            });
+            card.append(tagList);
+        }
+
+        card.append(actions);
+        savedContainer.appendChild(card);
     });
 }
 
@@ -1160,39 +1588,28 @@ function saveToStorage() {
 function loadFromStorage() {
     try {
         const stored = localStorage.getItem('aiPromptGenerator');
-        if (stored) {
-            const data = JSON.parse(stored);
-            currentPlatform = data.currentPlatform || 'natural_language';
-            currentTheme = data.currentTheme || 'cyberpunk_neon';
-            promptHistory = data.promptHistory || [];
-            savedPrompts = data.savedPrompts || [];
-
-            // Apply loaded theme
-            applyTheme(currentTheme);
-
-            // Update UI elements
-            const platformSelect = document.getElementById('platform-select');
-            const themeSelect = document.getElementById('theme-select');
-
-            if (platformSelect) platformSelect.value = currentPlatform;
-            if (themeSelect) themeSelect.value = currentTheme;
-
-            // Update displays
-            setTimeout(() => {
-                updateHistoryDisplay();
-                updateSavedPromptsDisplay();
-            }, 100);
+        if (!stored) {
+            return false;
         }
+
+        const data = JSON.parse(stored);
+        currentPlatform = data.currentPlatform || 'natural_language';
+        currentTheme = data.currentTheme || 'cyberpunk_neon';
+        promptHistory = data.promptHistory || [];
+        savedPrompts = data.savedPrompts || [];
+
+        const platformSelect = document.getElementById('platform-select');
+        const themeSelect = document.getElementById('theme-select');
+
+        if (platformSelect) platformSelect.value = currentPlatform;
+        if (themeSelect) themeSelect.value = currentTheme;
+
+        updateHistoryDisplay();
+        updateSavedPromptsDisplay();
+        return true;
     } catch (e) {
         console.warn('Could not load from localStorage:', e);
-    }
-}
-
-// Modal functions
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
+        return false;
     }
 }
 

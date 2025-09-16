@@ -1,0 +1,76 @@
+/* Tab navigation styling */
+
+.tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--space-xs);
+  background: var(--theme-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--theme-border);
+  padding: var(--space-2xs);
+  overflow: hidden;
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  color: var(--theme-text-muted);
+  font-weight: 600;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.tab.active,
+.tab:hover {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+}
+
+.tab-content {
+  display: none;
+  background: var(--theme-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--theme-border);
+  padding: clamp(var(--space-md), 2vw, var(--space-xl));
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.prompt-workspace,
+.batch-section,
+.image-upload-area {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.workspace-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workspace-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+@media (max-width: 30rem) {
+  .tabs {
+    grid-auto-flow: row;
+    grid-auto-columns: unset;
+  }
+}
+
