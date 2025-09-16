@@ -1,0 +1,136 @@
+/* Specialized panels and layout components */
+
+.prompt-preview {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border);
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-md);
+  min-height: 160px;
+}
+
+.preview-content {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--theme-text);
+  white-space: pre-wrap;
+}
+
+.preview-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+.metric {
+  display: grid;
+  gap: var(--space-2xs);
+  padding-inline: var(--space-sm);
+  padding-block: 0.4rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--theme-border);
+  background: rgba(255, 255, 255, 0.03);
+  min-width: 100px;
+  text-align: center;
+}
+
+.metric-label {
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+}
+
+.action-toolbar {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.action-toolbar > * {
+  width: 100%;
+}
+
+.copy-action {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.more-actions summary {
+  list-style: none;
+}
+
+.analysis-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.analysis-tags .tag {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--space-sm);
+  padding-block: 0.35rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.08);
+  font-size: var(--text-sm);
+}
+
+.uploaded-image .image-container {
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border);
+  overflow: hidden;
+  max-height: 40vh;
+}
+
+.uploaded-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hf-embed {
+  margin-top: var(--space-lg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--theme-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.mini-frame {
+  width: 100%;
+  border: none;
+  min-height: 60vh;
+  border-radius: var(--radius-lg);
+  background: var(--theme-surface);
+}
+
+@media (min-width: 48rem) {
+  .action-toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .action-toolbar > *:not(.more-actions) {
+    grid-column: span 1;
+  }
+
+  .copy-action {
+    grid-row: 1 / span 2;
+  }
+}
+
+@media (min-width: 64rem) {
+  .action-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action-toolbar > * {
+    width: auto;
+  }
+
+  .copy-action {
+    grid-row: auto;
+  }
+}
+

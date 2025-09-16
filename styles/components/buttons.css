@@ -1,0 +1,164 @@
+/* Button system and badges */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-height: 44px;
+  padding-inline: var(--space-md);
+  padding-block: var(--space-xs);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  font-weight: 600;
+  line-height: 1.2;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+  text-align: center;
+}
+
+.btn:hover,
+.btn:focus-visible {
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn[disabled],
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+
+.btn--primary {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+}
+
+.btn--secondary {
+  background: var(--theme-accent, var(--theme-primary));
+  color: var(--theme-secondary);
+}
+
+.btn--outline {
+  background: transparent;
+  border-color: var(--theme-border);
+}
+
+.btn--full-width {
+  width: 100%;
+}
+
+.btn--sm {
+  min-height: 44px;
+  font-size: var(--text-sm);
+  padding-inline: var(--space-sm);
+}
+
+.btn--compact {
+  min-height: 44px;
+  padding-inline: var(--space-sm);
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border);
+  background: transparent;
+  color: var(--theme-text);
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+  border-color: transparent;
+}
+
+.icon-button__label {
+  margin-inline-end: var(--space-2xs);
+  font-size: var(--text-sm);
+}
+
+.hamburger-icon {
+  display: inline-block;
+  position: relative;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  border-radius: var(--radius-pill);
+}
+
+.hamburger-icon::before,
+.hamburger-icon::after {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: var(--radius-pill);
+}
+
+.hamburger-icon::before {
+  top: -6px;
+}
+
+.hamburger-icon::after {
+  top: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--space-sm);
+  padding-block: 0.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--theme-accent, var(--theme-primary));
+  color: var(--theme-secondary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.badge--accent {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding-inline: var(--space-sm);
+  padding-block: 0.35rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--theme-border);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+
+.status-pill--accent {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+  border-color: transparent;
+}
+
+@media (min-width: 54rem) {
+  .btn--compact {
+    padding-inline: var(--space-md);
+  }
+}
+

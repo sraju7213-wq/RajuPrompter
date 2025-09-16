@@ -4,38 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Prompt Generator v2.0</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components/buttons.css">
+    <link rel="stylesheet" href="styles/components/forms.css">
+    <link rel="stylesheet" href="styles/components/chips.css">
+    <link rel="stylesheet" href="styles/components/tabs.css">
+    <link rel="stylesheet" href="styles/components/cards.css">
+    <link rel="stylesheet" href="styles/components/panels.css">
+    <link rel="stylesheet" href="styles/components/dropzone.css">
+    <link rel="stylesheet" href="styles/components/modal.css">
+    <link rel="stylesheet" href="styles/components/drawer.css">
 </head>
 <body data-theme="cyberpunk_neon">
-    <!-- Enhanced Header with Modern Features -->
-    <header class="header">
-        <div class="header-left">
-            <button class="hamburger" id="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
-            <div class="logo">
-                <h1><i class="fas fa-magic"></i> AI Prompt Generator v2.0</h1>
-                <span class="version-badge">Advanced</span>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="app-header" role="banner">
+        <div class="app-header__start">
+            <button class="icon-button" id="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-drawer">
+                <span class="hamburger-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Toggle navigation</span>
+            </button>
+            <div class="app-brand">
+                <h1 class="app-title"><i class="fas fa-magic" aria-hidden="true"></i> AI Prompt Generator v2.0</h1>
+                <span class="badge badge--accent">Advanced</span>
             </div>
         </div>
-
-        <div class="header-center">
-            <div class="platform-selector">
-                <label for="platform-select"><i class="fas fa-cogs"></i> Platform:</label>
-                <select id="platform-select" class="form-control">
-                    <option value="natural_language" selected>Natural Language</option>
-                    <option value="midjourney">Midjourney v6.1</option>
-                    <option value="stable_diffusion">Stable Diffusion XL</option>
-                    <option value="flux_ai">Flux AI Pro</option>
-                    <option value="dall_e">DALL-E 3</option>
-                </select>
+        <div class="app-header__end">
+            <div class="header-actions">
+                <button class="btn btn--outline btn--compact" type="button" data-header-collaborate>
+                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
+                </button>
+                <a class="btn btn--outline btn--compact" href="#" data-header-mini>
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                </a>
             </div>
+        </div>
+    </header>
 
-            <div class="theme-selector">
-                <label for="theme-select"><i class="fas fa-palette"></i> Theme:</label>
-                <select id="theme-select" class="form-control">
+    <aside class="drawer" id="mobile-drawer" aria-hidden="true" aria-labelledby="mobile-drawer-title">
+        <div class="drawer__content">
+            <header class="drawer__header">
+                <h2 id="mobile-drawer-title">Menu</h2>
+                <button class="icon-button" type="button" id="drawer-close" aria-label="Close menu">
+                    <span class="icon-button__label">Close</span>
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </header>
+            <nav class="drawer__nav" aria-label="Primary">
+                <button class="drawer__link" data-drawer-tab="manual" type="button"><i class="fas fa-edit" aria-hidden="true"></i> Manual Builder</button>
+                <button class="drawer__link" data-drawer-tab="image-to-prompt" type="button"><i class="fas fa-image" aria-hidden="true"></i> Image to Prompt</button>
+                <button class="drawer__link" data-drawer-tab="batch-generator" type="button"><i class="fas fa-clone" aria-hidden="true"></i> Batch Generator</button>
+                <button class="drawer__link" data-drawer-tab="mini-generator" type="button"><i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa</button>
+            </nav>
+            <div class="drawer__actions">
+                <button class="btn btn--secondary btn--full-width" type="button" data-drawer-collaborate>
+                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
+                </button>
+                <button class="btn btn--outline btn--full-width" type="button" data-drawer-mini>
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                </button>
+            </div>
+        </div>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+
+    <div class="app-shell">
+        <section class="control-strip" aria-label="Controls">
+            <span class="control-strip__pill" aria-hidden="true">Advanced</span>
+            <div class="control-strip__group control-strip__group--platform">
+                <label class="control-strip__label" for="platform-select"><i class="fas fa-cogs" aria-hidden="true"></i> Platform</label>
+                <div class="select-field">
+                    <select id="platform-select" class="form-control">
+                        <option value="natural_language">Natural Language</option>
+                        <option value="midjourney">Midjourney v6.1</option>
+                        <option value="stable_diffusion">SDXL</option>
+                        <option value="flux_ai">Flux AI Pro</option>
+                        <option value="dall_e">DALL-E 3</option>
+                    </select>
+                </div>
+            </div>
+            <div class="control-strip__group control-strip__group--themes">
+                <span class="control-strip__label">Themes</span>
+                <div class="chip-carousel" role="listbox" aria-label="Theme selection">
+                    <button class="chip theme-chip is-active" type="button" role="option" aria-selected="true" data-theme="cyberpunk_neon">Cyberpunk</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="dark_professional">Dark</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="light_modern">Light</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="warm_autumn">Autumn</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="ocean_blue">Ocean</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="pastel_dreams">Pastel</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="forest_green">Forest</button>
+                    <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="sunset_gradient">Sunset</button>
+                </div>
+                <label class="visually-hidden" for="theme-select">Theme</label>
+                <select id="theme-select" class="visually-hidden">
                     <option value="cyberpunk_neon" selected>Cyberpunk Neon</option>
                     <option value="dark_professional">Dark Professional</option>
                     <option value="light_modern">Light Modern</option>
@@ -46,391 +112,412 @@
                     <option value="sunset_gradient">Sunset Gradient</option>
                 </select>
             </div>
-        </div>
-
-        <div class="header-right">
-            <button class="btn btn--outline" id="collaboration-btn">
-                <i class="fas fa-users"></i> Collaborate
-            </button>
-            <a class="btn btn--outline" id="mini-generator-link" href="#">
-                <i class="fas fa-bolt"></i> Chota Dhamakaa
-            </a>
-        </div>
-    </header>
-
-    <!-- Main App Container -->
-    <div class="app-container">
-        <!-- Enhanced Left Sidebar -->
-        <aside class="sidebar">
-            <!-- AI Suggestions Panel -->
-            <div class="sidebar-section">
-                <h3><i class="fas fa-robot"></i> AI Suggestions</h3>
-                <div class="ai-suggestions" id="ai-suggestions">
-                    <div class="suggestion-item">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Add lighting description for better mood</span>
-                    </div>
-                </div>
-                <button class="btn btn--sm btn--secondary" id="get-suggestions">
-                    <i class="fas fa-magic"></i> Get AI Suggestions
+            <div class="control-strip__actions">
+                <button class="btn btn--outline btn--compact" type="button" id="collaboration-btn">
+                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
                 </button>
+                <a class="btn btn--outline btn--compact" id="mini-generator-link" href="#">
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                </a>
             </div>
+        </section>
 
-            <!-- Enhanced Random Generators -->
-            <div class="sidebar-section">
-                <h3><i class="fas fa-dice"></i> Random Generators</h3>
-                <div class="random-buttons">
-                    <button class="random-btn" data-category="portrait">
-                        <span class="icon">👤</span>
-                        <span>Portrait</span>
-                    </button>
-                    <button class="random-btn" data-category="landscape">
-                        <span class="icon">🌄</span>
-                        <span>Landscape</span>
-                    </button>
-                    <button class="random-btn" data-category="digital_art">
-                        <span class="icon">🎨</span>
-                        <span>Digital Art</span>
-                    </button>
-                    <button class="random-btn" data-category="photography">
-                        <span class="icon">📸</span>
-                        <span>Photography</span>
-                    </button>
-                    <button class="random-btn" data-category="fantasy">
-                        <span class="icon">🐉</span>
-                        <span>Fantasy</span>
-                    </button>
-                    <button class="random-btn" data-category="surprise">
-                        <span class="icon">🎲</span>
-                        <span>Surprise Me</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Enhanced Word Library -->
-            <div class="sidebar-section">
-                <h3><i class="fas fa-book"></i> Smart Word Library</h3>
-                <div class="word-search">
-                    <input type="text" id="word-search" placeholder="Search 3000+ words..." class="form-control">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-
-                <div class="category-tabs">
-                    <button class="category-tab active" data-category="subjects">Subjects</button>
-                    <button class="category-tab" data-category="styles">Styles</button>
-                    <button class="category-tab" data-category="lighting">Lighting</button>
-                    <button class="category-tab" data-category="colors">Colors</button>
-                    <button class="category-tab" data-category="composition">Composition</button>
-                    <button class="category-tab" data-category="moods">Moods</button>
-                </div>
-
-                <div class="word-bank" id="word-bank">
-                    <!-- Words populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Prompt History -->
-            <div class="sidebar-section">
-                <h3><i class="fas fa-history"></i> Recent Prompts</h3>
-                <div class="prompt-history" id="prompt-history">
-                    <!-- History populated by JavaScript -->
-                </div>
-            </div>
-        </aside>
-
-        <!-- Enhanced Main Content -->
-        <main class="main-content">
-            <!-- Advanced Tab Navigation -->
-            <nav class="tabs">
-                <button class="tab active" data-tab="manual">
-                    <i class="fas fa-edit"></i> Manual Builder
-                </button>
-                <button class="tab" data-tab="image-to-prompt">
-                    <i class="fas fa-image"></i> Image to Prompt
-                </button>
-                <button class="tab" data-tab="batch-generator">
-                    <i class="fas fa-clone"></i> Batch Generator
-                </button>
-                <button class="tab" data-tab="mini-generator">
-                    <i class="fas fa-bolt"></i> Chota Dhamakaa
-                </button>
-            </nav>
-
-            <!-- Manual Builder Tab -->
-            <div class="tab-content active" id="manual-tab">
-                <div class="prompt-workspace">
-                    <div class="workspace-header">
-                        <h2 class="workspace-title">Build Your Prompt</h2>
-                        <div class="workspace-tools">
-                            <button class="btn btn--sm btn--outline" id="clear-prompt">
-                                <i class="fas fa-trash"></i> Clear
-                            </button>
-                            <button class="btn btn--sm btn--outline" id="optimize-prompt">
-                                <i class="fas fa-magic"></i> Auto-Optimize
-                            </button>
-                            <button class="btn btn--sm btn--secondary" id="voice-input">
-                                <i class="fas fa-microphone"></i> Voice Input
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="prompt-settings">
-                        <label for="prompt-length">Prompt Length</label>
-                        <input type="range" id="prompt-length" min="100" max="700" step="100" value="300">
-                        <span id="prompt-length-display">Medium</span>
-                    </div>
-
-                    <div class="prompt-editor">
-                        <textarea
-                            id="prompt-textarea"
-                            class="prompt-textarea"
-                            placeholder="Describe your vision... (or use voice input or drag words)"
-                            rows="8"
-                        ></textarea>
-
-                        <div class="editor-tools">
-                            <div class="word-count" id="word-count">0 words</div>
-                            <div class="quality-indicator" id="quality-indicator">Quality: GOOD (65%)</div>
-                            <div class="platform-compatibility" id="platform-compatibility">
-                                <i class="fas fa-check-circle"></i> Platform Optimized
+        <main id="main-content" class="app-main-area" tabindex="-1">
+            <div class="app-grid">
+                <aside class="app-sidebar sidebar" aria-label="Creative assist panels">
+                    <details class="panel panel--disclosure" id="ai-suggestions-panel" data-breakpoint="md">
+                        <summary class="panel__summary">
+                            <span class="panel__title"><i class="fas fa-robot" aria-hidden="true"></i> AI Suggestions</span>
+                            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                        </summary>
+                        <div class="panel__body">
+                            <div class="ai-suggestions" id="ai-suggestions">
+                                <div class="suggestion-item">
+                                    <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                                    <span>Add lighting description for better mood</span>
+                                </div>
                             </div>
+                            <button class="btn btn--sm btn--secondary btn--full-width" id="get-suggestions" type="button">
+                                <i class="fas fa-magic" aria-hidden="true"></i> Get AI Suggestions
+                            </button>
                         </div>
-                    </div>
+                    </details>
 
-                    <!-- Enhanced Platform-Specific Controls -->
-                    <div class="platform-specific-controls" id="platform-controls">
-                        <!-- Controls populated dynamically based on platform -->
-                    </div>
-                </div>
-            </div>
-
-              <!-- Enhanced Image to Prompt Tab -->
-            <div class="tab-content" id="image-to-prompt-tab">
-                <div class="image-upload-area">
-                    <div class="upload-section">
-                        <h2>AI-Powered Image Analysis</h2>
-                        <p>Upload an image and get an optimized prompt instantly</p>
-
-                        <div class="upload-zone" id="upload-zone">
-                            <div class="upload-content">
-                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                <h3>Drop an image here or click to browse</h3>
-                                <p>Supports JPG, PNG, WebP up to 10MB</p>
-                                <input type="file" id="image-upload" accept="image/*" hidden>
-                                <button class="btn btn--primary" onclick="document.getElementById('image-upload').click()">
-                                    <i class="fas fa-folder-open"></i> Browse Files
+                    <section class="panel" aria-labelledby="random-generator-heading">
+                        <div class="panel__header">
+                            <h3 id="random-generator-heading"><i class="fas fa-dice" aria-hidden="true"></i> Random Generators</h3>
+                        </div>
+                        <div class="panel__body">
+                            <div class="random-buttons">
+                                <button class="random-btn" data-category="portrait" type="button">
+                                    <span class="icon" aria-hidden="true">👤</span>
+                                    <span>Portrait</span>
+                                </button>
+                                <button class="random-btn" data-category="landscape" type="button">
+                                    <span class="icon" aria-hidden="true">🌄</span>
+                                    <span>Landscape</span>
+                                </button>
+                                <button class="random-btn" data-category="digital_art" type="button">
+                                    <span class="icon" aria-hidden="true">🎨</span>
+                                    <span>Digital Art</span>
+                                </button>
+                                <button class="random-btn" data-category="photography" type="button">
+                                    <span class="icon" aria-hidden="true">📸</span>
+                                    <span>Photography</span>
+                                </button>
+                                <button class="random-btn" data-category="fantasy" type="button">
+                                    <span class="icon" aria-hidden="true">🐉</span>
+                                    <span>Fantasy</span>
+                                </button>
+                                <button class="random-btn" data-category="surprise" type="button">
+                                    <span class="icon" aria-hidden="true">🎲</span>
+                                    <span>Surprise Me</span>
                                 </button>
                             </div>
                         </div>
+                    </section>
 
-                        <div class="upload-status" id="upload-status" aria-live="polite"></div>
-
-                        <div class="uploaded-image" id="preview-container" style="display: none;">
-                            <h3>Image Preview</h3>
-                            <div class="image-container">
-                                <img id="uploaded-img" src="" alt="Uploaded image">
+                    <section class="panel word-library" aria-labelledby="word-library-heading">
+                        <div class="panel__header">
+                            <h3 id="word-library-heading"><i class="fas fa-book" aria-hidden="true"></i> Smart Word Library</h3>
+                        </div>
+                        <div class="panel__body">
+                            <div class="word-search">
+                                <label class="visually-hidden" for="word-search">Search words</label>
+                                <input type="text" id="word-search" class="form-control" placeholder="Search 3000+ words...">
+                                <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                            </div>
+                            <div class="category-tabs" role="tablist" aria-label="Word library categories">
+                                <button class="category-tab active" role="tab" aria-selected="true" data-category="subjects">Subjects</button>
+                                <button class="category-tab" role="tab" aria-selected="false" data-category="styles">Styles</button>
+                                <button class="category-tab" role="tab" aria-selected="false" data-category="lighting">Lighting</button>
+                                <button class="category-tab" role="tab" aria-selected="false" data-category="colors">Colors</button>
+                                <button class="category-tab" role="tab" aria-selected="false" data-category="composition">Composition</button>
+                                <button class="category-tab" role="tab" aria-selected="false" data-category="moods">Moods</button>
+                            </div>
+                            <div class="word-bank" id="word-bank" aria-live="polite">
+                                <!-- Words populated by JavaScript -->
                             </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div class="analysis-results" id="analysis-results" style="display: none;">
-                        <h3>AI Analysis Results</h3>
-                        <div class="analysis-tags" id="analysis-tags">
-                            <!-- AI-detected tags -->
+                    <section class="panel" aria-labelledby="recent-prompts-heading">
+                        <div class="panel__header">
+                            <h3 id="recent-prompts-heading"><i class="fas fa-history" aria-hidden="true"></i> Recent Prompts</h3>
                         </div>
-
-                        <div class="generated-prompt">
-                            <div class="output-header">
-                                <span>Output</span>
-                                <label class="nl-option"><input type="checkbox" id="natural-language-toggle" checked> Natural Language</label>
-                            </div>
-                            <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
-                            <button class="btn btn--primary" id="use-generated-prompt">
-                                <i class="fas fa-check"></i> Use This Prompt
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="hf-image-to-prompt-container">
-                    <iframe
-                        src="https://huggingface.co/spaces/ovi054/image-to-prompt"
-                        sandbox="allow-scripts allow-same-origin"
-                        width="100%"
-                        height="500px"
-                        style="border:none;"
-                    ></iframe>
-                </div>
-            </div>
-
-            <!-- New Batch Generator Tab -->
-            <div class="tab-content" id="batch-generator-tab">
-                <div class="batch-section">
-                    <h2>Batch Prompt Generator</h2>
-                    <p>Generate multiple variations of prompts for A/B testing</p>
-
-                    <div class="batch-controls">
-                        <div class="form-group">
-                            <label>Base Prompt:</label>
-                            <textarea id="batch-base-prompt" class="form-control" rows="3" placeholder="Enter your base prompt..."></textarea>
-                        </div>
-
-                        <div class="batch-settings">
-                            <div class="form-group">
-                                <label>Number of Variations:</label>
-                                <select id="batch-count" class="form-control">
-                                    <option value="5">5 variations</option>
-                                    <option value="10">10 variations</option>
-                                    <option value="20">20 variations</option>
-                                    <option value="50">50 variations</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Variation Type:</label>
-                                <select id="variation-type" class="form-control">
-                                    <option value="style">Style Variations</option>
-                                    <option value="lighting">Lighting Variations</option>
-                                    <option value="composition">Composition Variations</option>
-                                    <option value="color">Color Variations</option>
-                                    <option value="mixed">Mixed Variations</option>
-                                </select>
+                        <div class="panel__body">
+                            <div class="prompt-history" id="prompt-history" aria-live="polite">
+                                <!-- History populated by JavaScript -->
                             </div>
                         </div>
+                    </section>
+                </aside>
 
-                        <button class="btn btn--primary" id="generate-batch">
-                            <i class="fas fa-magic"></i> Generate Batch
+                <section class="app-main main-content" aria-label="Prompt builder">
+                    <nav class="tabs" role="tablist" aria-label="Workspace views">
+                        <button class="tab active" data-tab="manual" role="tab" aria-selected="true" aria-controls="manual-tab">
+                            <i class="fas fa-edit" aria-hidden="true"></i> Manual Builder
                         </button>
-                    </div>
+                        <button class="tab" data-tab="image-to-prompt" role="tab" aria-selected="false" aria-controls="image-to-prompt-tab">
+                            <i class="fas fa-image" aria-hidden="true"></i> Image to Prompt
+                        </button>
+                        <button class="tab" data-tab="batch-generator" role="tab" aria-selected="false" aria-controls="batch-generator-tab">
+                            <i class="fas fa-clone" aria-hidden="true"></i> Batch Generator
+                        </button>
+                        <button class="tab" data-tab="mini-generator" role="tab" aria-selected="false" aria-controls="mini-generator-tab">
+                            <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                        </button>
+                    </nav>
 
-                    <div class="batch-results" id="batch-results">
-                        <!-- Generated variations will appear here -->
-                    </div>
-                </div>
-            </div>
-            <!-- Chota Dhamakaa Mini Generator Tab -->
-            <div class="tab-content" id="mini-generator-tab">
-                <iframe src="classicpg/index.html" class="mini-frame"></iframe>
+                    <section class="tab-content active" id="manual-tab" role="tabpanel" aria-labelledby="manual" tabindex="0">
+                        <article class="prompt-workspace">
+                            <header class="workspace-header">
+                                <h2 class="workspace-title">Build Your Prompt</h2>
+                                <div class="workspace-actions">
+                                    <button class="btn btn--sm btn--outline" id="clear-prompt" type="button">
+                                        <i class="fas fa-trash" aria-hidden="true"></i> Clear
+                                    </button>
+                                    <button class="btn btn--sm btn--outline" id="optimize-prompt" type="button">
+                                        <i class="fas fa-magic" aria-hidden="true"></i> Auto-Optimize
+                                    </button>
+                                    <button class="btn btn--sm btn--secondary" id="voice-input" type="button">
+                                        <i class="fas fa-microphone" aria-hidden="true"></i> Voice Input
+                                    </button>
+                                </div>
+                            </header>
+
+                            <div class="prompt-settings">
+                                <label for="prompt-length">Prompt Length</label>
+                                <input type="range" id="prompt-length" min="100" max="700" step="100" value="300">
+                                <span class="prompt-length-display" id="prompt-length-display">Medium</span>
+                            </div>
+
+                            <div class="prompt-editor">
+                                <label class="visually-hidden" for="prompt-textarea">Prompt text</label>
+                                <textarea
+                                    id="prompt-textarea"
+                                    class="prompt-textarea"
+                                    placeholder="Describe your vision... (or use voice input or drag words)"
+                                    rows="8"
+                                ></textarea>
+                                <div class="editor-status" aria-live="polite">
+                                    <span class="status-pill" id="word-count">0 words</span>
+                                    <span class="status-pill" id="quality-indicator">Quality: GOOD (65%)</span>
+                                    <span class="status-pill status-pill--accent" id="platform-compatibility">
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i> Platform Optimized
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="platform-specific-controls" id="platform-controls">
+                                <!-- Controls populated dynamically based on platform -->
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="tab-content" id="image-to-prompt-tab" role="tabpanel" aria-labelledby="image-to-prompt" tabindex="0">
+                        <div class="image-upload-area">
+                            <div class="upload-section">
+                                <h2>AI-Powered Image Analysis</h2>
+                                <p>Upload an image and get an optimized prompt instantly</p>
+
+                                <div class="upload-zone" id="upload-zone">
+                                    <label class="upload-content" for="image-upload">
+                                        <i class="fas fa-cloud-upload-alt upload-icon" aria-hidden="true"></i>
+                                        <h3>Drop an image here or tap to browse</h3>
+                                        <p>Supports JPG, PNG, WebP up to 10MB</p>
+                                        <span class="upload-button">Browse Files</span>
+                                    </label>
+                                    <input type="file" id="image-upload" accept="image/*">
+                                </div>
+
+                                <p class="upload-guidance">Max size 10MB • Drag-and-drop friendly</p>
+
+                                <div class="upload-status" id="upload-status" aria-live="polite"></div>
+
+                                <div class="uploaded-image" id="preview-container" hidden>
+                                    <h3>Image Preview</h3>
+                                    <div class="image-container">
+                                        <img id="uploaded-img" src="" alt="Uploaded image preview" loading="lazy">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="analysis-results" id="analysis-results" hidden>
+                                <h3>AI Analysis Results</h3>
+                                <div class="analysis-tags" id="analysis-tags">
+                                    <!-- AI-detected tags -->
+                                </div>
+
+                                <div class="generated-prompt">
+                                    <div class="output-header">
+                                        <span>Output</span>
+                                        <label class="nl-option"><input type="checkbox" id="natural-language-toggle" checked> Natural Language</label>
+                                    </div>
+                                    <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
+                                    <button class="btn btn--primary btn--full-width" id="use-generated-prompt" type="button">
+                                        <i class="fas fa-check" aria-hidden="true"></i> Use This Prompt
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="hf-image-to-prompt-container" class="hf-embed">
+                            <iframe
+                                src="https://huggingface.co/spaces/ovi054/image-to-prompt"
+                                sandbox="allow-scripts allow-same-origin"
+                                width="100%"
+                                height="500"
+                                loading="lazy"
+                                title="Image to Prompt Tool"
+                                style="border: none;"
+                            ></iframe>
+                        </div>
+                    </section>
+
+                    <section class="tab-content" id="batch-generator-tab" role="tabpanel" aria-labelledby="batch-generator" tabindex="0">
+                        <article class="batch-section">
+                            <h2>Batch Prompt Generator</h2>
+                            <p>Generate multiple variations of prompts for A/B testing</p>
+
+                            <div class="batch-controls">
+                                <div class="form-group">
+                                    <label for="batch-base-prompt">Base Prompt</label>
+                                    <textarea id="batch-base-prompt" class="form-control" rows="3" placeholder="Enter your base prompt..."></textarea>
+                                </div>
+
+                                <div class="batch-settings">
+                                    <div class="form-group">
+                                        <label for="batch-count">Number of Variations</label>
+                                        <select id="batch-count" class="form-control">
+                                            <option value="5">5 variations</option>
+                                            <option value="10">10 variations</option>
+                                            <option value="20">20 variations</option>
+                                            <option value="50">50 variations</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="variation-type">Variation Type</label>
+                                        <select id="variation-type" class="form-control">
+                                            <option value="style">Style Variations</option>
+                                            <option value="lighting">Lighting Variations</option>
+                                            <option value="composition">Composition Variations</option>
+                                            <option value="color">Color Variations</option>
+                                            <option value="mixed">Mixed Variations</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn--primary btn--full-width" id="generate-batch" type="button">
+                                    <i class="fas fa-magic" aria-hidden="true"></i> Generate Batch
+                                </button>
+                            </div>
+
+                            <div class="batch-results" id="batch-results" aria-live="polite">
+                                <!-- Generated variations will appear here -->
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="tab-content" id="mini-generator-tab" role="tabpanel" aria-labelledby="mini-generator" tabindex="0">
+                        <iframe src="classicpg/index.html" class="mini-frame" title="Chota Dhamakaa mini generator"></iframe>
+                    </section>
+                </section>
+
+                <aside class="app-secondary right-panel" aria-label="Insights and actions">
+                    <details class="panel panel--disclosure preview-panel" id="preview-panel" data-breakpoint="md">
+                        <summary class="panel__summary">
+                            <span class="panel__title"><i class="fas fa-eye" aria-hidden="true"></i> Live Preview</span>
+                            <div class="platform-badge" id="platform-badge">Midjourney</div>
+                        </summary>
+                        <div class="panel__body">
+                            <div class="prompt-preview">
+                                <div class="preview-content" id="preview-content">
+                                    Start building your prompt...
+                                </div>
+                            </div>
+                            <div class="preview-metrics">
+                                <div class="metric">
+                                    <span class="metric-label">Words</span>
+                                    <span class="metric-value" id="word-count-display">0</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Quality</span>
+                                    <span class="metric-value quality-score" id="quality-score">85%</span>
+                                </div>
+                                <div class="metric">
+                                    <span class="metric-label">Tokens</span>
+                                    <span class="metric-value" id="token-count">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <section class="panel" aria-labelledby="advanced-settings-heading">
+                        <div class="panel__header">
+                            <h3 id="advanced-settings-heading"><i class="fas fa-sliders-h" aria-hidden="true"></i> Advanced Settings</h3>
+                        </div>
+                        <div class="panel__body">
+                            <div class="advanced-settings" id="advanced-settings">
+                                <!-- Platform-specific controls populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel" aria-labelledby="actions-heading">
+                        <div class="panel__header">
+                            <h3 id="actions-heading"><i class="fas fa-tools" aria-hidden="true"></i> Actions</h3>
+                        </div>
+                        <div class="panel__body">
+                            <div class="action-toolbar" role="group" aria-label="Prompt actions">
+                                <div class="copy-action">
+                                    <button class="btn btn--secondary" id="copy-prompt" type="button">
+                                        <i class="fas fa-copy" aria-hidden="true"></i> Copy
+                                    </button>
+                                    <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
+                                </div>
+                                <button class="btn btn--primary" id="save-prompt" type="button">
+                                    <i class="fas fa-save" aria-hidden="true"></i> Save
+                                </button>
+                                <details class="more-actions">
+                                    <summary class="btn btn--outline" role="button" aria-haspopup="true">
+                                        <i class="fas fa-ellipsis-h" aria-hidden="true"></i> More
+                                    </summary>
+                                    <div class="more-actions__menu" role="menu">
+                                        <button class="btn btn--outline btn--full-width" id="export-txt" type="button" role="menuitem">
+                                            <i class="fas fa-file-export" aria-hidden="true"></i> Export .txt
+                                        </button>
+                                        <button class="btn btn--outline btn--full-width" id="share-prompt" type="button" role="menuitem">
+                                            <i class="fas fa-share-alt" aria-hidden="true"></i> Share Link
+                                        </button>
+                                        <button class="btn btn--outline btn--full-width" id="analyze-prompt" type="button" role="menuitem">
+                                            <i class="fas fa-chart-line" aria-hidden="true"></i> Deep Analysis
+                                        </button>
+                                    </div>
+                                </details>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel" aria-labelledby="saved-prompts-heading">
+                        <div class="panel__header">
+                            <h3 id="saved-prompts-heading"><i class="fas fa-bookmark" aria-hidden="true"></i> Saved Prompts</h3>
+                        </div>
+                        <div class="panel__body">
+                            <div class="saved-prompts" id="saved-prompts" aria-live="polite">
+                                <!-- Saved prompts populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
+                </aside>
             </div>
         </main>
-
-        <!-- Enhanced Right Panel -->
-        <aside class="right-panel">
-            <!-- Live Preview with Quality Metrics -->
-            <div class="panel-section">
-                <div class="preview-header">
-                    <h3><i class="fas fa-eye"></i> Live Preview</h3>
-                    <div class="platform-badge" id="platform-badge">Midjourney</div>
-                </div>
-
-                <div class="prompt-preview">
-                    <div class="preview-content" id="preview-content">
-                        Start building your prompt...
-                    </div>
-                </div>
-
-                <div class="preview-metrics">
-                    <div class="metric">
-                        <span class="metric-label">Words:</span>
-                        <span class="metric-value" id="word-count-display">0</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Quality:</span>
-                        <span class="metric-value quality-score" id="quality-score">85%</span>
-                    </div>
-                    <div class="metric">
-                        <span class="metric-label">Tokens:</span>
-                        <span class="metric-value" id="token-count">0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Enhanced Advanced Settings -->
-            <div class="panel-section">
-                <h3><i class="fas fa-sliders-h"></i> Advanced Settings</h3>
-                <div class="advanced-settings" id="advanced-settings">
-                    <!-- Platform-specific controls populated by JavaScript -->
-                </div>
-            </div>
-
-            <!-- Enhanced Actions -->
-            <div class="panel-section">
-                <h3><i class="fas fa-tools"></i> Actions</h3>
-                <div class="action-buttons">
-                    <div class="copy-action">
-                        <button class="btn neon-copy-btn" id="copy-prompt">
-                            <i class="fas fa-copy"></i> Copy to Clipboard
-                        </button>
-                        <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
-                    </div>
-                    <button class="btn btn--secondary btn--full-width" id="save-prompt">
-                        <i class="fas fa-save"></i> Save Prompt
-                    </button>
-                    <button class="btn btn--outline btn--full-width" id="export-txt">
-                        <i class="fas fa-file-export"></i> Export as .txt
-                    </button>
-                    <button class="btn btn--outline btn--full-width" id="share-prompt">
-                        <i class="fas fa-share-alt"></i> Share Link
-                    </button>
-                    <button class="btn btn--outline btn--full-width" id="analyze-prompt">
-                        <i class="fas fa-chart-line"></i> Deep Analysis
-                    </button>
-                </div>
-            </div>
-
-            <!-- Enhanced Saved Prompts -->
-            <div class="panel-section">
-                <h3><i class="fas fa-bookmark"></i> Saved Prompts</h3>
-                <div class="saved-prompts" id="saved-prompts">
-                    <!-- Saved prompts populated by JavaScript -->
-                </div>
-            </div>
-        </aside>
     </div>
 
-    <!-- Enhanced Modals -->
-    <div class="modal hidden" id="save-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-save"></i> Save Prompt</h3>
-                <button class="modal-close" onclick="closeModal('save-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
+    <div class="modal hidden" id="save-modal" role="dialog" aria-modal="true" aria-labelledby="save-modal-title">
+        <div class="modal__container">
+            <header class="modal__header">
+                <h3 id="save-modal-title"><i class="fas fa-save" aria-hidden="true"></i> Save Prompt</h3>
+                <button class="icon-button" type="button" data-modal-close>
+                    <span class="icon-button__label">Close</span>
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div class="modal__body">
                 <div class="form-group">
-                    <label for="prompt-name">Prompt Name:</label>
+                    <label for="prompt-name">Prompt Name</label>
                     <input type="text" id="prompt-name" class="form-control" placeholder="Enter a name for your prompt">
                 </div>
                 <div class="form-group">
-                    <label for="prompt-description">Description (optional):</label>
+                    <label for="prompt-description">Description (optional)</label>
                     <textarea id="prompt-description" class="form-control" rows="3" placeholder="Add a description..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="prompt-tags">Tags:</label>
+                    <label for="prompt-tags">Tags</label>
                     <input type="text" id="prompt-tags" class="form-control" placeholder="Add tags separated by commas">
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn btn--outline" onclick="closeModal('save-modal')">Cancel</button>
-                <button class="btn btn--primary" id="confirm-save">
-                    <i class="fas fa-save"></i> Save
+            <footer class="modal__footer">
+                <button class="btn btn--outline" type="button" data-modal-close>Cancel</button>
+                <button class="btn btn--primary" id="confirm-save" type="button">
+                    <i class="fas fa-save" aria-hidden="true"></i> Save
                 </button>
-            </div>
+            </footer>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay hidden" id="loading-overlay">
+    <div class="loading-overlay hidden" id="loading-overlay" role="status" aria-live="polite">
         <div class="loading-spinner">
-            <i class="fas fa-magic fa-spin"></i>
+            <i class="fas fa-magic fa-spin" aria-hidden="true"></i>
             <p>Processing your request...</p>
         </div>
     </div>
 
-    <!-- Open-source libraries for image analysis and text generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js" integrity="sha512-AAtvAU1ms5P0R2l9KeTtZL1NVr7DiIP9N6byjHgNsx3Rp3XIan+FJxuxMxDPZWS9Vyuk3F7S3w7Dnk3a1BMK9w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.1/dist/transformers.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="kazimirPrompt.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js" integrity="sha512-AAtvAU1ms5P0R2l9KeTtZL1NVr7DiIP9N6byjHgNsx3Rp3XIan+FJxuxMxDPZWS9Vyuk3F7S3w7Dnk3a1BMK9w==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.1/dist/transformers.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js" defer></script>
+    <script src="kazimirPrompt.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>

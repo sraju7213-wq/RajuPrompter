@@ -1,0 +1,134 @@
+/* Form controls and input styling */
+
+.form-control,
+textarea,
+select {
+  width: 100%;
+  padding-inline: var(--space-sm);
+  padding-block: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--theme-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--theme-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.form-control:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.15);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 36vh;
+}
+
+.select-field {
+  position: relative;
+}
+
+.select-field::after {
+  content: '\f078';
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  position: absolute;
+  inset-inline-end: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--theme-text-muted);
+}
+
+.word-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.word-search .form-control {
+  padding-inline-end: 2.5rem;
+}
+
+.search-icon {
+  position: absolute;
+  inset-inline-end: var(--space-sm);
+  color: var(--theme-text-muted);
+}
+
+.prompt-settings {
+  display: grid;
+  gap: var(--space-xs);
+  margin-block: var(--space-md);
+}
+
+.prompt-settings input[type='range'] {
+  width: 100%;
+  accent-color: var(--theme-primary);
+}
+
+.prompt-length-display {
+  font-weight: 600;
+  color: var(--theme-text-muted);
+}
+
+.form-group {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.batch-settings {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.editor-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.prompt-editor {
+  display: grid;
+}
+
+.prompt-textarea {
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--theme-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  color: var(--theme-text);
+}
+
+.prompt-textarea::placeholder {
+  color: var(--theme-text-muted);
+}
+
+.prompt-textarea:focus {
+  border-color: var(--theme-primary);
+  box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.15);
+}
+
+.upload-guidance {
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+  margin-block: var(--space-xs);
+}
+
+@media (min-width: 30rem) {
+  .batch-settings {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  textarea {
+    min-height: 28vh;
+  }
+}
+

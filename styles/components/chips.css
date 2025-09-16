@@ -1,0 +1,58 @@
+/* Chip groups and carousels */
+
+.chip-carousel {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  padding-block: var(--space-2xs);
+  scroll-snap-type: inline mandatory;
+  scrollbar-width: thin;
+}
+
+.chip-carousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chip-carousel::-webkit-scrollbar-thumb {
+  background: var(--theme-border);
+  border-radius: var(--radius-pill);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 96px;
+  min-height: 44px;
+  padding-inline: var(--space-sm);
+  padding-block: 0.4rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--theme-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--theme-text);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  scroll-snap-align: start;
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.chip:focus-visible {
+  outline: 3px solid var(--theme-focus);
+  outline-offset: 2px;
+}
+
+.chip:hover,
+.chip.is-active {
+  background: var(--theme-primary);
+  color: var(--theme-secondary);
+  border-color: transparent;
+}
+
+@media (min-width: 48rem) {
+  .chip-carousel {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
