@@ -1,15 +1,17 @@
 /* Tab navigation styling */
 
 .tabs {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: calc(var(--z-header) - 10);
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: var(--space-xs);
-  background: var(--theme-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--theme-border);
-  padding: var(--space-2xs);
-  overflow: hidden;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.5rem clamp(1rem, 4vw, 2rem);
+  background: rgba(12, 12, 12, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
 }
 
 .tab {
@@ -17,29 +19,44 @@
   background: transparent;
   color: var(--theme-text-muted);
   font-weight: 600;
-  padding: var(--space-sm);
-  border-radius: var(--radius-md);
-  min-height: 44px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.5rem;
+  min-height: 52px;
+  border-radius: 14px;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2xs);
-  transition: background var(--transition-fast), color var(--transition-fast);
+  gap: 0.35rem;
+  transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
 
-.tab.active,
+.tab i {
+  font-size: 1.2rem;
+}
+
+.tab span {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
+.tab.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
 .tab:hover {
-  background: var(--theme-primary);
-  color: var(--theme-secondary);
+  color: #ffffff;
 }
 
 .tab-content {
   display: none;
-  background: var(--theme-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--theme-border);
-  padding: clamp(var(--space-md), 2vw, var(--space-xl));
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
 }
 
 .tab-content.active {
@@ -48,7 +65,9 @@
 
 .prompt-workspace,
 .batch-section,
-.image-upload-area {
+.image-prompt-grid,
+.embed-card,
+.actions-card {
   display: grid;
   gap: var(--space-lg);
 }
@@ -57,7 +76,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-sm);
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
 }
 
@@ -67,10 +86,4 @@
   gap: var(--space-xs);
 }
 
-@media (max-width: 30rem) {
-  .tabs {
-    grid-auto-flow: row;
-    grid-auto-columns: unset;
-  }
-}
 

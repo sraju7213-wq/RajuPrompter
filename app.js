@@ -12,6 +12,10 @@ let imageCaptioner = null;
 let lastImageTags = [];
 let lastColorHex = '';
 let desiredPromptLength = 300;
+let currentAspectRatio = '1:1';
+let currentDescriptionMode = 'describe-detail';
+let magicEnhanceEnabled = false;
+let optimizeTimer = null;
 
 const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])';
@@ -300,6 +304,37 @@ function setupEventListeners() {
             updatePromptPreview();
             updateWordCount();
             updateQualityScore();
+            if (magicEnhanceEnabled) {
+                debounceOptimize();
+            }
+        });
+    }
+
+    const clearFieldBtn = document.getElementById('clear-field');
+    if (clearFieldBtn) {
+        clearFieldBtn.addEventListener('click', clearPrompt);
+    }
+
+    const magicToggle = document.getElementById('magic-enhance-toggle');
+    if (magicToggle) {
+        magicToggle.addEventListener('change', (event) => {
+            magicEnhanceEnabled = event.target.checked;
+            if (magicEnhanceEnabled && currentPrompt) {
+                optimizePrompt();
+            }
+        });
+    }
+
+    const aspectGroup = document.getElementById('aspect-ratio-group');
+    if (aspectGroup) {
+        aspectGroup.addEventListener('click', (event) => {
+            const segment = event.target.closest('.segment');
+            if (!segment) return;
+            currentAspectRatio = segment.dataset.aspect || '1:1';
+            aspectGroup.querySelectorAll('.segment').forEach(btn => {
+                btn.classList.toggle('is-active', btn === segment);
+            });
+            updatePromptPreview();
         });
     }
 
@@ -399,12 +434,49 @@ function setupEventListeners() {
         naturalToggle.addEventListener('change', updateGeneratedPrompt);
     }
 
+    const descriptionGrid = document.getElementById('description-grid');
+    if (descriptionGrid) {
+        descriptionGrid.addEventListener('click', (event) => {
+            const option = event.target.closest('.description-option');
+            if (!option) return;
+            currentDescriptionMode = option.dataset.description || 'describe-detail';
+            descriptionGrid.querySelectorAll('.description-option').forEach(btn => {
+                btn.classList.toggle('is-active', btn === option);
+            });
+            const customField = document.getElementById('custom-question-field');
+            if (customField) {
+                customField.hidden = currentDescriptionMode !== 'custom-question';
+            }
+            updateGeneratedPrompt();
+        });
+    }
+
+    const customQuestionInput = document.getElementById('custom-question-input');
+    if (customQuestionInput) {
+        customQuestionInput.addEventListener('input', () => {
+            if (currentDescriptionMode === 'custom-question') {
+                updateGeneratedPrompt();
+            }
+        });
+    }
+
     const useGeneratedPromptBtn = document.getElementById('use-generated-prompt');
     if (useGeneratedPromptBtn) {
         useGeneratedPromptBtn.addEventListener('click', function() {
             const text = document.getElementById('generated-prompt-text').value;
             if (text) setPrompt(text);
-            switchTab('manual');
+            switchTab('prompt-builder');
+        });
+    }
+
+    const copyGeneratedBtn = document.getElementById('copy-generated-prompt');
+    if (copyGeneratedBtn) {
+        copyGeneratedBtn.addEventListener('click', () => {
+            const text = document.getElementById('generated-prompt-text')?.value || '';
+            if (!text) return;
+            copyTextToClipboard(text)
+                .then(() => showNotification('Prompt copied to clipboard!'))
+                .catch(() => alert('Unable to copy prompt automatically.'));
         });
     }
 
@@ -417,7 +489,7 @@ function setupEventListeners() {
     if (miniLink) {
         miniLink.addEventListener('click', function(e) {
             e.preventDefault();
-            switchTab('mini-generator');
+            switchTab('image-generator');
         });
     }
 
@@ -514,7 +586,7 @@ function setupHeaderShortcuts() {
     document.querySelectorAll('[data-header-mini], [data-drawer-mini]').forEach(link => {
         link.addEventListener('click', (event) => {
             event.preventDefault();
-            switchTab('mini-generator');
+            switchTab('image-generator');
             closeDrawer();
         });
     });
@@ -804,8 +876,12 @@ function updatePromptPreview() {
         let formattedPrompt = currentPrompt || 'Start building your prompt...';
 
         // Add platform-specific formatting
-        if (currentPlatform === 'midjourney' && currentPrompt) {
-            formattedPrompt += ' --ar 16:9 --s 100 --q 1';
+        if (currentPrompt) {
+            if (currentPlatform === 'midjourney') {
+                formattedPrompt += ` --ar ${currentAspectRatio} --s 100 --q 1`;
+            } else if (currentPlatform === 'stable_diffusion') {
+                formattedPrompt += ` | aspect ratio ${currentAspectRatio}`;
+            }
         }
 
         preview.textContent = formattedPrompt;
@@ -818,6 +894,8 @@ function updateWordCount() {
 
     const wordCountDisplay = document.getElementById('word-count');
     const wordCountMetric = document.getElementById('word-count-display');
+    const charCounter = document.getElementById('char-count');
+    const textarea = document.getElementById('prompt-textarea');
 
     if (wordCountDisplay) {
         wordCountDisplay.textContent = `${wordCount} words`;
@@ -825,6 +903,11 @@ function updateWordCount() {
 
     if (wordCountMetric) {
         wordCountMetric.textContent = wordCount;
+    }
+
+    if (charCounter && textarea) {
+        const length = textarea.value.length;
+        charCounter.textContent = `${length}/2000`;
     }
 
     updateActionStates();
@@ -1064,14 +1147,16 @@ async function updateGeneratedPrompt() {
     const textarea = document.getElementById('generated-prompt-text');
     if (!textarea) return;
     const useNatural = document.getElementById('natural-language-toggle')?.checked;
+    const customQuestion = document.getElementById('custom-question-input')?.value.trim() || '';
     const base = useNatural
-        ? generateNaturalLanguageDescription(lastImageTags, lastColorHex)
-        : generateDetailedPrompt(lastImageTags, lastColorHex);
-    const expanded = await expandPrompt(base, desiredPromptLength);
-    textarea.value = expanded;
+        ? generateNaturalLanguageDescription(lastImageTags, lastColorHex, currentDescriptionMode, customQuestion)
+        : generateDetailedPrompt(lastImageTags, lastColorHex, currentDescriptionMode, customQuestion);
+    const shouldExpand = !['text-extraction', 'custom-question'].includes(currentDescriptionMode);
+    const output = shouldExpand ? await expandPrompt(base, desiredPromptLength) : base;
+    textarea.value = output;
 }
 
-function generateDetailedPrompt(tags, colorHex) {
+function generateDetailedPrompt(tags, colorHex, mode = 'describe-detail', customQuestion = '') {
     const subject = tags[0] || 'scene';
     const extras = tags.slice(1).join(', ');
     const style = getRandomWord('styles', 'visual_styles');
@@ -1079,10 +1164,41 @@ function generateDetailedPrompt(tags, colorHex) {
     const mood = getRandomWord('moods', 'positive');
     let prompt = `a ${style} ${subject}${extras ? ', ' + extras : ''}, ${lighting} lighting, ${mood} mood`;
     if (colorHex) prompt += `, ${colorHex} tones`;
-    return prompt + ', highly detailed, 4k';
+    let suffix = ', highly detailed, 4k';
+
+    switch (mode) {
+        case 'describe-brief':
+            prompt = `${subject}${extras ? ', ' + extras : ''}, ${style}, ${lighting}`;
+            suffix = '';
+            break;
+        case 'person-description':
+            prompt = `portrait of ${subject}${extras ? ', ' + extras : ''}, ${style} style, ${lighting} lighting, ${mood} atmosphere`;
+            break;
+        case 'object-recognition':
+            prompt = `detailed product shot of ${subject}${extras ? ', ' + extras : ''}, ${lighting}, studio background`;
+            suffix = ', ultra sharp, product photography';
+            break;
+        case 'art-style':
+            prompt = `${style} illustration of ${subject}${extras ? ', ' + extras : ''}, ${mood} tone, ${lighting} lighting`;
+            break;
+        case 'text-extraction':
+            return `Identify and transcribe any visible text from ${subject}${extras ? ', ' + extras : ''} with clear formatting.`;
+        case 'midjourney':
+            prompt += ` --ar ${currentAspectRatio} --stylize 100`;
+            break;
+        case 'stable-diffusion':
+            prompt += `, aspect ratio ${currentAspectRatio}, DSLR sharp focus`;
+            break;
+        case 'custom-question':
+            return customQuestion || `Describe the key elements of ${subject}.`;
+        default:
+            break;
+    }
+
+    return suffix ? `${prompt}${suffix}` : prompt;
 }
 
-function generateNaturalLanguageDescription(tags, colorHex) {
+function generateNaturalLanguageDescription(tags, colorHex, mode = 'describe-detail', customQuestion = '') {
     const primary = tags[0] || 'a scene';
     const extras = tags.slice(1).join(', ');
     let sentence = `The image shows ${primary}`;
@@ -1090,6 +1206,28 @@ function generateNaturalLanguageDescription(tags, colorHex) {
     if (colorHex) sentence += ` with dominant ${colorHex} tones`;
     sentence += `.`;
     sentence += ` It features ${getRandomWord('lighting', 'qualities')} lighting and evokes a ${getRandomWord('moods', 'positive')} mood.`;
+
+    switch (mode) {
+        case 'describe-brief':
+            return `A quick look at ${primary}${extras ? ' with ' + extras : ''}.`;
+        case 'person-description':
+            return `Portrait of ${primary}${extras ? ', ' + extras : ''}, highlighting facial features, clothing, and mood.`;
+        case 'object-recognition':
+            return `Focus on the main objects: ${primary}${extras ? ', ' + extras : ''}. Describe materials, shapes, and placement.`;
+        case 'art-style':
+            return `${sentence} Describe the artistic style, medium, and techniques apparent in the composition.`;
+        case 'text-extraction':
+            return `Extract and transcribe any legible text found in the image of ${primary}.`;
+        case 'midjourney':
+            return `${sentence} Provide a Midjourney-ready prompt emphasizing ${currentAspectRatio} composition.`;
+        case 'stable-diffusion':
+            return `${sentence} Craft a Stable Diffusion prompt mentioning aspect ratio ${currentAspectRatio}.`;
+        case 'custom-question':
+            return customQuestion || sentence;
+        default:
+            break;
+    }
+
     return sentence;
 }
 
@@ -1129,7 +1267,7 @@ function generateBatch() {
         div.textContent = variation;
         div.addEventListener('click', () => {
             setPrompt(variation);
-            switchTab('manual');
+            switchTab('prompt-builder');
         });
         results.appendChild(div);
     }
@@ -1152,6 +1290,15 @@ async function expandPrompt(base, minLength) {
         result += `, ${getRandomWord('styles', 'visual_styles')} ${getRandomWord('lighting', 'qualities')} lighting`;
     }
     return result;
+}
+
+function debounceOptimize() {
+    clearTimeout(optimizeTimer);
+    optimizeTimer = setTimeout(() => {
+        if (magicEnhanceEnabled) {
+            optimizePrompt();
+        }
+    }, 600);
 }
 
 async function optimizePrompt() {
@@ -1429,7 +1576,7 @@ function updateHistoryDisplay() {
         useBtn.className = 'btn btn--sm btn--secondary';
         useBtn.textContent = 'Use';
         useBtn.addEventListener('click', () => {
-            setPrompt(item.prompt).then(() => switchTab('manual'));
+            setPrompt(item.prompt).then(() => switchTab('prompt-builder'));
         });
 
         const copyBtn = document.createElement('button');
@@ -1487,7 +1634,7 @@ function updateSavedPromptsDisplay() {
         useBtn.className = 'btn btn--sm btn--secondary';
         useBtn.textContent = 'Use';
         useBtn.addEventListener('click', () => {
-            setPrompt(item.prompt).then(() => switchTab('manual'));
+            setPrompt(item.prompt).then(() => switchTab('prompt-builder'));
         });
 
         const copyBtn = document.createElement('button');
