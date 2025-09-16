@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Prompt Generator that blends manual prompt building, image analysis, and batch generation for Midjourney, DALL-E, Stable Diffusion, Leonardo AI, and more.">
+    <meta name="keywords" content="AI prompt generator,image to prompt,batch prompt builder,Midjourney,DALL-E,Stable Diffusion,Leonardo AI,Playground AI">
+    <meta property="og:title" content="AI Prompt Generator">
+    <meta property="og:description" content="Create optimized prompts with advanced manual controls, batch generation, and AI-powered image analysis.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com">
+    <meta name="theme-color" content="#111111">
     <title>AI Prompt Generator v2.0</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,6 +26,13 @@
     <link rel="stylesheet" href="styles/components/dropzone.css">
     <link rel="stylesheet" href="styles/components/modal.css">
     <link rel="stylesheet" href="styles/components/drawer.css">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
+    </script>
 </head>
 <body data-theme="cyberpunk_neon">
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -30,19 +44,17 @@
                 <span class="visually-hidden">Toggle navigation</span>
             </button>
             <div class="app-brand">
-                <h1 class="app-title"><i class="fas fa-magic" aria-hidden="true"></i> AI Prompt Generator v2.0</h1>
-                <span class="badge badge--accent">Advanced</span>
+                <span class="app-brand__badge">AI Prompt Suite</span>
+                <h1 class="app-title">AI Prompt Generator</h1>
             </div>
         </div>
-        <div class="app-header__end">
-            <div class="header-actions">
-                <button class="btn btn--outline btn--compact" type="button" data-header-collaborate>
-                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
-                </button>
-                <a class="btn btn--outline btn--compact" href="#" data-header-mini>
-                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
-                </a>
-            </div>
+        <div class="app-header__actions">
+            <button class="icon-button" type="button" id="theme-mode-toggle" aria-label="Toggle light and dark theme" aria-pressed="false">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+            </button>
+            <button class="icon-button" type="button" id="header-help" aria-label="Open help center">
+                <i class="fas fa-circle-info" aria-hidden="true"></i>
+            </button>
         </div>
     </header>
 
@@ -56,17 +68,17 @@
                 </button>
             </header>
             <nav class="drawer__nav" aria-label="Primary">
-                <button class="drawer__link" data-drawer-tab="manual" type="button"><i class="fas fa-edit" aria-hidden="true"></i> Manual Builder</button>
+                <button class="drawer__link" data-drawer-tab="prompt-builder" type="button"><i class="fas fa-pen" aria-hidden="true"></i> Prompt Builder</button>
                 <button class="drawer__link" data-drawer-tab="image-to-prompt" type="button"><i class="fas fa-image" aria-hidden="true"></i> Image to Prompt</button>
-                <button class="drawer__link" data-drawer-tab="batch-generator" type="button"><i class="fas fa-clone" aria-hidden="true"></i> Batch Generator</button>
-                <button class="drawer__link" data-drawer-tab="mini-generator" type="button"><i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa</button>
+                <button class="drawer__link" data-drawer-tab="image-generator" type="button"><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Image Generator</button>
+                <button class="drawer__link" data-drawer-tab="more-tools" type="button"><i class="fas fa-toolbox" aria-hidden="true"></i> More Tools</button>
             </nav>
             <div class="drawer__actions">
                 <button class="btn btn--secondary btn--full-width" type="button" data-drawer-collaborate>
-                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
+                    <i class="fas fa-share-nodes" aria-hidden="true"></i> Share Prompt
                 </button>
                 <button class="btn btn--outline btn--full-width" type="button" data-drawer-mini>
-                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Quick Generator
                 </button>
             </div>
         </div>
@@ -74,7 +86,7 @@
     <div class="scrim" id="scrim" hidden></div>
 
     <div class="app-shell">
-        <section class="control-strip" aria-label="Controls">
+        <section class="control-strip" aria-label="Workspace controls">
             <span class="control-strip__pill" aria-hidden="true">Advanced</span>
             <div class="control-strip__group control-strip__group--platform">
                 <label class="control-strip__label" for="platform-select"><i class="fas fa-cogs" aria-hidden="true"></i> Platform</label>
@@ -89,7 +101,7 @@
                 </div>
             </div>
             <div class="control-strip__group control-strip__group--themes">
-                <span class="control-strip__label">Themes</span>
+                <span class="control-strip__label"><i class="fas fa-palette" aria-hidden="true"></i> Quick Themes</span>
                 <div class="chip-carousel" role="listbox" aria-label="Theme selection">
                     <button class="chip theme-chip is-active" type="button" role="option" aria-selected="true" data-theme="cyberpunk_neon">Cyberpunk</button>
                     <button class="chip theme-chip" type="button" role="option" aria-selected="false" data-theme="dark_professional">Dark</button>
@@ -114,10 +126,10 @@
             </div>
             <div class="control-strip__actions">
                 <button class="btn btn--outline btn--compact" type="button" id="collaboration-btn">
-                    <i class="fas fa-users" aria-hidden="true"></i> Collaborate
+                    <i class="fas fa-share-nodes" aria-hidden="true"></i> Share
                 </button>
-                <a class="btn btn--outline btn--compact" id="mini-generator-link" href="#">
-                    <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
+                <a class="btn btn--outline btn--compact" id="mini-generator-link" href="#" data-header-mini>
+                    <i class="fas fa-bolt" aria-hidden="true"></i> Quick Gen
                 </a>
             </div>
         </section>
@@ -214,31 +226,19 @@
                 </aside>
 
                 <section class="app-main main-content" aria-label="Prompt builder">
-                    <nav class="tabs" role="tablist" aria-label="Workspace views">
-                        <button class="tab active" data-tab="manual" role="tab" aria-selected="true" aria-controls="manual-tab">
-                            <i class="fas fa-edit" aria-hidden="true"></i> Manual Builder
-                        </button>
-                        <button class="tab" data-tab="image-to-prompt" role="tab" aria-selected="false" aria-controls="image-to-prompt-tab">
-                            <i class="fas fa-image" aria-hidden="true"></i> Image to Prompt
-                        </button>
-                        <button class="tab" data-tab="batch-generator" role="tab" aria-selected="false" aria-controls="batch-generator-tab">
-                            <i class="fas fa-clone" aria-hidden="true"></i> Batch Generator
-                        </button>
-                        <button class="tab" data-tab="mini-generator" role="tab" aria-selected="false" aria-controls="mini-generator-tab">
-                            <i class="fas fa-bolt" aria-hidden="true"></i> Chota Dhamakaa
-                        </button>
-                    </nav>
-
-                    <section class="tab-content active" id="manual-tab" role="tabpanel" aria-labelledby="manual" tabindex="0">
+                    <section class="tab-content active" id="prompt-builder-tab" role="tabpanel" aria-labelledby="tab-prompt-builder" tabindex="0">
                         <article class="prompt-workspace">
                             <header class="workspace-header">
-                                <h2 class="workspace-title">Build Your Prompt</h2>
+                                <div>
+                                    <p class="workspace-eyebrow">Prompt Builder</p>
+                                    <h2 class="workspace-title">Build your perfect prompt</h2>
+                                </div>
                                 <div class="workspace-actions">
                                     <button class="btn btn--sm btn--outline" id="clear-prompt" type="button">
                                         <i class="fas fa-trash" aria-hidden="true"></i> Clear
                                     </button>
                                     <button class="btn btn--sm btn--outline" id="optimize-prompt" type="button">
-                                        <i class="fas fa-magic" aria-hidden="true"></i> Auto-Optimize
+                                        <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Enhance Now
                                     </button>
                                     <button class="btn btn--sm btn--secondary" id="voice-input" type="button">
                                         <i class="fas fa-microphone" aria-hidden="true"></i> Voice Input
@@ -247,19 +247,169 @@
                             </header>
 
                             <div class="prompt-settings">
-                                <label for="prompt-length">Prompt Length</label>
-                                <input type="range" id="prompt-length" min="100" max="700" step="100" value="300">
-                                <span class="prompt-length-display" id="prompt-length-display">Medium</span>
+                                <div class="range-field">
+                                    <div class="range-field__label">
+                                        <label for="prompt-length">Prompt Length</label>
+                                        <span class="range-value" id="prompt-length-display">Medium</span>
+                                    </div>
+                                    <input type="range" id="prompt-length" min="100" max="700" step="100" value="300">
+                                </div>
+                                <div class="segment-card">
+                                    <span class="segment-card__label">Image Dimensions</span>
+                                    <div class="segmented-group" id="aspect-ratio-group" role="group" aria-label="Image aspect ratios">
+                                        <button type="button" class="segment is-active" data-aspect="1:1">1:1</button>
+                                        <button type="button" class="segment" data-aspect="3:4">3:4</button>
+                                        <button type="button" class="segment" data-aspect="4:3">4:3</button>
+                                        <button type="button" class="segment" data-aspect="9:16">9:16</button>
+                                        <button type="button" class="segment" data-aspect="16:9">16:9</button>
+                                    </div>
+                                </div>
                             </div>
+
+                            <section class="prompt-builder-card" aria-labelledby="manual-builder-heading">
+                                <header class="card-header">
+                                    <div>
+                                        <p class="workspace-eyebrow">Manual Controls</p>
+                                        <h3 id="manual-builder-heading">Prompt Ingredients</h3>
+                                        <p class="card-subtitle">Fill in the creative attributes and we will assemble a ready-to-use prompt.</p>
+                                    </div>
+                                </header>
+                                <div class="builder-grid">
+                                    <div class="form-group">
+                                        <label for="builder-subject">Subject / Main Focus</label>
+                                        <input type="text" id="builder-subject" class="form-control" placeholder="e.g. futuristic city skyline at dusk" autocomplete="off">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="builder-art-style">Art Style</label>
+                                        <select id="builder-art-style" class="form-control">
+                                            <option value="">Select art style</option>
+                                            <option value="photorealistic">Photorealistic</option>
+                                            <option value="digital painting">Digital Art</option>
+                                            <option value="oil painting">Oil Painting</option>
+                                            <option value="watercolor">Watercolor</option>
+                                            <option value="cyberpunk concept art">Cyberpunk</option>
+                                            <option value="studio portrait">Studio Portrait</option>
+                                            <option value="isometric illustration">Isometric Illustration</option>
+                                            <option value="surreal dreamscape">Surrealism</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="builder-lighting">Lighting</label>
+                                        <select id="builder-lighting" class="form-control">
+                                            <option value="">Choose lighting</option>
+                                            <option value="golden hour lighting">Golden hour</option>
+                                            <option value="dramatic studio lighting">Dramatic studio</option>
+                                            <option value="soft diffused lighting">Soft diffused</option>
+                                            <option value="neon rim lighting">Neon rim</option>
+                                            <option value="moonlit night lighting">Moonlit night</option>
+                                            <option value="volumetric lighting">Volumetric</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group form-group--inline">
+                                        <span class="form-label">Color Palette</span>
+                                        <div class="color-palette" id="builder-color-palette" role="radiogroup" aria-label="Color palette">
+                                            <button type="button" class="color-chip is-active" data-color="monochrome" aria-pressed="true">
+                                                <span class="color-chip__swatch" style="--chip-color:#9ca3af;"></span>
+                                                Monochrome
+                                            </button>
+                                            <button type="button" class="color-chip" data-color="vibrant">
+                                                <span class="color-chip__swatch" style="--chip-color:#22c55e;"></span>
+                                                Vibrant
+                                            </button>
+                                            <button type="button" class="color-chip" data-color="pastel">
+                                                <span class="color-chip__swatch" style="--chip-color:#f472b6;"></span>
+                                                Pastel
+                                            </button>
+                                            <button type="button" class="color-chip" data-color="cinematic">
+                                                <span class="color-chip__swatch" style="--chip-color:#0ea5e9;"></span>
+                                                Cinematic
+                                            </button>
+                                        </div>
+                                        <label class="color-picker" for="builder-color-custom">Custom</label>
+                                        <input type="color" id="builder-color-custom" value="#1db954" aria-label="Custom color picker">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="builder-composition">Composition</label>
+                                        <select id="builder-composition" class="form-control">
+                                            <option value="">Choose composition</option>
+                                            <option value="rule of thirds composition">Rule of thirds</option>
+                                            <option value="centered composition">Centered</option>
+                                            <option value="wide cinematic composition">Wide cinematic</option>
+                                            <option value="dynamic perspective composition">Dynamic perspective</option>
+                                            <option value="macro close-up composition">Macro close-up</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="builder-camera">Camera Settings</label>
+                                        <select id="builder-camera" class="form-control">
+                                            <option value="">Camera profile</option>
+                                            <option value="shot on 35mm lens, f/1.8, ISO 100">35mm • f/1.8 • ISO 100</option>
+                                            <option value="shot on 85mm lens, f/2.8, ISO 200">85mm • f/2.8 • ISO 200</option>
+                                            <option value="shot with ultra wide 16mm lens, f/4, ISO 400">16mm ultra wide • f/4 • ISO 400</option>
+                                            <option value="rendered with octane lighting and global illumination">Octane render</option>
+                                            <option value="captured on medium format camera, f/11, ISO 50">Medium format • f/11 • ISO 50</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="builder-mood">Mood / Atmosphere</label>
+                                        <select id="builder-mood" class="form-control">
+                                            <option value="">Select mood</option>
+                                            <option value="serene atmosphere">Serene</option>
+                                            <option value="mysterious atmosphere">Mysterious</option>
+                                            <option value="energetic atmosphere">Energetic</option>
+                                            <option value="dramatic atmosphere">Dramatic</option>
+                                            <option value="uplifting atmosphere">Uplifting</option>
+                                            <option value="futuristic atmosphere">Futuristic</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="builder-extra">
+                                    <div class="platform-guidelines" id="platform-guidelines" aria-live="polite">
+                                        <h4>Platform Guidance</h4>
+                                        <p>Select a platform to view recommended character limits and structure.</p>
+                                        <ul class="platform-guidelines__list" id="platform-guidelines-list"></ul>
+                                    </div>
+                                    <div class="builder-preview" aria-live="polite">
+                                        <h4>Real-time Preview</h4>
+                                        <p id="builder-preview-text">Start entering details to build a prompt.</p>
+                                    </div>
+                                </div>
+                                <div class="builder-footer">
+                                    <span class="builder-counter" id="builder-counter">0 characters</span>
+                                    <div class="builder-buttons">
+                                        <button class="btn btn--secondary" type="button" id="apply-builder">
+                                            <i class="fas fa-plus-circle" aria-hidden="true"></i> Apply to Prompt
+                                        </button>
+                                        <button class="btn btn--outline" type="button" id="clear-builder">
+                                            <i class="fas fa-rotate" aria-hidden="true"></i> Reset Builder
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="builder-warning" id="builder-warning" role="status" aria-live="polite"></div>
+                            </section>
 
                             <div class="prompt-editor">
                                 <label class="visually-hidden" for="prompt-textarea">Prompt text</label>
-                                <textarea
-                                    id="prompt-textarea"
-                                    class="prompt-textarea"
-                                    placeholder="Describe your vision... (or use voice input or drag words)"
-                                    rows="8"
-                                ></textarea>
+                                <div class="prompt-textarea__wrapper">
+                                    <textarea
+                                        id="prompt-textarea"
+                                        class="prompt-textarea"
+                                        placeholder="Enter your prompt"
+                                        rows="8"
+                                        maxlength="2000"
+                                    ></textarea>
+                                    <button class="clear-field" type="button" id="clear-field" aria-label="Clear prompt input">
+                                        <i class="fas fa-times" aria-hidden="true"></i>
+                                    </button>
+                                    <span class="char-counter" id="char-count">0/2000</span>
+                                </div>
+                                <div class="enhance-toggle">
+                                    <label class="toggle" for="magic-enhance-toggle">
+                                        <input type="checkbox" id="magic-enhance-toggle">
+                                        <span class="toggle__indicator" aria-hidden="true"></span>
+                                        <span class="toggle__label">Magic Enhance</span>
+                                    </label>
+                                </div>
                                 <div class="editor-status" aria-live="polite">
                                     <span class="status-pill" id="word-count">0 words</span>
                                     <span class="status-pill" id="quality-indicator">Quality: GOOD (65%)</span>
@@ -270,30 +420,99 @@
                             </div>
 
                             <div class="platform-specific-controls" id="platform-controls">
-                                <!-- Controls populated dynamically based on platform -->
+                                <section class="platform-optimizations" aria-labelledby="platform-optimizations-heading">
+                                    <header class="platform-optimizations__header">
+                                        <h3 id="platform-optimizations-heading">Platform Optimizations</h3>
+                                        <p>Toggle adjustments tailored to each AI platform to keep prompts compliant.</p>
+                                    </header>
+                                    <div class="platform-toggle-grid" id="platform-toggle-grid" role="group" aria-label="Platform optimizations">
+                                        <label class="platform-toggle">
+                                            <input type="checkbox" value="midjourney" data-platform-toggle>
+                                            <span class="platform-toggle__label">Midjourney</span>
+                                            <span class="platform-toggle__hint">Max 650 chars • adds --ar + stylistic boosts</span>
+                                        </label>
+                                        <label class="platform-toggle">
+                                            <input type="checkbox" value="stable_diffusion" data-platform-toggle>
+                                            <span class="platform-toggle__label">Stable Diffusion</span>
+                                            <span class="platform-toggle__hint">Max 800 chars • adds negative prompts & CFG</span>
+                                        </label>
+                                        <label class="platform-toggle">
+                                            <input type="checkbox" value="dall_e" data-platform-toggle>
+                                            <span class="platform-toggle__label">DALL-E</span>
+                                            <span class="platform-toggle__hint">Max 600 chars • concise instructions</span>
+                                        </label>
+                                        <label class="platform-toggle">
+                                            <input type="checkbox" value="leonardo" data-platform-toggle>
+                                            <span class="platform-toggle__label">Leonardo AI</span>
+                                            <span class="platform-toggle__hint">Max 700 chars • cinematic keywords</span>
+                                        </label>
+                                        <label class="platform-toggle">
+                                            <input type="checkbox" value="playground" data-platform-toggle>
+                                            <span class="platform-toggle__label">Playground AI</span>
+                                            <span class="platform-toggle__hint">Max 500 chars • creative descriptors</span>
+                                        </label>
+                                    </div>
+                                    <div class="platform-alert" id="platform-alert" role="status" aria-live="polite"></div>
+                                </section>
                             </div>
                         </article>
                     </section>
 
-                    <section class="tab-content" id="image-to-prompt-tab" role="tabpanel" aria-labelledby="image-to-prompt" tabindex="0">
-                        <div class="image-upload-area">
-                            <div class="upload-section">
-                                <h2>AI-Powered Image Analysis</h2>
-                                <p>Upload an image and get an optimized prompt instantly</p>
-
+                    <section class="tab-content" id="image-to-prompt-tab" role="tabpanel" aria-labelledby="tab-image-to-prompt" tabindex="0">
+                        <div class="image-prompt-grid">
+                            <article class="upload-card">
+                                <header class="card-header">
+                                    <div>
+                                        <p class="workspace-eyebrow">Image Analysis</p>
+                                        <h2>Convert image to prompt</h2>
+                                    </div>
+                                    <p class="card-subtitle">Upload an image for instant prompt suggestions.</p>
+                                </header>
                                 <div class="upload-zone" id="upload-zone">
                                     <label class="upload-content" for="image-upload">
-                                        <i class="fas fa-cloud-upload-alt upload-icon" aria-hidden="true"></i>
-                                        <h3>Drop an image here or tap to browse</h3>
-                                        <p>Supports JPG, PNG, WebP up to 10MB</p>
-                                        <span class="upload-button">Browse Files</span>
+                                        <div class="upload-placeholder" aria-hidden="true">
+                                            <i class="fas fa-image" aria-hidden="true"></i>
+                                            <p>Tap to upload image</p>
+                                            <span class="upload-button">Upload Image</span>
+                                        </div>
                                     </label>
                                     <input type="file" id="image-upload" accept="image/*">
                                 </div>
-
-                                <p class="upload-guidance">Max size 10MB • Drag-and-drop friendly</p>
-
+                                <p class="upload-guidance">Supports JPG, PNG, WebP up to 10MB</p>
                                 <div class="upload-status" id="upload-status" aria-live="polite"></div>
+                                <div class="upload-feedback" id="upload-feedback" role="status" aria-live="polite"></div>
+                                <div class="upload-progress" id="upload-progress" hidden>
+                                    <div class="upload-progress__bar">
+                                        <span class="upload-progress__value" id="upload-progress-value"></span>
+                                    </div>
+                                    <span class="upload-progress__percent" id="upload-progress-percent">0%</span>
+                                </div>
+                                <div class="analysis-loading" id="analysis-loading" hidden>
+                                    <span class="analysis-loading__spinner" aria-hidden="true"></span>
+                                    <span>Analyzing image...</span>
+                                </div>
+
+                                <div class="description-card">
+                                    <div class="description-card__header">
+                                        <h3>Description Type</h3>
+                                        <p>Choose how the AI should describe your image.</p>
+                                    </div>
+                                    <div class="description-grid" id="description-grid" role="group" aria-label="Description styles">
+                                        <button type="button" class="description-option is-active" data-description="describe-detail">Describe Image in Detail</button>
+                                        <button type="button" class="description-option" data-description="describe-brief">Describe Briefly</button>
+                                        <button type="button" class="description-option" data-description="person-description">Person Description</button>
+                                        <button type="button" class="description-option" data-description="object-recognition">Object Recognition</button>
+                                        <button type="button" class="description-option" data-description="art-style">Art Style Analysis</button>
+                                        <button type="button" class="description-option" data-description="text-extraction">Text Extraction</button>
+                                        <button type="button" class="description-option" data-description="midjourney">Midjourney Prompt</button>
+                                        <button type="button" class="description-option" data-description="stable-diffusion">Stable Diffusion Prompt</button>
+                                        <button type="button" class="description-option" data-description="custom-question">Custom Question</button>
+                                    </div>
+                                    <div class="custom-question" id="custom-question-field" hidden>
+                                        <label for="custom-question-input">Custom question</label>
+                                        <input type="text" id="custom-question-input" class="form-control" placeholder="What do you want to know about the image?">
+                                    </div>
+                                </div>
 
                                 <div class="uploaded-image" id="preview-container" hidden>
                                     <h3>Image Preview</h3>
@@ -301,25 +520,26 @@
                                         <img id="uploaded-img" src="" alt="Uploaded image preview" loading="lazy">
                                     </div>
                                 </div>
-                            </div>
+                            </article>
 
-                            <div class="analysis-results" id="analysis-results" hidden>
-                                <h3>AI Analysis Results</h3>
+                            <article class="analysis-card" id="analysis-results" hidden>
+                                <header class="card-header">
+                                    <h3>AI Analysis Results</h3>
+                                </header>
                                 <div class="analysis-tags" id="analysis-tags">
                                     <!-- AI-detected tags -->
                                 </div>
-
                                 <div class="generated-prompt">
                                     <div class="output-header">
                                         <span>Output</span>
                                         <label class="nl-option"><input type="checkbox" id="natural-language-toggle" checked> Natural Language</label>
                                     </div>
-                                    <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
-                                    <button class="btn btn--primary btn--full-width" id="use-generated-prompt" type="button">
-                                        <i class="fas fa-check" aria-hidden="true"></i> Use This Prompt
-                                    </button>
+                                    <div class="generated-summary" id="generated-summary"></div>
+                                    <div class="generated-variations" id="generated-variations" aria-live="polite">
+                                        <!-- Variations populated by JavaScript -->
+                                    </div>
                                 </div>
-                            </div>
+                            </article>
                         </div>
 
                         <div id="hf-image-to-prompt-container" class="hf-embed">
@@ -335,53 +555,143 @@
                         </div>
                     </section>
 
-                    <section class="tab-content" id="batch-generator-tab" role="tabpanel" aria-labelledby="batch-generator" tabindex="0">
-                        <article class="batch-section">
-                            <h2>Batch Prompt Generator</h2>
-                            <p>Generate multiple variations of prompts for A/B testing</p>
-
-                            <div class="batch-controls">
-                                <div class="form-group">
-                                    <label for="batch-base-prompt">Base Prompt</label>
-                                    <textarea id="batch-base-prompt" class="form-control" rows="3" placeholder="Enter your base prompt..."></textarea>
-                                </div>
-
-                                <div class="batch-settings">
-                                    <div class="form-group">
-                                        <label for="batch-count">Number of Variations</label>
-                                        <select id="batch-count" class="form-control">
-                                            <option value="5">5 variations</option>
-                                            <option value="10">10 variations</option>
-                                            <option value="20">20 variations</option>
-                                            <option value="50">50 variations</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="variation-type">Variation Type</label>
-                                        <select id="variation-type" class="form-control">
-                                            <option value="style">Style Variations</option>
-                                            <option value="lighting">Lighting Variations</option>
-                                            <option value="composition">Composition Variations</option>
-                                            <option value="color">Color Variations</option>
-                                            <option value="mixed">Mixed Variations</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <button class="btn btn--primary btn--full-width" id="generate-batch" type="button">
-                                    <i class="fas fa-magic" aria-hidden="true"></i> Generate Batch
-                                </button>
-                            </div>
-
-                            <div class="batch-results" id="batch-results" aria-live="polite">
-                                <!-- Generated variations will appear here -->
-                            </div>
+                    <section class="tab-content" id="image-generator-tab" role="tabpanel" aria-labelledby="tab-image-generator" tabindex="0">
+                        <article class="embed-card">
+                            <header class="card-header">
+                                <p class="workspace-eyebrow">Quick Ideas</p>
+                                <h2>Image Prompt Generator</h2>
+                                <p class="card-subtitle">Use the lightweight generator for rapid inspiration.</p>
+                            </header>
+                            <iframe src="classicpg/index.html" class="mini-frame" title="Quick image prompt generator"></iframe>
                         </article>
                     </section>
 
-                    <section class="tab-content" id="mini-generator-tab" role="tabpanel" aria-labelledby="mini-generator" tabindex="0">
-                        <iframe src="classicpg/index.html" class="mini-frame" title="Chota Dhamakaa mini generator"></iframe>
+                    <section class="tab-content" id="more-tools-tab" role="tabpanel" aria-labelledby="tab-more-tools" tabindex="0">
+                        <div class="more-tools-grid">
+                            <article class="batch-section">
+                                <header class="card-header">
+                                    <p class="workspace-eyebrow">Batch Tools</p>
+                                    <h2>Batch Prompt Generator</h2>
+                                    <p class="card-subtitle">Generate multiple variations of prompts for A/B testing.</p>
+                                </header>
+                                <div class="batch-controls">
+                                    <div class="form-group">
+                                        <label for="batch-base-prompt">Base Prompt</label>
+                                        <textarea id="batch-base-prompt" class="form-control" rows="3" placeholder="Enter your base prompt..."></textarea>
+                                    </div>
+                                    <div class="batch-settings">
+                                        <div class="form-group">
+                                            <label for="batch-count">Number of Variations</label>
+                                            <select id="batch-count" class="form-control">
+                                                <option value="5">5 variations</option>
+                                                <option value="6">6 variations</option>
+                                                <option value="8">8 variations</option>
+                                                <option value="10">10 variations</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="variation-type">Variation Type</label>
+                                            <select id="variation-type" class="form-control">
+                                                <option value="style">Style Variations</option>
+                                                <option value="lighting">Lighting Variations</option>
+                                                <option value="composition">Composition Variations</option>
+                                                <option value="color">Color Variations</option>
+                                                <option value="mixed">Mixed Variations</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn--primary btn--full-width" id="generate-batch" type="button">
+                                        <i class="fas fa-magic" aria-hidden="true"></i> Generate Batch
+                                    </button>
+                                </div>
+                                <div class="batch-results" id="batch-results" aria-live="polite">
+                                    <!-- Generated variations will appear here -->
+                                </div>
+                                <div class="batch-utilities">
+                                    <div class="batch-actions">
+                                        <button class="btn btn--outline" id="mix-selected-prompts" type="button">
+                                            <i class="fas fa-layer-group" aria-hidden="true"></i> Mix Selected Prompts
+                                        </button>
+                                        <button class="btn btn--outline" id="export-json" type="button">
+                                            <i class="fas fa-file-code" aria-hidden="true"></i> Export JSON
+                                        </button>
+                                        <button class="btn btn--outline" id="export-csv" type="button">
+                                            <i class="fas fa-table" aria-hidden="true"></i> Export CSV
+                                        </button>
+                                    </div>
+                                    <section class="ab-testing" id="ab-testing" aria-labelledby="ab-testing-heading">
+                                        <header class="ab-testing__header">
+                                            <h3 id="ab-testing-heading">A/B Testing Lab</h3>
+                                            <p>Assign variations to slots A and B to compare word count, structure, and quality.</p>
+                                        </header>
+                                        <div class="ab-testing__grid">
+                                            <article class="ab-slot" data-slot="A">
+                                                <header class="ab-slot__header">
+                                                    <h4>Variation A</h4>
+                                                    <button class="btn btn--sm btn--outline" type="button" data-ab-slot="A" data-ab-action="clear">Clear</button>
+                                                </header>
+                                                <textarea id="ab-slot-a" class="form-control" rows="4" placeholder="Select a batch prompt to populate" readonly></textarea>
+                                                <footer class="ab-slot__footer">
+                                                    <span class="ab-slot__metrics" id="ab-slot-a-metrics">0 words • 0 chars</span>
+                                                    <div class="ab-slot__actions">
+                                                        <button class="btn btn--sm btn--secondary" type="button" data-ab-slot="A" data-ab-action="use">Use in Builder</button>
+                                                        <button class="btn btn--sm btn--outline" type="button" data-ab-slot="A" data-ab-action="copy">Copy</button>
+                                                    </div>
+                                                </footer>
+                                            </article>
+                                            <article class="ab-slot" data-slot="B">
+                                                <header class="ab-slot__header">
+                                                    <h4>Variation B</h4>
+                                                    <button class="btn btn--sm btn--outline" type="button" data-ab-slot="B" data-ab-action="clear">Clear</button>
+                                                </header>
+                                                <textarea id="ab-slot-b" class="form-control" rows="4" placeholder="Select a batch prompt to populate" readonly></textarea>
+                                                <footer class="ab-slot__footer">
+                                                    <span class="ab-slot__metrics" id="ab-slot-b-metrics">0 words • 0 chars</span>
+                                                    <div class="ab-slot__actions">
+                                                        <button class="btn btn--sm btn--secondary" type="button" data-ab-slot="B" data-ab-action="use">Use in Builder</button>
+                                                        <button class="btn btn--sm btn--outline" type="button" data-ab-slot="B" data-ab-action="copy">Copy</button>
+                                                    </div>
+                                                </footer>
+                                            </article>
+                                        </div>
+                                        <div class="ab-summary" id="ab-summary" aria-live="polite"></div>
+                                    </section>
+                                </div>
+                            </article>
+
+                            <article class="actions-card">
+                                <header class="card-header">
+                                    <p class="workspace-eyebrow">Prompt Actions</p>
+                                    <h2>Manage &amp; Share</h2>
+                                </header>
+                                <div class="action-toolbar" role="group" aria-label="Prompt actions">
+                                    <div class="copy-action">
+                                        <button class="btn btn--secondary" id="copy-prompt" type="button">
+                                            <i class="fas fa-copy" aria-hidden="true"></i> Copy Prompt
+                                        </button>
+                                        <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
+                                    </div>
+                                    <button class="btn btn--primary" id="save-prompt" type="button">
+                                        <i class="fas fa-save" aria-hidden="true"></i> Save Prompt
+                                    </button>
+                                    <button class="btn btn--outline" type="button" data-header-collaborate>
+                                        <i class="fas fa-share-nodes" aria-hidden="true"></i> Share Prompt
+                                    </button>
+                                    <button class="btn btn--outline" type="button" data-header-mini>
+                                        <i class="fas fa-bolt" aria-hidden="true"></i> Quick Generator
+                                    </button>
+                                    <button class="btn btn--outline" id="export-txt" type="button">
+                                        <i class="fas fa-file-export" aria-hidden="true"></i> Export .txt
+                                    </button>
+                                    <button class="btn btn--outline" id="share-prompt" type="button">
+                                        <i class="fas fa-share-alt" aria-hidden="true"></i> Share Link
+                                    </button>
+                                    <button class="btn btn--outline" id="analyze-prompt" type="button">
+                                        <i class="fas fa-chart-line" aria-hidden="true"></i> Deep Analysis
+                                    </button>
+                                </div>
+                            </article>
+                        </div>
                     </section>
                 </section>
 
@@ -425,41 +735,6 @@
                         </div>
                     </section>
 
-                    <section class="panel" aria-labelledby="actions-heading">
-                        <div class="panel__header">
-                            <h3 id="actions-heading"><i class="fas fa-tools" aria-hidden="true"></i> Actions</h3>
-                        </div>
-                        <div class="panel__body">
-                            <div class="action-toolbar" role="group" aria-label="Prompt actions">
-                                <div class="copy-action">
-                                    <button class="btn btn--secondary" id="copy-prompt" type="button">
-                                        <i class="fas fa-copy" aria-hidden="true"></i> Copy
-                                    </button>
-                                    <span id="copy-feedback" class="copy-feedback" aria-live="polite"></span>
-                                </div>
-                                <button class="btn btn--primary" id="save-prompt" type="button">
-                                    <i class="fas fa-save" aria-hidden="true"></i> Save
-                                </button>
-                                <details class="more-actions">
-                                    <summary class="btn btn--outline" role="button" aria-haspopup="true">
-                                        <i class="fas fa-ellipsis-h" aria-hidden="true"></i> More
-                                    </summary>
-                                    <div class="more-actions__menu" role="menu">
-                                        <button class="btn btn--outline btn--full-width" id="export-txt" type="button" role="menuitem">
-                                            <i class="fas fa-file-export" aria-hidden="true"></i> Export .txt
-                                        </button>
-                                        <button class="btn btn--outline btn--full-width" id="share-prompt" type="button" role="menuitem">
-                                            <i class="fas fa-share-alt" aria-hidden="true"></i> Share Link
-                                        </button>
-                                        <button class="btn btn--outline btn--full-width" id="analyze-prompt" type="button" role="menuitem">
-                                            <i class="fas fa-chart-line" aria-hidden="true"></i> Deep Analysis
-                                        </button>
-                                    </div>
-                                </details>
-                            </div>
-                        </div>
-                    </section>
-
                     <section class="panel" aria-labelledby="saved-prompts-heading">
                         <div class="panel__header">
                             <h3 id="saved-prompts-heading"><i class="fas fa-bookmark" aria-hidden="true"></i> Saved Prompts</h3>
@@ -474,6 +749,25 @@
             </div>
         </main>
     </div>
+
+    <nav class="bottom-nav tabs" role="tablist" aria-label="Primary navigation">
+        <button class="tab active" id="tab-prompt-builder" data-tab="prompt-builder" role="tab" aria-selected="true" aria-controls="prompt-builder-tab">
+            <i class="fas fa-pen" aria-hidden="true"></i>
+            <span>Prompt Builder</span>
+        </button>
+        <button class="tab" id="tab-image-to-prompt" data-tab="image-to-prompt" role="tab" aria-selected="false" aria-controls="image-to-prompt-tab">
+            <i class="fas fa-image" aria-hidden="true"></i>
+            <span>Image to Prompt</span>
+        </button>
+        <button class="tab" id="tab-image-generator" data-tab="image-generator" role="tab" aria-selected="false" aria-controls="image-generator-tab">
+            <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i>
+            <span>Image Generator</span>
+        </button>
+        <button class="tab" id="tab-more-tools" data-tab="more-tools" role="tab" aria-selected="false" aria-controls="more-tools-tab">
+            <i class="fas fa-toolbox" aria-hidden="true"></i>
+            <span>More Tools</span>
+        </button>
+    </nav>
 
     <div class="modal hidden" id="save-modal" role="dialog" aria-modal="true" aria-labelledby="save-modal-title">
         <div class="modal__container">

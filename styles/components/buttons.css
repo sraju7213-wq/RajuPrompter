@@ -14,6 +14,8 @@
   color: var(--theme-text);
   font-weight: 600;
   line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
   text-align: center;
 }
@@ -47,7 +49,7 @@
 
 .btn--outline {
   background: transparent;
-  border-color: var(--theme-border);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .btn--full-width {

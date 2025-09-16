@@ -41,6 +41,9 @@
   --transition-base: 220ms ease;
   --transition-slow: 320ms ease;
 
+  /* Accent colors */
+  --accent-blue: #3a7afe;
+
   /* Z-index scale */
   --z-base: 1;
   --z-header: 900;
@@ -51,17 +54,17 @@
 
 /* Theme palettes applied via data-theme attribute */
 [data-theme='cyberpunk_neon'] {
-  --theme-primary: #00ff88;
-  --theme-secondary: #111111;
-  --theme-accent: #ff0080;
-  --theme-background: #050505;
-  --theme-surface: #161616;
-  --theme-elevated: rgba(17, 17, 17, 0.85);
-  --theme-text: #f7fff9;
-  --theme-text-muted: #8dffd0;
-  --theme-border: rgba(0, 255, 136, 0.25);
-  --theme-focus: rgba(0, 255, 136, 0.65);
-  --theme-success: #00ff88;
+  --theme-primary: #1db954;
+  --theme-secondary: #0b0b0b;
+  --theme-accent: var(--accent-blue);
+  --theme-background: #111111;
+  --theme-surface: #1e1e1e;
+  --theme-elevated: #242424;
+  --theme-text: #f5f7f8;
+  --theme-text-muted: #b0b6ba;
+  --theme-border: rgba(255, 255, 255, 0.08);
+  --theme-focus: rgba(29, 185, 84, 0.6);
+  --theme-success: #1db954;
   --theme-warning: #ffb02e;
   --theme-error: #ff4d8d;
 }
