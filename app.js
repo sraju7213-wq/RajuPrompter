@@ -261,6 +261,7 @@ function initializeApp() {
     initializeWordBank();
     initImageAnalyzer();
     updatePromptPreview();
+    updateQualityScore();
     updatePlatformBadge();
     updateActionStates();
     updateFooterYear();
@@ -270,9 +271,8 @@ function initializeApp() {
 
 function setupResponsiveEnhancements() {
     setupDrawer();
-    setupThemeChips();
+    setupThemeSwatches();
     setupDisclosures();
-    setupHeaderShortcuts();
     setupModalControls();
     document.querySelectorAll('.tab-content').forEach(content => {
         if (!content.classList.contains('active')) {
@@ -294,15 +294,6 @@ function setupEventListeners() {
             updatePromptPreview();
             saveToStorage();
             console.log('🔄 Platform changed to:', currentPlatform);
-        });
-    }
-
-    // Theme selector
-    const themeSelect = document.getElementById('theme-select');
-    if (themeSelect) {
-        themeSelect.addEventListener('change', function(e) {
-            applyTheme(e.target.value);
-            console.log('🎨 Theme changed to:', e.target.value);
         });
     }
 
@@ -423,32 +414,6 @@ function setupEventListeners() {
         confirmSaveBtn.addEventListener('click', confirmSavePrompt);
     }
 
-    const suggestionBtn = document.getElementById('get-suggestions');
-    if (suggestionBtn) {
-        suggestionBtn.addEventListener('click', getAISuggestions);
-    }
-
-    const exportTxtBtn = document.getElementById('export-txt');
-    if (exportTxtBtn) {
-        exportTxtBtn.addEventListener('click', exportToTxt);
-    }
-
-
-    const shareBtn = document.getElementById('share-prompt');
-    if (shareBtn) {
-        shareBtn.addEventListener('click', sharePrompt);
-    }
-
-    const analyzeBtn = document.getElementById('analyze-prompt');
-    if (analyzeBtn) {
-        analyzeBtn.addEventListener('click', deepAnalyzePrompt);
-    }
-
-    const collaborateBtn = document.getElementById('collaboration-btn');
-    if (collaborateBtn) {
-        collaborateBtn.addEventListener('click', sharePrompt);
-    }
-
     const imageUpload = document.getElementById('image-upload');
     if (imageUpload) {
         imageUpload.addEventListener('change', handleImageUpload);
@@ -473,6 +438,14 @@ function setupEventListeners() {
                 customField.hidden = currentDescriptionMode !== 'custom-question';
             }
             updateGeneratedPrompt();
+        });
+    }
+
+    const wordSearchField = document.getElementById('word-search');
+    if (wordSearchField) {
+        wordSearchField.addEventListener('input', (event) => {
+            const query = event.target.value.trim().toLowerCase();
+            filterWordBank(query);
         });
     }
 
@@ -501,21 +474,13 @@ function setupEventListeners() {
             if (!text) return;
             copyTextToClipboard(text)
                 .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => alert('Unable to copy prompt automatically.'));
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
         });
     }
 
     const batchBtn = document.getElementById('generate-batch');
     if (batchBtn) {
         batchBtn.addEventListener('click', generateBatch);
-    }
-
-    const miniLink = document.getElementById('mini-generator-link');
-    if (miniLink) {
-        miniLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            switchTab('image-generator');
-        });
     }
 
     // Listen for messages from the Hugging Face iframe
@@ -602,42 +567,22 @@ function closeDrawer() {
     }
 }
 
-function setupHeaderShortcuts() {
-    document.querySelectorAll('[data-header-collaborate], [data-drawer-collaborate]').forEach(button => {
-        button.addEventListener('click', () => {
-            sharePrompt();
-            closeDrawer();
-        });
-    });
+function setupThemeSwatches() {
+    const swatches = document.querySelectorAll('.theme-swatch');
+    if (!swatches.length) {
+        return;
+    }
 
-    document.querySelectorAll('[data-header-mini], [data-drawer-mini]').forEach(link => {
-        link.addEventListener('click', (event) => {
-            event.preventDefault();
-            switchTab('image-generator');
-            closeDrawer();
-        });
-    });
-
-    document.querySelectorAll('[data-drawer-tab]').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const tabName = event.currentTarget.dataset.drawerTab;
-            if (tabName) {
-                switchTab(tabName);
-            }
-            closeDrawer();
-        });
-    });
-}
-
-function setupThemeChips() {
-    document.querySelectorAll('.theme-chip').forEach(chip => {
-        chip.addEventListener('click', () => {
-            const theme = chip.dataset.theme;
+    swatches.forEach(swatch => {
+        swatch.addEventListener('click', () => {
+            const theme = swatch.dataset.theme;
             if (theme) {
                 applyTheme(theme);
             }
         });
     });
+
+    updateThemeUI();
 }
 
 function setupDisclosures() {
@@ -744,6 +689,9 @@ function setupModalControls() {
 
 function openModalElement(modal) {
     if (!modal) return;
+    if (activeModal && activeModal !== modal) {
+        closeModalElement(activeModal);
+    }
     lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal.classList.remove('hidden');
     modal.setAttribute('aria-hidden', 'false');
@@ -778,16 +726,6 @@ function setupQuickActions() {
             });
         }
     });
-
-    const themeToggleButton = document.querySelector('[data-action="toggle-theme"]');
-    if (themeToggleButton) {
-        themeToggleButton.addEventListener('click', () => {
-            const nextTheme = DARK_THEMES.has(currentTheme) ? 'light_modern' : 'dark_professional';
-            setQuickActionLoading(themeToggleButton, true);
-            applyTheme(nextTheme);
-            setTimeout(() => setQuickActionLoading(themeToggleButton, false), 400);
-        });
-    }
 
     const languageButton = document.querySelector('[data-action="open-language"]');
     const languagePanel = document.getElementById('language-preferences-panel');
@@ -835,7 +773,7 @@ function setupQuickActions() {
         });
     }
 
-    updateThemeToggleButton();
+    updateThemeUI();
     setLanguage(currentLanguage, { persist: false });
 }
 
@@ -958,10 +896,8 @@ function setLanguage(languageCode, { persist = true } = {}) {
 
     const languageButton = document.querySelector('[data-action="open-language"]');
     if (languageButton) {
-        const baseTooltip = languageButton.getAttribute('data-tooltip-base') || 'Adjust interface language';
         const label = LANGUAGE_LABELS[normalized] || LANGUAGE_LABELS.en;
-        languageButton.setAttribute('aria-label', `${baseTooltip} (current: ${label})`);
-        languageButton.setAttribute('data-tooltip', `${baseTooltip} (Current: ${label})`);
+        languageButton.setAttribute('aria-label', `Language preferences (current: ${label})`);
     }
 
     if (persist) {
@@ -969,24 +905,27 @@ function setLanguage(languageCode, { persist = true } = {}) {
     }
 }
 
-function updateThemeToggleButton() {
-    const themeStatus = document.querySelector('[data-theme-label]');
-    const themeIcon = document.querySelector('[data-theme-icon]');
-    const themeButton = document.querySelector('[data-action="toggle-theme"]');
-    const isDarkMode = DARK_THEMES.has(currentTheme);
+function updateThemeUI() {
+    const swatches = document.querySelectorAll('.theme-swatch');
+    let activeSwatch = null;
 
-    if (themeStatus) {
-        themeStatus.textContent = isDarkMode ? 'Dark mode active' : 'Light mode active';
-    }
+    swatches.forEach(swatch => {
+        const isActive = swatch.dataset.theme === currentTheme;
+        swatch.classList.toggle('is-active', isActive);
+        swatch.setAttribute('aria-checked', isActive ? 'true' : 'false');
+        if (isActive) {
+            activeSwatch = swatch;
+        }
+    });
 
-    if (themeIcon) {
-        themeIcon.className = isDarkMode ? 'fas fa-moon' : 'fas fa-sun';
-    }
-
-    if (themeButton) {
-        const baseTooltip = themeButton.getAttribute('data-tooltip-base') || 'Switch themes';
-        themeButton.setAttribute('aria-label', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
-        themeButton.setAttribute('data-tooltip', `${baseTooltip} (${isDarkMode ? 'Current: Dark' : 'Current: Light'})`);
+    const indicator = document.getElementById('theme-mode-indicator');
+    if (indicator) {
+        if (activeSwatch) {
+            const mode = activeSwatch.dataset.themeMode === 'light' ? 'Light mode' : 'Dark mode';
+            indicator.textContent = `${mode} • ${activeSwatch.querySelector('.theme-swatch__label')?.textContent || ''}`.trim();
+        } else {
+            indicator.textContent = DARK_THEMES.has(currentTheme) ? 'Dark mode active' : 'Light mode active';
+        }
     }
 }
 
@@ -1114,7 +1053,6 @@ async function setPrompt(prompt) {
             updatePromptPreview();
             updateWordCount();
             updateQualityScore();
-            getAISuggestions();
         }
         return;
     }
@@ -1124,7 +1062,6 @@ async function setPrompt(prompt) {
         updatePromptPreview();
         updateWordCount();
         updateQualityScore();
-        getAISuggestions();
     }
 }
 
@@ -1200,6 +1137,10 @@ function updateActionStates() {
             copyBtn.setAttribute('disabled', 'disabled');
         }
     }
+
+    if (!hasPrompt) {
+        setActionFeedback('');
+    }
 }
 
 function updateQualityScore() {
@@ -1209,7 +1150,7 @@ function updateQualityScore() {
 
     if (qualityIndicator) {
         const level = score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'fair' : 'poor';
-        qualityIndicator.className = `quality-indicator ${level}`;
+        qualityIndicator.className = `status-pill quality-indicator ${level}`;
         qualityIndicator.textContent = `Quality: ${level.toUpperCase()} (${score}%)`;
     }
 
@@ -1282,27 +1223,49 @@ function switchWordCategory(category) {
             const wordElement = document.createElement('span');
             wordElement.className = 'word-item';
             wordElement.textContent = word;
+            wordElement.dataset.length = word.length;
+            wordElement.style.setProperty('--char-length', word.length);
             wordBank.appendChild(wordElement);
         });
     });
+
+    const searchField = document.getElementById('word-search');
+    if (searchField && searchField.value.trim()) {
+        filterWordBank(searchField.value.trim().toLowerCase());
+    } else {
+        filterWordBank('');
+    }
 }
 
-function getAISuggestions() {
-    const suggestions = [];
-    const text = currentPrompt.toLowerCase();
-    if (!text.match(/light/)) suggestions.push('Add lighting description for better mood');
-    if (!text.match(/style/)) suggestions.push('Specify art style to refine the look');
-    if (!text.match(/color/)) suggestions.push('Mention color palette for richer output');
-    if (!text.match(/mood/)) suggestions.push('Include mood keywords to set the tone');
-    if (suggestions.length === 0) suggestions.push('Prompt looks good! Try adding more details.');
-    const container = document.getElementById('ai-suggestions');
-    container.innerHTML = '';
-    suggestions.forEach(s => {
-        const div = document.createElement('div');
-        div.className = 'suggestion-item';
-        div.innerHTML = `<i class="fas fa-lightbulb"></i><span>${s}</span>`;
-        container.appendChild(div);
+function filterWordBank(query = '') {
+    const wordBank = document.getElementById('word-bank');
+    if (!wordBank) {
+        return;
+    }
+
+    const normalized = query.trim().toLowerCase();
+    const items = wordBank.querySelectorAll('.word-item');
+    let visibleCount = 0;
+
+    items.forEach(item => {
+        const matches = !normalized || item.textContent.toLowerCase().includes(normalized);
+        item.toggleAttribute('hidden', !matches);
+        if (matches) {
+            visibleCount += 1;
+        }
     });
+
+    let emptyState = wordBank.querySelector('.word-bank__empty');
+    if (!visibleCount && normalized) {
+        if (!emptyState) {
+            emptyState = document.createElement('p');
+            emptyState.className = 'word-bank__empty';
+            wordBank.appendChild(emptyState);
+        }
+        emptyState.textContent = 'No words found for that search.';
+    } else if (emptyState) {
+        emptyState.remove();
+    }
 }
 
 async function handleImageUpload(event) {
@@ -1410,6 +1373,30 @@ function displayUploadStatus(message, type = 'info') {
 
 function updateBatchFeedback(message, type = 'info') {
     const feedback = document.getElementById('batch-feedback');
+    if (!feedback) {
+        return;
+    }
+
+    feedback.textContent = message || '';
+    feedback.className = 'status-message';
+
+    if (!message) {
+        feedback.style.display = 'none';
+        return;
+    }
+
+    feedback.style.display = '';
+    if (type === 'success') {
+        feedback.classList.add('status-message--success');
+    } else if (type === 'error') {
+        feedback.classList.add('status-message--error');
+    } else if (type === 'warning') {
+        feedback.classList.add('status-message--warning');
+    }
+}
+
+function setActionFeedback(message = '', type = 'info') {
+    const feedback = document.getElementById('action-feedback');
     if (!feedback) {
         return;
     }
@@ -1676,7 +1663,7 @@ function generateNaturalLanguageDescription(tags, colorHex, mode = 'describe-det
     return sentence;
 }
 
-function generateBatch(event) {
+async function generateBatch(event) {
     const baseField = document.getElementById('batch-base-prompt');
     const count = parseInt(document.getElementById('batch-count').value, 10);
     const type = document.getElementById('variation-type').value;
@@ -1715,6 +1702,9 @@ function generateBatch(event) {
         const variation = buildPromptVariation(base, type, variations.size + 1);
         variations.add(variation);
         attempts += 1;
+        if (attempts % 10 === 0) {
+            await waitForFrame();
+        }
     }
 
     if (variations.size === 0) {
@@ -1837,57 +1827,6 @@ async function optimizePrompt() {
     updatePromptPreview();
     updateWordCount();
     updateQualityScore();
-    getAISuggestions();
-}
-
-async function deepAnalyzePrompt() {
-    if (!currentPrompt) {
-        alert('No prompt to analyze!');
-        return;
-    }
-    let analysis = '';
-    if (textGenerator) {
-        try {
-            const res = await textGenerator(`Provide improvements for this image generation prompt: ${currentPrompt}`, { max_new_tokens: 100 });
-            analysis = res[0].generated_text;
-        } catch (e) {
-            analysis = 'Analysis failed.';
-        }
-    } else {
-        analysis = 'Consider adding more details about lighting, style, color, mood, and composition.';
-    }
-    alert(analysis);
-}
-
-function exportToTxt() {
-    if (!currentPrompt) {
-        alert('No prompt to export!');
-        return;
-    }
-    const blob = new Blob([currentPrompt], {type: 'text/plain'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'prompt.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-function sharePrompt() {
-    if (!currentPrompt) {
-        alert('No prompt to share!');
-        return;
-    }
-    const url = `${window.location.origin}${window.location.pathname}?prompt=${encodeURIComponent(currentPrompt)}`;
-    if (navigator.share) {
-        navigator.share({ text: currentPrompt, url });
-    } else {
-        navigator.clipboard.writeText(url).then(() => {
-            showNotification('Share link copied to clipboard!');
-        });
-    }
 }
 
 // Tab switching
@@ -1911,6 +1850,10 @@ function switchTab(tabName) {
 
 // Theme system
 function applyTheme(themeName) {
+    if (!themeName) {
+        return;
+    }
+
     currentTheme = themeName;
     document.body.setAttribute('data-theme', themeName);
 
@@ -1919,18 +1862,7 @@ function applyTheme(themeName) {
         document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
     }
 
-    const themeSelect = document.getElementById('theme-select');
-    if (themeSelect) {
-        themeSelect.value = themeName;
-    }
-
-    document.querySelectorAll('.theme-chip').forEach(chip => {
-        const isActive = chip.dataset.theme === themeName;
-        chip.classList.toggle('is-active', isActive);
-        chip.setAttribute('aria-selected', isActive ? 'true' : 'false');
-    });
-
-    updateThemeToggleButton();
+    updateThemeUI();
     saveToStorage();
 }
 
@@ -1957,22 +1889,18 @@ function copyTextToClipboard(text) {
 
 function copyToClipboard() {
     if (!currentPrompt || !currentPrompt.trim()) {
-        alert('No prompt to copy!');
+        setActionFeedback('Enter or generate a prompt before copying.', 'error');
         return;
     }
 
-    const feedback = document.getElementById('copy-feedback');
-    const showCopied = () => {
-        if (feedback) {
-            feedback.textContent = 'Copied!';
-            feedback.classList.add('show');
-            setTimeout(() => feedback.classList.remove('show'), 2000);
-        }
-    };
-
-    copyTextToClipboard(currentPrompt).then(showCopied).catch(() => {
-        alert('Unable to copy prompt automatically. Please copy manually.');
-    });
+    copyTextToClipboard(currentPrompt)
+        .then(() => {
+            setActionFeedback('Prompt copied to clipboard.', 'success');
+            showNotification('Prompt copied to clipboard!');
+        })
+        .catch(() => {
+            setActionFeedback('Unable to copy automatically. Please copy manually.', 'warning');
+        });
 }
 
 function clearPrompt() {
@@ -1981,7 +1909,7 @@ function clearPrompt() {
 
 function savePrompt() {
     if (!currentPrompt || !currentPrompt.trim()) {
-        alert('No prompt to save!');
+        setActionFeedback('Add some prompt text before saving.', 'error');
         return;
     }
     const modal = document.getElementById('save-modal');
@@ -2010,7 +1938,7 @@ function savePrompt() {
 
 function confirmSavePrompt() {
     if (!currentPrompt || !currentPrompt.trim()) {
-        alert('No prompt to save!');
+        setActionFeedback('Add some prompt text before saving.', 'error');
         return;
     }
 
@@ -2042,6 +1970,7 @@ function confirmSavePrompt() {
     saveToStorage();
     updateSavedPromptsDisplay();
     showNotification('Prompt saved successfully!');
+    setActionFeedback('Prompt saved to your library.', 'success');
 
     if (modal) {
         closeModalElement(modal);
@@ -2113,7 +2042,7 @@ function updateHistoryDisplay() {
         copyBtn.addEventListener('click', () => {
             copyTextToClipboard(item.prompt)
                 .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => alert('Unable to copy prompt automatically.'));
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
         });
 
         actions.append(useBtn, copyBtn);
@@ -2171,7 +2100,7 @@ function updateSavedPromptsDisplay() {
         copyBtn.addEventListener('click', () => {
             copyTextToClipboard(item.prompt)
                 .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => alert('Unable to copy prompt automatically.'));
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
         });
 
         actions.append(useBtn, copyBtn);
@@ -2283,6 +2212,16 @@ function showNotification(message) {
     }, 3000);
 }
 
+function waitForFrame() {
+    return new Promise(resolve => {
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => resolve());
+        } else {
+            setTimeout(resolve, 0);
+        }
+    });
+}
+
 // Storage functions
 function saveToStorage() {
     const data = {
@@ -2315,12 +2254,9 @@ function loadFromStorage() {
         savedPrompts = data.savedPrompts || [];
 
         const platformSelect = document.getElementById('platform-select');
-        const themeSelect = document.getElementById('theme-select');
+    if (platformSelect) platformSelect.value = currentPlatform;
 
-        if (platformSelect) platformSelect.value = currentPlatform;
-        if (themeSelect) themeSelect.value = currentTheme;
-
-        updateHistoryDisplay();
+    updateHistoryDisplay();
         updateSavedPromptsDisplay();
         return true;
     } catch (e) {

@@ -330,6 +330,35 @@ a:focus {
   color: var(--theme-warning);
 }
 
+.quality-score.excellent,
+.quality-score.good {
+  color: var(--theme-success);
+}
+
+.quality-score.fair {
+  color: var(--theme-warning);
+}
+
+.quality-score.poor {
+  color: var(--theme-error);
+}
+
+.status-pill.quality-indicator.excellent,
+.status-pill.quality-indicator.good {
+  border-color: rgba(16, 185, 129, 0.6);
+  color: var(--theme-success);
+}
+
+.status-pill.quality-indicator.fair {
+  border-color: rgba(251, 191, 36, 0.6);
+  color: var(--theme-warning);
+}
+
+.status-pill.quality-indicator.poor {
+  border-color: rgba(239, 68, 68, 0.6);
+  color: var(--theme-error);
+}
+
 .help-list {
   display: grid;
   gap: 0.65rem;

@@ -45,24 +45,10 @@
   border-bottom: 1px solid var(--theme-border);
 }
 
-.ai-suggestions {
-  display: grid;
-  gap: var(--space-xs);
-}
-
-.suggestion-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-sm);
-  border-radius: var(--radius-md);
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-}
-
 .random-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-sm);
   padding: var(--space-sm);
   border-radius: var(--radius-md);
@@ -77,6 +63,10 @@
 .random-btn:focus-visible {
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
+}
+
+.random-btn .icon {
+  font-size: 1.5rem;
 }
 
 .category-tabs {
@@ -111,10 +101,12 @@
 
 .word-bank {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: var(--space-xs);
   max-height: 420px;
   overflow-y: auto;
   padding-inline-end: var(--space-sm);
+  padding-block: var(--space-xs);
 }
 
 .word-group {
@@ -126,13 +118,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: var(--space-sm);
-  padding-block: 0.4rem;
+  padding-inline: clamp(0.45rem, 0.75rem - (var(--char-length, 0) * 0.01rem), 0.75rem);
+  padding-block: clamp(0.3rem, 0.45rem - (var(--char-length, 0) * 0.005rem), 0.45rem);
   border-radius: var(--radius-pill);
   border: 1px solid var(--theme-border);
   background: rgba(255, 255, 255, 0.03);
-  font-size: var(--text-sm);
+  font-size: clamp(0.55rem, 0.95rem - (var(--char-length, 0) * 0.02rem), 0.95rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .word-item:hover,
@@ -140,6 +135,89 @@
   background: var(--theme-primary);
   color: var(--theme-secondary);
   border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.word-item[hidden] {
+  display: none !important;
+}
+
+.word-bank__empty {
+  grid-column: 1 / -1;
+  padding: var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+}
+
+.word-library-card,
+.helper-card {
+  background: rgba(18, 18, 18, 0.88);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: clamp(1.25rem, 2vw, 2rem);
+  display: grid;
+  gap: var(--space-md);
+  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
+}
+
+.word-library-card {
+  margin-top: var(--space-lg);
+}
+
+.word-library-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.word-library-card__header p {
+  color: var(--theme-text-muted);
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+.word-library-card__controls {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.word-library-card__search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-inline: var(--space-sm);
+  padding-block: 0.45rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--theme-border);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.word-library-card__search i {
+  color: var(--theme-text-muted);
+}
+
+.word-library-card__search .form-control {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  min-height: auto;
+}
+
+.word-library-card__search .form-control:focus {
+  box-shadow: none;
+}
+
+.helper-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 
 .prompt-card {
@@ -310,22 +388,16 @@
   width: 100%;
 }
 
-@media (min-width: 52rem) {
+@media (min-width: 48rem) {
   .image-prompt-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
   }
 
   .more-tools-grid {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   }
 
   .actions-card .action-toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (min-width: 72rem) {
-  .actions-card .action-toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
