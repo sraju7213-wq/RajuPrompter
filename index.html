@@ -50,21 +50,21 @@
             <div class="control-strip__group control-strip__group--themes">
                 <span class="control-strip__label"><i class="fas fa-palette" aria-hidden="true"></i> Theme Presets</span>
                 <div class="theme-dial" role="radiogroup" aria-label="Theme presets">
-                    <button class="theme-swatch is-active" type="button" role="radio" aria-checked="true" data-theme="cyberpunk_neon" data-theme-mode="dark">
+                    <button class="theme-swatch is-active" type="button" role="radio" aria-checked="true" aria-label="Apply Neon dark theme" data-theme="cyberpunk_neon" data-theme-mode="dark" data-theme-label="Neon">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label">Neon</span>
+                        <span class="theme-swatch__label visually-hidden">Neon dark theme</span>
                     </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" data-theme="dark_professional" data-theme-mode="dark">
+                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Midnight dark theme" data-theme="dark_professional" data-theme-mode="dark" data-theme-label="Midnight">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label">Midnight</span>
+                        <span class="theme-swatch__label visually-hidden">Midnight dark theme</span>
                     </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" data-theme="light_modern" data-theme-mode="light">
+                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Daylight light theme" data-theme="light_modern" data-theme-mode="light" data-theme-label="Daylight">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label">Daylight</span>
+                        <span class="theme-swatch__label visually-hidden">Daylight light theme</span>
                     </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" data-theme="pastel_dreams" data-theme-mode="light">
+                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Breeze light theme" data-theme="pastel_dreams" data-theme-mode="light" data-theme-label="Breeze">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label">Breeze</span>
+                        <span class="theme-swatch__label visually-hidden">Breeze light theme</span>
                     </button>
                 </div>
                 <p class="control-strip__helper" id="theme-mode-indicator" aria-live="polite">Dark mode • Neon</p>
@@ -488,36 +488,49 @@
                                     <p class="workspace-eyebrow">Workflow Helpers</p>
                                     <h2>Inspiration &amp; History</h2>
                                 </header>
-                                <div class="random-buttons" role="group" aria-label="Random prompt generators">
-                                    <button class="random-btn" data-category="portrait" type="button">
-                                        <span class="icon" aria-hidden="true">👤</span>
-                                        <span>Portrait</span>
-                                    </button>
-                                    <button class="random-btn" data-category="landscape" type="button">
-                                        <span class="icon" aria-hidden="true">🌄</span>
-                                        <span>Landscape</span>
-                                    </button>
-                                    <button class="random-btn" data-category="digital_art" type="button">
-                                        <span class="icon" aria-hidden="true">🎨</span>
-                                        <span>Digital Art</span>
-                                    </button>
-                                    <button class="random-btn" data-category="photography" type="button">
-                                        <span class="icon" aria-hidden="true">📸</span>
-                                        <span>Photography</span>
-                                    </button>
-                                    <button class="random-btn" data-category="fantasy" type="button">
-                                        <span class="icon" aria-hidden="true">🐉</span>
-                                        <span>Fantasy</span>
-                                    </button>
-                                    <button class="random-btn" data-category="surprise" type="button">
-                                        <span class="icon" aria-hidden="true">🎲</span>
-                                        <span>Surprise Me</span>
-                                    </button>
-                                </div>
-                                <div class="helper-actions">
-                                    <button class="btn btn--outline btn--full-width" type="button" data-modal-open="recent-prompts-modal" id="open-recent-prompts">
-                                        <i class="fas fa-history" aria-hidden="true"></i> View Recent Prompts
-                                    </button>
+                                <div class="helper-card__body">
+                                    <details class="secondary-tools" open>
+                                        <summary class="secondary-tools__summary">
+                                            <span><i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Random Prompt Shortcuts</span>
+                                        </summary>
+                                        <div class="secondary-tools__content" role="group" aria-label="Random prompt generators">
+                                            <button class="random-btn" data-category="portrait" type="button">
+                                                <span class="icon" aria-hidden="true">👤</span>
+                                                <span>Portrait</span>
+                                            </button>
+                                            <button class="random-btn" data-category="landscape" type="button">
+                                                <span class="icon" aria-hidden="true">🌄</span>
+                                                <span>Landscape</span>
+                                            </button>
+                                            <button class="random-btn" data-category="digital_art" type="button">
+                                                <span class="icon" aria-hidden="true">🎨</span>
+                                                <span>Digital Art</span>
+                                            </button>
+                                            <button class="random-btn" data-category="photography" type="button">
+                                                <span class="icon" aria-hidden="true">📸</span>
+                                                <span>Photography</span>
+                                            </button>
+                                            <button class="random-btn" data-category="fantasy" type="button">
+                                                <span class="icon" aria-hidden="true">🐉</span>
+                                                <span>Fantasy</span>
+                                            </button>
+                                            <button class="random-btn" data-category="surprise" type="button">
+                                                <span class="icon" aria-hidden="true">🎲</span>
+                                                <span>Surprise Me</span>
+                                            </button>
+                                        </div>
+                                    </details>
+                                    <details class="secondary-tools">
+                                        <summary class="secondary-tools__summary">
+                                            <span><i class="fas fa-history" aria-hidden="true"></i> Recent Prompt Library</span>
+                                        </summary>
+                                        <div class="secondary-tools__content helper-actions">
+                                            <p class="helper-description">Open your latest prompts on demand without crowding the main editor.</p>
+                                            <button class="btn btn--outline btn--full-width" type="button" data-modal-open="recent-prompts-modal" id="open-recent-prompts">
+                                                <i class="fas fa-folder-open" aria-hidden="true"></i> Browse Recent Prompts
+                                            </button>
+                                        </div>
+                                    </details>
                                 </div>
                             </article>
                         </div>
