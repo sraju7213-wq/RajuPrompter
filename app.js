@@ -17,6 +17,9 @@ let currentDescriptionMode = 'describe-detail';
 let magicEnhanceEnabled = false;
 let optimizeTimer = null;
 let currentLanguage = 'en';
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
+const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const deferredTabCache = new Set();
 
 const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])';
@@ -260,6 +263,7 @@ function initializeApp() {
     updatePromptPreview();
     updatePlatformBadge();
     updateActionStates();
+    updateFooterYear();
 
     console.log('🚀 App initialized successfully!');
 }
@@ -677,6 +681,20 @@ function updateDisclosureStates() {
 }
 
 function setupModalControls() {
+    document.querySelectorAll('[data-modal-open]').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            const targetId = button.getAttribute('data-modal-open');
+            if (!targetId) return;
+            const modal = document.getElementById(targetId);
+            if (modal) {
+                openModalElement(modal);
+            } else {
+                console.warn('Modal target not found:', targetId);
+            }
+        });
+    });
+
     document.querySelectorAll('[data-modal-close]').forEach(button => {
         button.addEventListener('click', () => {
             if (activeModal) {
@@ -728,6 +746,7 @@ function openModalElement(modal) {
     if (!modal) return;
     lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
     activeModal = modal;
     const focusTarget = modal.querySelector(FOCUSABLE_SELECTOR);
     if (focusTarget) {
@@ -738,6 +757,7 @@ function openModalElement(modal) {
 function closeModalElement(modal) {
     if (!modal) return;
     modal.classList.add('hidden');
+    modal.setAttribute('aria-hidden', 'true');
     if (activeModal === modal) {
         activeModal = null;
     }
@@ -747,11 +767,16 @@ function closeModalElement(modal) {
 }
 
 function setupQuickActions() {
-    const navigationButtons = document.querySelectorAll('.quick-action[data-tab-target]');
-    navigationButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            activateQuickAction(button);
-        });
+    const quickActionButtons = document.querySelectorAll('.quick-action');
+    quickActionButtons.forEach(button => {
+        if (button.dataset.action) {
+            return;
+        }
+        if (button.dataset.tabTarget || button.dataset.openModal || button.dataset.openUrl) {
+            button.addEventListener('click', () => {
+                activateQuickAction(button);
+            });
+        }
     });
 
     const themeToggleButton = document.querySelector('[data-action="toggle-theme"]');
@@ -817,42 +842,66 @@ function setupQuickActions() {
 function activateQuickAction(button) {
     if (!button) return;
     const tabName = button.dataset.tabTarget;
-    if (!tabName) return;
-
-    setQuickActionLoading(button, true);
-    switchTab(tabName);
-
     const focusSelector = button.dataset.focusTarget;
     const scrollSelector = button.dataset.scrollTarget;
+    const modalTarget = button.dataset.openModal;
+    const externalUrl = button.dataset.openUrl;
+    const openTarget = button.dataset.openTarget || '_self';
 
-    setTimeout(() => {
-        let handled = false;
-        if (scrollSelector) {
-            const scrollTarget = document.querySelector(scrollSelector);
-            if (scrollTarget && typeof scrollTarget.scrollIntoView === 'function') {
-                scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                handled = true;
-            }
-        }
+    setQuickActionLoading(button, true);
 
-        if (focusSelector) {
-            const focusTarget = document.querySelector(focusSelector);
-            if (focusTarget && typeof focusTarget.focus === 'function') {
-                if (!handled && typeof focusTarget.scrollIntoView === 'function') {
-                    focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    let actionPromise = Promise.resolve();
+
+    if (tabName) {
+        switchTab(tabName);
+        actionPromise = new Promise(resolve => {
+            setTimeout(() => {
+                let handled = false;
+                if (scrollSelector) {
+                    const scrollTarget = document.querySelector(scrollSelector);
+                    if (scrollTarget && typeof scrollTarget.scrollIntoView === 'function') {
+                        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        handled = true;
+                    }
                 }
-                focusTarget.focus({ preventScroll: true });
-                handled = true;
+
+                if (focusSelector) {
+                    const focusTarget = document.querySelector(focusSelector);
+                    if (focusTarget && typeof focusTarget.focus === 'function') {
+                        if (!handled && typeof focusTarget.scrollIntoView === 'function') {
+                            focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        focusTarget.focus({ preventScroll: true });
+                        handled = true;
+                    }
+                }
+
+                if (!handled) {
+                    console.warn('Quick action target not found for', tabName);
+                    showNotification('Section loaded. Scroll to view the updated workspace.');
+                }
+
+                resolve();
+            }, 220);
+        });
+    } else if (modalTarget) {
+        actionPromise = new Promise(resolve => {
+            const modal = document.getElementById(modalTarget);
+            if (modal) {
+                openModalElement(modal);
+            } else {
+                console.warn('Quick action modal not found for', modalTarget);
             }
-        }
+            resolve();
+        });
+    } else if (externalUrl) {
+        actionPromise = new Promise(resolve => {
+            window.open(externalUrl, openTarget);
+            resolve();
+        });
+    }
 
-        if (!handled) {
-            console.warn('Quick action target not found for', tabName);
-            showNotification('Section loaded. Scroll to view the updated workspace.');
-        }
-
-        setQuickActionLoading(button, false);
-    }, 220);
+    actionPromise.finally(() => setQuickActionLoading(button, false));
 }
 
 function setQuickActionLoading(button, isLoading) {
@@ -874,6 +923,22 @@ function closeLanguagePanel(trigger, panel) {
     panel.hidden = true;
     panel.setAttribute('aria-hidden', 'true');
     trigger.setAttribute('aria-expanded', 'false');
+}
+
+function loadDeferredEmbeds(tabName) {
+    if (!tabName || deferredTabCache.has(tabName)) return;
+    const frames = document.querySelectorAll(`iframe[data-deferred-tab='${tabName}']`);
+    if (frames.length === 0) {
+        return;
+    }
+
+    frames.forEach(frame => {
+        if (frame.dataset.src && !frame.src) {
+            frame.src = frame.dataset.src;
+        }
+    });
+
+    deferredTabCache.add(tabName);
 }
 
 function setLanguage(languageCode, { persist = true } = {}) {
@@ -1240,35 +1305,213 @@ function getAISuggestions() {
     });
 }
 
-function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(ev) {
+async function handleImageUpload(event) {
+    const file = event.target?.files ? event.target.files[0] : null;
+    if (!file) {
+        return;
+    }
+
+    resetImageAnalysis(true);
+    displayUploadStatus('');
+
+    const validation = validateUploadFile(file);
+    if (!validation.valid) {
+        displayUploadStatus(validation.message, 'error');
+        event.target.value = '';
+        return;
+    }
+
+    displayUploadStatus('Validating upload...', 'info');
+
+    try {
+        setLoadingOverlay(true, 'Analyzing your image…');
+        const dataUrl = await readFileAsDataURL(file);
+        const base64Image = dataUrl.split(',')[1];
+
+        const serverValidation = await validateUploadOnServer(file, base64Image);
+        if (serverValidation && serverValidation.valid === false) {
+            displayUploadStatus(serverValidation.message || 'Upload blocked for security reasons.', 'error');
+            event.target.value = '';
+            return;
+        }
+
+        const validationWarning = serverValidation && serverValidation.warning;
+        if (validationWarning) {
+            displayUploadStatus(`${serverValidation.message} Preparing preview…`, 'warning');
+        } else {
+            displayUploadStatus('Upload validated. Preparing preview…', 'info');
+        }
+
+        const previewImage = await loadPreviewImage(dataUrl);
+
+        displayUploadStatus(validationWarning ? 'Analyzing image locally…' : 'Analyzing image…', validationWarning ? 'warning' : 'info');
+
+        const [hfPrompt] = await Promise.all([
+            fetchHFPrompt(base64Image),
+            analyzeImage(previewImage)
+        ]);
+
+        if (hfPrompt) {
+            const textarea = document.getElementById('generated-prompt-text');
+            if (textarea && !textarea.value.trim()) {
+                textarea.value = hfPrompt;
+            }
+        }
+
+        displayUploadStatus('Image processed successfully.', 'success');
+    } catch (error) {
+        console.error('Image upload error', error);
+        const message = error?.message || 'We could not process that image. Please try a different file.';
+        displayUploadStatus(message, 'error');
+        resetImageAnalysis(true);
+        event.target.value = '';
+    } finally {
+        setLoadingOverlay(false);
+    }
+}
+
+function validateUploadFile(file) {
+    const extension = file.name ? file.name.split('.').pop().toLowerCase() : '';
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+
+    if (!SUPPORTED_IMAGE_TYPES.includes(file.type) && !allowedExtensions.includes(extension)) {
+        return { valid: false, message: 'Unsupported file type. Use JPG, PNG, or WebP images.' };
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE) {
+        return { valid: false, message: 'File size too large. Please choose an image under 10MB.' };
+    }
+
+    return { valid: true };
+}
+
+function displayUploadStatus(message, type = 'info') {
+    const status = document.getElementById('upload-status');
+    if (!status) {
+        return;
+    }
+
+    status.textContent = message || '';
+    status.className = 'upload-status';
+    if (!message) {
+        status.style.display = 'none';
+        return;
+    }
+
+    status.style.display = '';
+    if (type === 'success') {
+        status.classList.add('upload-status--success');
+    } else if (type === 'error') {
+        status.classList.add('upload-status--error');
+    } else if (type === 'warning') {
+        status.classList.add('upload-status--warning');
+    }
+}
+
+function updateBatchFeedback(message, type = 'info') {
+    const feedback = document.getElementById('batch-feedback');
+    if (!feedback) {
+        return;
+    }
+
+    feedback.textContent = message || '';
+    feedback.className = 'status-message';
+
+    if (!message) {
+        feedback.style.display = 'none';
+        return;
+    }
+
+    feedback.style.display = '';
+    if (type === 'success') {
+        feedback.classList.add('status-message--success');
+    } else if (type === 'error') {
+        feedback.classList.add('status-message--error');
+    } else if (type === 'warning') {
+        feedback.classList.add('status-message--warning');
+    }
+}
+
+function resetImageAnalysis(clearPreview = false) {
+    const analysisResults = document.getElementById('analysis-results');
+    const tagContainer = document.getElementById('analysis-tags');
+    const textarea = document.getElementById('generated-prompt-text');
+    const previewContainer = document.getElementById('preview-container');
+    const uploadImg = document.getElementById('uploaded-img');
+
+    if (analysisResults) analysisResults.hidden = true;
+    if (tagContainer) tagContainer.innerHTML = '';
+    if (textarea) textarea.value = '';
+    if (previewContainer && clearPreview) previewContainer.hidden = true;
+    if (uploadImg && clearPreview) uploadImg.removeAttribute('src');
+
+    lastImageTags = [];
+    lastColorHex = '';
+}
+
+function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === 'string') {
+                resolve(reader.result);
+            } else {
+                reject(new Error('Could not read file contents.'));
+            }
+        };
+        reader.onerror = () => reject(new Error('Could not read file contents.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadPreviewImage(dataUrl) {
+    return new Promise((resolve, reject) => {
         const img = document.getElementById('uploaded-img');
         const previewContainer = document.getElementById('preview-container');
         const analysisResults = document.getElementById('analysis-results');
-        if (img) {
-            img.onload = () => {
-                if (previewContainer) previewContainer.hidden = false;
-                if (analysisResults) analysisResults.hidden = true;
-                analyzeImage(img);
-            };
-            img.src = ev.target.result;
+        if (!img) {
+            reject(new Error('Preview element missing.'));
+            return;
         }
-        const base64Image = ev.target.result.split(',')[1];
-        const status = document.getElementById('upload-status');
-        if (status) status.textContent = 'Analyzing image...';
-        fetchHFPrompt(base64Image)
-            .then(prompt => {
-                if (status) status.textContent = prompt ? '' : 'Failed to analyze image.';
-                if (prompt) console.log('HF API prompt:', prompt);
+
+        img.onload = () => {
+            if (previewContainer) previewContainer.hidden = false;
+            if (analysisResults) analysisResults.hidden = true;
+            resolve(img);
+        };
+
+        img.onerror = () => reject(new Error('We could not display this image. Try a different file.'));
+        img.src = dataUrl;
+    });
+}
+
+async function validateUploadOnServer(file, base64Image) {
+    try {
+        const response = await fetch('/.netlify/functions/validate-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                data: base64Image
             })
-            .catch(() => {
-                if (status) status.textContent = 'Failed to analyze image.';
-            });
-    };
-    reader.readAsDataURL(file);
+        });
+
+        if (!response.ok) {
+            throw new Error('Server validation failed. Using local checks.');
+        }
+
+        const payload = await response.json();
+        if (typeof payload.valid === 'boolean') {
+            return payload;
+        }
+
+        return { valid: true, warning: true, message: 'Continuing with local validation.' };
+    } catch (error) {
+        console.warn('Server-side validation unavailable', error);
+        return { valid: true, warning: true, message: 'Server validation unavailable. Continuing with local checks.' };
+    }
 }
 
 async function fetchHFPrompt(imageBase64) {
@@ -1433,13 +1676,14 @@ function generateNaturalLanguageDescription(tags, colorHex, mode = 'describe-det
     return sentence;
 }
 
-function generateBatch() {
+function generateBatch(event) {
     const baseField = document.getElementById('batch-base-prompt');
     const count = parseInt(document.getElementById('batch-count').value, 10);
     const type = document.getElementById('variation-type').value;
     const resultsContainer = document.getElementById('batch-results');
     const resultsList = document.getElementById('batch-results-list');
     const emptyState = document.getElementById('batch-results-empty');
+    const trigger = event?.currentTarget instanceof HTMLElement ? event.currentTarget : document.getElementById('generate-batch');
 
     if (!baseField || !resultsContainer || !resultsList || !emptyState) {
         console.warn('Batch generator UI is incomplete.');
@@ -1449,44 +1693,39 @@ function generateBatch() {
     const base = baseField.value.trim();
     resultsContainer.setAttribute('aria-busy', 'true');
     resultsList.innerHTML = '';
+    updateBatchFeedback('');
 
     if (!base) {
         emptyState.hidden = false;
         resultsContainer.removeAttribute('aria-busy');
+        updateBatchFeedback('Add a base prompt to generate variations.', 'error');
         showNotification('Add a base prompt to generate variations.');
         return;
     }
 
     emptyState.hidden = true;
+    updateBatchFeedback('Generating variations…', 'info');
+    setButtonLoading(trigger, true, 'Generating…');
+
+    const variations = new Set();
+    const maxAttempts = count * 6;
+    let attempts = 0;
+
+    while (variations.size < count && attempts < maxAttempts) {
+        const variation = buildPromptVariation(base, type, variations.size + 1);
+        variations.add(variation);
+        attempts += 1;
+    }
+
+    if (variations.size === 0) {
+        updateBatchFeedback('No variations could be generated. Try expanding your base prompt.', 'error');
+        resultsContainer.removeAttribute('aria-busy');
+        setButtonLoading(trigger, false);
+        return;
+    }
 
     const fragment = document.createDocumentFragment();
-    for (let i = 0; i < count; i++) {
-        let variation = base;
-        switch (type) {
-            case 'style':
-                variation += ', ' + getRandomWord('styles', 'artistic_styles');
-                break;
-            case 'lighting':
-                variation += ', ' + getRandomWord('lighting', 'qualities');
-                break;
-            case 'composition':
-                variation += ', ' + getRandomWord('composition', 'framing');
-                break;
-            case 'color':
-                variation += ', ' + getRandomWord('colors', 'warm');
-                break;
-            default: {
-                const funcs = [
-                    () => getRandomWord('styles', 'artistic_styles'),
-                    () => getRandomWord('lighting', 'qualities'),
-                    () => getRandomWord('composition', 'framing'),
-                    () => getRandomWord('colors', 'warm')
-                ];
-                variation += ', ' + funcs[Math.floor(Math.random() * funcs.length)]();
-                break;
-            }
-        }
-
+    variations.forEach(variation => {
         const item = document.createElement('button');
         item.type = 'button';
         item.className = 'batch-item';
@@ -1496,14 +1735,67 @@ function generateBatch() {
             switchTab('prompt-builder');
         });
         fragment.appendChild(item);
-    }
+    });
 
     resultsList.appendChild(fragment);
     resultsContainer.removeAttribute('aria-busy');
     if (typeof resultsContainer.focus === 'function') {
         resultsContainer.focus({ preventScroll: true });
     }
-    showNotification(`Generated ${count} prompt ${count === 1 ? 'variation' : 'variations'}.`);
+
+    const difference = count - variations.size;
+    if (difference > 0) {
+        updateBatchFeedback(`Generated ${variations.size} unique prompt ${variations.size === 1 ? 'variation' : 'variations'}. Some duplicates were filtered out.`, 'warning');
+    } else {
+        updateBatchFeedback(`Generated ${variations.size} unique prompt ${variations.size === 1 ? 'variation' : 'variations'}.`, 'success');
+    }
+    showNotification(`Generated ${variations.size} prompt ${variations.size === 1 ? 'variation' : 'variations'}.`);
+
+    setButtonLoading(trigger, false);
+}
+
+function buildPromptVariation(basePrompt, type, index = 1) {
+    const trimmedBase = basePrompt.replace(/\s+/g, ' ').trim();
+    const styleMovement = getRandomWord('styles', 'art_movements');
+    const artisticStyle = getRandomWord('styles', 'artistic_styles');
+    const visualStyle = getRandomWord('styles', 'visual_styles');
+    const lightingQuality = getRandomWord('lighting', 'qualities');
+    const naturalLighting = getRandomWord('lighting', 'natural');
+    const compositionAngle = getRandomWord('composition', 'camera_angles');
+    const compositionFrame = getRandomWord('composition', 'framing');
+    const warmColor = getRandomWord('colors', 'warm');
+    const coolColor = getRandomWord('colors', 'cool');
+    const moodCategory = index % 2 === 0 ? 'positive' : 'negative';
+    const moodWord = getRandomWord('moods', moodCategory);
+
+    const lensDescriptors = [
+        'captured with a 35mm lens',
+        'macro focus with shallow depth of field',
+        'ultra-wide cinematic perspective',
+        'telephoto compression for dramatic scale',
+        'tilt-shift depth cues'
+    ];
+    const timeOfDay = ['at golden hour', 'during blue hour', 'beneath neon night lights', 'at dawn', 'under stormy skies'];
+    const textureDetails = ['rich texture mapping', 'soft gradient background', 'volumetric lighting', 'high contrast shadows', 'cinematic atmosphere'];
+    const detailFinish = ['ultra detailed', 'studio quality', 'hyper realistic finish', 'painterly rendering', 'illustrative detail'];
+
+    const lens = lensDescriptors[Math.floor(Math.random() * lensDescriptors.length)];
+    const time = timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
+    const texture = textureDetails[Math.floor(Math.random() * textureDetails.length)];
+    const finish = detailFinish[Math.floor(Math.random() * detailFinish.length)];
+
+    switch (type) {
+        case 'style':
+            return `${trimmedBase}, ${artisticStyle} style, ${styleMovement} influence, ${finish}`;
+        case 'lighting':
+            return `${trimmedBase}, ${lightingQuality} lighting, ${naturalLighting} ambiance, ${time}, ${texture}`;
+        case 'composition':
+            return `${trimmedBase}, ${compositionAngle} perspective, ${compositionFrame} framing, ${lens}`;
+        case 'color':
+            return `${trimmedBase}, ${warmColor} and ${coolColor} palette, ${moodWord} mood, color graded for ${finish}`;
+        default:
+            return `${trimmedBase}, ${visualStyle} aesthetic, ${lightingQuality} lighting, ${compositionAngle} composition, ${warmColor} accents, ${moodWord} mood, ${lens}`;
+    }
 }
 
 async function expandPrompt(base, minLength) {
@@ -1614,6 +1906,7 @@ function switchTab(tabName) {
         content.toggleAttribute('hidden', !isActive);
     });
 
+    loadDeferredEmbeds(tabName);
 }
 
 // Theme system
@@ -1920,6 +2213,46 @@ function formatTimestamp(timestamp) {
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
     return date.toLocaleDateString();
+}
+
+function setButtonLoading(button, isLoading, label = 'Loading…') {
+    if (!button) return;
+    if (isLoading) {
+        if (!button.dataset.originalContent) {
+            button.dataset.originalContent = button.innerHTML;
+        }
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+        button.innerHTML = `<span class="btn__spinner"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>${label}</span></span>`;
+    } else {
+        button.classList.remove('is-loading');
+        button.removeAttribute('aria-busy');
+        button.disabled = false;
+        if (button.dataset.originalContent) {
+            button.innerHTML = button.dataset.originalContent;
+            delete button.dataset.originalContent;
+        }
+    }
+}
+
+function setLoadingOverlay(isVisible, message = 'Processing your request...') {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const text = overlay.querySelector('p');
+    if (text && message) {
+        text.textContent = message;
+    }
+    overlay.classList.toggle('hidden', !isVisible);
+    overlay.setAttribute('aria-hidden', isVisible ? 'false' : 'true');
+    overlay.setAttribute('aria-busy', isVisible ? 'true' : 'false');
+}
+
+function updateFooterYear() {
+    const yearElement = document.getElementById('footer-year');
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+    }
 }
 
 function showNotification(message) {
