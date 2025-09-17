@@ -62,20 +62,6 @@ working_html = '''<!DOCTYPE html>
     <div class="app-container">
         <!-- Enhanced Left Sidebar -->
         <aside class="sidebar">
-            <!-- AI Suggestions Panel -->
-            <div class="sidebar-section">
-                <h3><i class="fas fa-robot"></i> AI Suggestions</h3>
-                <div class="ai-suggestions" id="ai-suggestions">
-                    <div class="suggestion-item">
-                        <i class="fas fa-lightbulb"></i>
-                        <span>Add lighting description for better mood</span>
-                    </div>
-                </div>
-                <button class="btn btn--sm btn--secondary" id="get-suggestions">
-                    <i class="fas fa-magic"></i> Get AI Suggestions
-                </button>
-            </div>
-
             <!-- Enhanced Random Generators -->
             <div class="sidebar-section">
                 <h3><i class="fas fa-dice"></i> Random Generators</h3>

@@ -16,7 +16,6 @@ let currentAspectRatio = '1:1';
 let currentDescriptionMode = 'describe-detail';
 let magicEnhanceEnabled = false;
 let optimizeTimer = null;
-let currentLanguage = 'en';
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const deferredTabCache = new Set();
@@ -29,13 +28,6 @@ let activeDrawer = null;
 let disclosureResizeTimer = null;
 let notificationTimer = null;
 
-const LANGUAGE_LABELS = {
-    en: 'English',
-    es: 'Español',
-    fr: 'Français',
-    de: 'Deutsch',
-    hi: 'हिन्दी'
-};
 
 const DARK_THEMES = new Set([
     'cyberpunk_neon',
@@ -246,8 +238,6 @@ function initializeApp() {
     // Apply theme
     applyTheme(currentTheme);
 
-    // Apply stored language preference
-    setLanguage(currentLanguage, { persist: false });
 
     // Load shared prompt from URL if present
     const sharedPrompt = new URLSearchParams(window.location.search).get('prompt');
@@ -717,10 +707,12 @@ function closeModalElement(modal) {
 
 function setupQuickActions() {
     const quickActionButtons = document.querySelectorAll('.quick-action');
+
     quickActionButtons.forEach(button => {
         if (button.dataset.action) {
             return;
         }
+
         if (button.dataset.tabTarget || button.dataset.openModal || button.dataset.openUrl) {
             button.addEventListener('click', () => {
                 activateQuickAction(button);
@@ -728,54 +720,7 @@ function setupQuickActions() {
         }
     });
 
-    const languageButton = document.querySelector('[data-action="open-language"]');
-    const languagePanel = document.getElementById('language-preferences-panel');
-    if (languageButton && languagePanel) {
-        languageButton.addEventListener('click', () => {
-            const isExpanded = languageButton.getAttribute('aria-expanded') === 'true';
-            if (isExpanded) {
-                closeLanguagePanel(languageButton, languagePanel);
-            } else {
-                languageButton.setAttribute('aria-expanded', 'true');
-                languagePanel.hidden = false;
-                languagePanel.setAttribute('aria-hidden', 'false');
-                requestAnimationFrame(() => {
-                    const select = languagePanel.querySelector('select');
-                    if (select) {
-                        select.focus();
-                    }
-                });
-            }
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!languagePanel.contains(event.target) && !languageButton.contains(event.target)) {
-                closeLanguagePanel(languageButton, languagePanel);
-            }
-        });
-
-        languagePanel.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                closeLanguagePanel(languageButton, languagePanel);
-                languageButton.focus();
-            }
-        });
-    }
-
-    const languageSelect = document.getElementById('language-select');
-    if (languageSelect) {
-        languageSelect.addEventListener('change', (event) => {
-            setLanguage(event.target.value);
-            showNotification(`Language updated to ${LANGUAGE_LABELS[currentLanguage] || 'English'}`, 'success');
-            if (languageButton && languagePanel) {
-                closeLanguagePanel(languageButton, languagePanel);
-                languageButton.focus();
-            }
-        });
-    }
-
     updateThemeUI();
-    setLanguage(currentLanguage, { persist: false });
 }
 
 function activateQuickAction(button) {
@@ -856,13 +801,6 @@ function setQuickActionLoading(button, isLoading) {
     }
 }
 
-function closeLanguagePanel(trigger, panel) {
-    if (!trigger || !panel) return;
-    if (panel.hidden) return;
-    panel.hidden = true;
-    panel.setAttribute('aria-hidden', 'true');
-    trigger.setAttribute('aria-expanded', 'false');
-}
 
 function loadDeferredEmbeds(tabName) {
     if (!tabName || deferredTabCache.has(tabName)) return;
@@ -880,31 +818,6 @@ function loadDeferredEmbeds(tabName) {
     deferredTabCache.add(tabName);
 }
 
-function setLanguage(languageCode, { persist = true } = {}) {
-    const normalized = LANGUAGE_LABELS[languageCode] ? languageCode : 'en';
-    currentLanguage = normalized;
-    document.documentElement.setAttribute('lang', normalized);
-
-    const languageStatus = document.querySelector('[data-language-label]');
-    if (languageStatus) {
-        languageStatus.textContent = LANGUAGE_LABELS[normalized] || LANGUAGE_LABELS.en;
-    }
-
-    const languageSelect = document.getElementById('language-select');
-    if (languageSelect) {
-        languageSelect.value = normalized;
-    }
-
-    const languageButton = document.querySelector('[data-action="open-language"]');
-    if (languageButton) {
-        const label = LANGUAGE_LABELS[normalized] || LANGUAGE_LABELS.en;
-        languageButton.setAttribute('aria-label', `Language preferences (current: ${label})`);
-    }
-
-    if (persist) {
-        saveToStorage();
-    }
-}
 
 function updateThemeUI() {
     const swatches = document.querySelectorAll('.theme-swatch');
@@ -2255,7 +2168,6 @@ function saveToStorage() {
     const data = {
         currentPlatform,
         currentTheme,
-        currentLanguage,
         promptHistory,
         savedPrompts
     };
@@ -2277,7 +2189,6 @@ function loadFromStorage() {
         const data = JSON.parse(stored);
         currentPlatform = data.currentPlatform || 'natural_language';
         currentTheme = data.currentTheme || 'cyberpunk_neon';
-        currentLanguage = data.currentLanguage || 'en';
         promptHistory = data.promptHistory || [];
         savedPrompts = data.savedPrompts || [];
 
@@ -2309,3 +2220,4 @@ style.textContent = `
 document.head.appendChild(style);
 
 console.log('🎉 AI Prompt Generator v2.0 Ready!');
+
