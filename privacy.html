@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy • Raju Prompt Suite</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components/cards.css">
+    <style>
+        main {
+            width: min(100%, 960px);
+            margin: 0 auto;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            display: grid;
+            gap: var(--space-lg);
+        }
+
+        .policy-section {
+            background: var(--theme-surface);
+            border: 1px solid var(--theme-border);
+            border-radius: var(--radius-lg);
+            padding: clamp(1.25rem, 3vw, 2.5rem);
+            display: grid;
+            gap: var(--space-sm);
+            box-shadow: var(--shadow-md);
+        }
+
+        .policy-section h2 {
+            font-size: var(--text-lg);
+        }
+
+        .policy-list {
+            display: grid;
+            gap: 0.75rem;
+            padding-inline-start: 1.25rem;
+            list-style: disc;
+            color: var(--theme-text-muted);
+        }
+
+        header {
+            padding: clamp(1.5rem, 4vw, 3rem);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+        }
+
+        header a {
+            font-weight: 600;
+            color: var(--theme-primary);
+        }
+
+        footer {
+            padding: clamp(1.5rem, 4vw, 3rem);
+            text-align: center;
+            color: var(--theme-text-muted);
+            font-size: var(--text-sm);
+        }
+    </style>
+</head>
+<body data-theme="dark_professional">
+    <header>
+        <div>
+            <h1>Privacy Policy</h1>
+            <p>Effective date: July 2024</p>
+        </div>
+        <a href="index.html">← Back to the app</a>
+    </header>
+
+    <main>
+        <section class="policy-section">
+            <h2>Overview</h2>
+            <p>Raju Prompt Suite is designed with privacy-first principles. We only process the minimum amount of data needed to generate prompts and never sell, rent, or trade your information.</p>
+        </section>
+
+        <section class="policy-section">
+            <h2>What We Collect</h2>
+            <ul class="policy-list">
+                <li><strong>Prompt text:</strong> Stored locally in your browser for history and saved prompts. Content never leaves your device unless you explicitly share it.</li>
+                <li><strong>Image uploads:</strong> Temporarily transmitted to our secure validation function to verify file type and size. No files are persisted after validation.</li>
+                <li><strong>Usage metrics:</strong> We may collect anonymous, aggregated analytics (e.g., feature usage counts) to improve the experience. These metrics contain no personal data.</li>
+            </ul>
+        </section>
+
+        <section class="policy-section">
+            <h2>Image Upload Safeguards</h2>
+            <ul class="policy-list">
+                <li>Uploads are limited to JPG, PNG, and WebP files under 10&nbsp;MB.</li>
+                <li>Serverless validation inspects file signatures and size to block unsafe content.</li>
+                <li>Validated images are used only for transient AI analysis and are immediately discarded.</li>
+            </ul>
+        </section>
+
+        <section class="policy-section">
+            <h2>Your Choices</h2>
+            <ul class="policy-list">
+                <li>Clear your prompt history and saved prompts at any time from the app interface.</li>
+                <li>Disable analytics by using a browser or network-level tracker blocker—core features continue to work.</li>
+                <li>Request deletion of any optional data you shared with us by contacting <a href="mailto:hello@rajuprompter.app">hello@rajuprompter.app</a>.</li>
+            </ul>
+        </section>
+
+        <section class="policy-section">
+            <h2>Contact</h2>
+            <p>If you have questions about privacy or need additional assurances, email <a href="mailto:hello@rajuprompter.app">hello@rajuprompter.app</a>. We respond to every request within five business days.</p>
+        </section>
+    </main>
+
+    <footer>
+        &copy; <span id="privacy-year"></span> Raju Prompt Suite. All rights reserved.
+    </footer>
+
+    <script>
+        document.getElementById('privacy-year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

@@ -36,7 +36,7 @@
             </div>
         </div>
         <div class="app-header__actions">
-            <button class="icon-button" type="button" id="header-help" aria-label="Open help center">
+            <button class="icon-button" type="button" id="header-help" aria-label="Open help center" data-modal-open="help-modal">
                 <i class="fas fa-circle-info" aria-hidden="true"></i>
             </button>
         </div>
@@ -229,6 +229,44 @@
                                 </select>
                                 <p class="quick-action__panel-helper">We use this to tune interface copy and generated previews.</p>
                             </div>
+                        </div>
+                    </div>
+                </article>
+                <article class="quick-actions__group" aria-labelledby="quick-actions-help">
+                    <header class="quick-actions__header">
+                        <h3 id="quick-actions-help">Help &amp; Resources</h3>
+                        <p>Get guidance, review policies, and reach out when you need a hand.</p>
+                    </header>
+                    <div class="quick-actions__buttons" role="group" aria-label="Help shortcuts">
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-open-modal="help-modal" data-tooltip="Browse tutorials and workflow tips" data-tooltip-base="Browse tutorials and workflow tips">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-life-ring"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Help Center</span>
+                                    <span class="quick-action__description">Open curated walkthroughs and troubleshooting steps without leaving the app.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-open-url="privacy.html" data-open-target="_blank" data-tooltip="Review how we protect your uploads" data-tooltip-base="Review how we protect your uploads">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-shield-heart"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Privacy Policy</span>
+                                    <span class="quick-action__description">Understand data handling, retention, and your rights in one concise document.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-open-url="mailto:hello@rajuprompter.app" data-tooltip="Send us feedback or feature requests" data-tooltip-base="Send us feedback or feature requests">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-envelope-open-text"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Contact Support</span>
+                                    <span class="quick-action__description">Drop us a note—responses land directly in your inbox.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
                         </div>
                     </div>
                 </article>
@@ -484,7 +522,8 @@
 
                         <div id="hf-image-to-prompt-container" class="hf-embed" tabindex="-1">
                             <iframe
-                                src="https://huggingface.co/spaces/ovi054/image-to-prompt"
+                                data-deferred-tab="image-to-prompt"
+                                data-src="https://huggingface.co/spaces/ovi054/image-to-prompt"
                                 sandbox="allow-scripts allow-same-origin"
                                 width="100%"
                                 height="500"
@@ -502,7 +541,7 @@
                                 <h2>Image Prompt Generator</h2>
                                 <p class="card-subtitle">Use the lightweight generator for rapid inspiration.</p>
                             </header>
-                            <iframe src="classicpg/index.html" class="mini-frame" title="Quick image prompt generator"></iframe>
+                            <iframe data-deferred-tab="image-generator" data-src="classicpg/index.html" class="mini-frame" title="Quick image prompt generator" loading="lazy"></iframe>
                         </article>
                     </section>
 
@@ -543,6 +582,7 @@
                                     <button class="btn btn--primary btn--full-width" id="generate-batch" type="button">
                                         <i class="fas fa-magic" aria-hidden="true"></i> Generate Batch
                                     </button>
+                                    <p class="status-message" id="batch-feedback" role="status" aria-live="polite"></p>
                                 </div>
                                 <div class="batch-results" id="batch-results" aria-live="polite" tabindex="-1">
                                     <p class="empty-state" id="batch-results-empty">Enter a base prompt above and generate to start comparing variations.</p>
@@ -641,6 +681,18 @@
         </main>
     </div>
 
+    <footer class="app-footer" aria-label="Site information">
+        <div class="app-footer__content">
+            <p class="app-footer__headline">Built for prompt engineers who value privacy-first creativity.</p>
+            <div class="app-footer__meta">
+                <span>&copy; <span id="footer-year"></span> Raju Prompt Suite</span>
+                <a href="privacy.html">Privacy Policy</a>
+                <button class="app-footer__link" type="button" data-modal-open="help-modal">Help Center</button>
+            </div>
+            <p class="app-footer__disclaimer">All prompt generation happens in your browser. Uploaded images are validated securely and never stored after analysis.</p>
+        </div>
+    </footer>
+
     <nav class="bottom-nav tabs" role="tablist" aria-label="Primary navigation">
         <button class="tab active" id="tab-prompt-builder" data-tab="prompt-builder" role="tab" aria-selected="true" aria-controls="prompt-builder-tab">
             <i class="fas fa-pen" aria-hidden="true"></i>
@@ -692,7 +744,46 @@
         </div>
     </div>
 
-    <div class="loading-overlay hidden" id="loading-overlay" role="status" aria-live="polite">
+    <div class="modal hidden" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-describedby="help-modal-description">
+        <div class="modal__container">
+            <header class="modal__header">
+                <h3 id="help-modal-title"><i class="fas fa-life-ring" aria-hidden="true"></i> Help Center</h3>
+                <button class="icon-button" type="button" data-modal-close>
+                    <span class="icon-button__label">Close</span>
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </header>
+            <div class="modal__body" id="help-modal-description">
+                <section>
+                    <h4>Quick Start</h4>
+                    <ul class="help-list">
+                        <li><strong>Prompt Builder:</strong> Add subjects, styles, and lighting keywords. Toggle <em>Magic Enhance</em> to auto-extend prompts.</li>
+                        <li><strong>Image to Prompt:</strong> Upload JPG, PNG, or WebP images up to 10&nbsp;MB. We validate files before processing.</li>
+                        <li><strong>Batch Generator:</strong> Enter a base idea and let the generator craft unique variations for testing.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h4>Data &amp; Privacy</h4>
+                    <p>Uploads are validated on a secured serverless function and never written to disk. Prompts stay in your browser unless you choose to share them.</p>
+                    <a class="policy-link" href="privacy.html" target="_blank" rel="noopener">Read the full privacy policy</a>
+                </section>
+                <section>
+                    <h4>Need More Help?</h4>
+                    <p>Reach our support team at <a href="mailto:hello@rajuprompter.app">hello@rajuprompter.app</a> for workflow questions or feature requests.</p>
+                </section>
+            </div>
+            <footer class="modal__footer">
+                <a class="btn btn--outline" href="privacy.html" target="_blank" rel="noopener">
+                    <i class="fas fa-lock" aria-hidden="true"></i> Privacy Policy
+                </a>
+                <button class="btn btn--primary" type="button" data-modal-close>
+                    <i class="fas fa-check" aria-hidden="true"></i> Got it
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <div class="loading-overlay hidden" id="loading-overlay" role="status" aria-live="polite" aria-hidden="true">
         <div class="loading-spinner">
             <i class="fas fa-magic fa-spin" aria-hidden="true"></i>
             <p>Processing your request...</p>

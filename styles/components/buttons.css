@@ -37,6 +37,26 @@
   transform: none;
 }
 
+.btn.is-loading {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.btn__spinner {
+  display: none;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+.btn__spinner span {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.btn.is-loading .btn__spinner {
+  display: inline-flex;
+}
+
 .btn--primary {
   background: var(--theme-primary);
   color: var(--theme-secondary);

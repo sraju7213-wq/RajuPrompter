@@ -307,6 +307,77 @@ a:focus {
   border: 0;
 }
 
+.status-message {
+  display: none;
+  margin-top: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+}
+
+.status-message:not(:empty) {
+  display: block;
+}
+
+.status-message--success {
+  color: var(--theme-success);
+}
+
+.status-message--error {
+  color: var(--theme-error);
+}
+
+.status-message--warning {
+  color: var(--theme-warning);
+}
+
+.help-list {
+  display: grid;
+  gap: 0.65rem;
+  padding-inline-start: 1.25rem;
+  list-style: disc;
+}
+
+.help-list li strong {
+  color: var(--theme-text);
+}
+
+.help-list li em {
+  color: var(--theme-primary);
+  font-weight: 600;
+  font-style: normal;
+}
+
+.policy-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

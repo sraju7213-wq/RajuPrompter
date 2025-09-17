@@ -196,6 +196,30 @@ textarea {
   margin-block: var(--space-xs);
 }
 
+.upload-status {
+  display: none;
+  min-height: 1.5rem;
+  margin-top: var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--theme-text-muted);
+}
+
+.upload-status:not(:empty) {
+  display: block;
+}
+
+.upload-status--success {
+  color: var(--theme-success);
+}
+
+.upload-status--error {
+  color: var(--theme-error);
+}
+
+.upload-status--warning {
+  color: var(--theme-warning);
+}
+
 @media (min-width: 30rem) {
   .batch-settings {
     grid-template-columns: repeat(2, minmax(0, 1fr));
