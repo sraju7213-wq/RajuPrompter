@@ -16,6 +16,7 @@ let currentAspectRatio = '1:1';
 let currentDescriptionMode = 'describe-detail';
 let magicEnhanceEnabled = false;
 let optimizeTimer = null;
+let currentLanguage = 'en';
 
 const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])';
@@ -23,6 +24,23 @@ let lastFocusedElement = null;
 let activeModal = null;
 let activeDrawer = null;
 let disclosureResizeTimer = null;
+
+const LANGUAGE_LABELS = {
+    en: 'English',
+    es: 'Español',
+    fr: 'Français',
+    de: 'Deutsch',
+    hi: 'हिन्दी'
+};
+
+const DARK_THEMES = new Set([
+    'cyberpunk_neon',
+    'dark_professional',
+    'warm_autumn',
+    'ocean_blue',
+    'forest_green',
+    'sunset_gradient'
+]);
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -223,6 +241,9 @@ function initializeApp() {
 
     // Apply theme
     applyTheme(currentTheme);
+
+    // Apply stored language preference
+    setLanguage(currentLanguage, { persist: false });
 
     // Load shared prompt from URL if present
     const sharedPrompt = new URLSearchParams(window.location.search).get('prompt');
@@ -500,6 +521,8 @@ function setupEventListeners() {
         }
     });
 
+    setupQuickActions();
+
     console.log('✅ Event listeners configured');
 }
 
@@ -720,6 +743,185 @@ function closeModalElement(modal) {
     }
     if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
         lastFocusedElement.focus();
+    }
+}
+
+function setupQuickActions() {
+    const navigationButtons = document.querySelectorAll('.quick-action[data-tab-target]');
+    navigationButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            activateQuickAction(button);
+        });
+    });
+
+    const themeToggleButton = document.querySelector('[data-action="toggle-theme"]');
+    if (themeToggleButton) {
+        themeToggleButton.addEventListener('click', () => {
+            const nextTheme = DARK_THEMES.has(currentTheme) ? 'light_modern' : 'dark_professional';
+            setQuickActionLoading(themeToggleButton, true);
+            applyTheme(nextTheme);
+            setTimeout(() => setQuickActionLoading(themeToggleButton, false), 400);
+        });
+    }
+
+    const languageButton = document.querySelector('[data-action="open-language"]');
+    const languagePanel = document.getElementById('language-preferences-panel');
+    if (languageButton && languagePanel) {
+        languageButton.addEventListener('click', () => {
+            const isExpanded = languageButton.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+                closeLanguagePanel(languageButton, languagePanel);
+            } else {
+                languageButton.setAttribute('aria-expanded', 'true');
+                languagePanel.hidden = false;
+                languagePanel.setAttribute('aria-hidden', 'false');
+                requestAnimationFrame(() => {
+                    const select = languagePanel.querySelector('select');
+                    if (select) {
+                        select.focus();
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!languagePanel.contains(event.target) && !languageButton.contains(event.target)) {
+                closeLanguagePanel(languageButton, languagePanel);
+            }
+        });
+
+        languagePanel.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeLanguagePanel(languageButton, languagePanel);
+                languageButton.focus();
+            }
+        });
+    }
+
+    const languageSelect = document.getElementById('language-select');
+    if (languageSelect) {
+        languageSelect.addEventListener('change', (event) => {
+            setLanguage(event.target.value);
+            showNotification(`Language updated to ${LANGUAGE_LABELS[currentLanguage] || 'English'}`);
+            if (languageButton && languagePanel) {
+                closeLanguagePanel(languageButton, languagePanel);
+                languageButton.focus();
+            }
+        });
+    }
+
+    updateThemeToggleButton();
+    setLanguage(currentLanguage, { persist: false });
+}
+
+function activateQuickAction(button) {
+    if (!button) return;
+    const tabName = button.dataset.tabTarget;
+    if (!tabName) return;
+
+    setQuickActionLoading(button, true);
+    switchTab(tabName);
+
+    const focusSelector = button.dataset.focusTarget;
+    const scrollSelector = button.dataset.scrollTarget;
+
+    setTimeout(() => {
+        let handled = false;
+        if (scrollSelector) {
+            const scrollTarget = document.querySelector(scrollSelector);
+            if (scrollTarget && typeof scrollTarget.scrollIntoView === 'function') {
+                scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                handled = true;
+            }
+        }
+
+        if (focusSelector) {
+            const focusTarget = document.querySelector(focusSelector);
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                if (!handled && typeof focusTarget.scrollIntoView === 'function') {
+                    focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                focusTarget.focus({ preventScroll: true });
+                handled = true;
+            }
+        }
+
+        if (!handled) {
+            console.warn('Quick action target not found for', tabName);
+            showNotification('Section loaded. Scroll to view the updated workspace.');
+        }
+
+        setQuickActionLoading(button, false);
+    }, 220);
+}
+
+function setQuickActionLoading(button, isLoading) {
+    if (!button) return;
+    if (isLoading) {
+        button.classList.add('is-loading');
+        button.setAttribute('aria-busy', 'true');
+        button.disabled = true;
+    } else {
+        button.classList.remove('is-loading');
+        button.removeAttribute('aria-busy');
+        button.disabled = false;
+    }
+}
+
+function closeLanguagePanel(trigger, panel) {
+    if (!trigger || !panel) return;
+    if (panel.hidden) return;
+    panel.hidden = true;
+    panel.setAttribute('aria-hidden', 'true');
+    trigger.setAttribute('aria-expanded', 'false');
+}
+
+function setLanguage(languageCode, { persist = true } = {}) {
+    const normalized = LANGUAGE_LABELS[languageCode] ? languageCode : 'en';
+    currentLanguage = normalized;
+    document.documentElement.setAttribute('lang', normalized);
+
+    const languageStatus = document.querySelector('[data-language-label]');
+    if (languageStatus) {
+        languageStatus.textContent = LANGUAGE_LABELS[normalized] || LANGUAGE_LABELS.en;
+    }
+
+    const languageSelect = document.getElementById('language-select');
+    if (languageSelect) {
+        languageSelect.value = normalized;
+    }
+
+    const languageButton = document.querySelector('[data-action="open-language"]');
+    if (languageButton) {
+        const baseTooltip = languageButton.getAttribute('data-tooltip-base') || 'Adjust interface language';
+        const label = LANGUAGE_LABELS[normalized] || LANGUAGE_LABELS.en;
+        languageButton.setAttribute('aria-label', `${baseTooltip} (current: ${label})`);
+        languageButton.setAttribute('data-tooltip', `${baseTooltip} (Current: ${label})`);
+    }
+
+    if (persist) {
+        saveToStorage();
+    }
+}
+
+function updateThemeToggleButton() {
+    const themeStatus = document.querySelector('[data-theme-label]');
+    const themeIcon = document.querySelector('[data-theme-icon]');
+    const themeButton = document.querySelector('[data-action="toggle-theme"]');
+    const isDarkMode = DARK_THEMES.has(currentTheme);
+
+    if (themeStatus) {
+        themeStatus.textContent = isDarkMode ? 'Dark mode active' : 'Light mode active';
+    }
+
+    if (themeIcon) {
+        themeIcon.className = isDarkMode ? 'fas fa-moon' : 'fas fa-sun';
+    }
+
+    if (themeButton) {
+        const baseTooltip = themeButton.getAttribute('data-tooltip-base') || 'Switch themes';
+        themeButton.setAttribute('aria-label', isDarkMode ? 'Switch to light mode' : 'Switch to dark mode');
+        themeButton.setAttribute('data-tooltip', `${baseTooltip} (${isDarkMode ? 'Current: Dark' : 'Current: Light'})`);
     }
 }
 
@@ -1232,12 +1434,32 @@ function generateNaturalLanguageDescription(tags, colorHex, mode = 'describe-det
 }
 
 function generateBatch() {
-    const base = document.getElementById('batch-base-prompt').value.trim();
+    const baseField = document.getElementById('batch-base-prompt');
     const count = parseInt(document.getElementById('batch-count').value, 10);
     const type = document.getElementById('variation-type').value;
-    const results = document.getElementById('batch-results');
-    results.innerHTML = '';
-    if (!base) return;
+    const resultsContainer = document.getElementById('batch-results');
+    const resultsList = document.getElementById('batch-results-list');
+    const emptyState = document.getElementById('batch-results-empty');
+
+    if (!baseField || !resultsContainer || !resultsList || !emptyState) {
+        console.warn('Batch generator UI is incomplete.');
+        return;
+    }
+
+    const base = baseField.value.trim();
+    resultsContainer.setAttribute('aria-busy', 'true');
+    resultsList.innerHTML = '';
+
+    if (!base) {
+        emptyState.hidden = false;
+        resultsContainer.removeAttribute('aria-busy');
+        showNotification('Add a base prompt to generate variations.');
+        return;
+    }
+
+    emptyState.hidden = true;
+
+    const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
         let variation = base;
         switch (type) {
@@ -1253,24 +1475,35 @@ function generateBatch() {
             case 'color':
                 variation += ', ' + getRandomWord('colors', 'warm');
                 break;
-            default:
+            default: {
                 const funcs = [
                     () => getRandomWord('styles', 'artistic_styles'),
                     () => getRandomWord('lighting', 'qualities'),
                     () => getRandomWord('composition', 'framing'),
                     () => getRandomWord('colors', 'warm')
                 ];
-                variation += ', ' + funcs[Math.floor(Math.random()*funcs.length)]();
+                variation += ', ' + funcs[Math.floor(Math.random() * funcs.length)]();
+                break;
+            }
         }
-        const div = document.createElement('div');
-        div.className = 'batch-item';
-        div.textContent = variation;
-        div.addEventListener('click', () => {
+
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'batch-item';
+        item.textContent = variation;
+        item.addEventListener('click', () => {
             setPrompt(variation);
             switchTab('prompt-builder');
         });
-        results.appendChild(div);
+        fragment.appendChild(item);
     }
+
+    resultsList.appendChild(fragment);
+    resultsContainer.removeAttribute('aria-busy');
+    if (typeof resultsContainer.focus === 'function') {
+        resultsContainer.focus({ preventScroll: true });
+    }
+    showNotification(`Generated ${count} prompt ${count === 1 ? 'variation' : 'variations'}.`);
 }
 
 async function expandPrompt(base, minLength) {
@@ -1404,6 +1637,7 @@ function applyTheme(themeName) {
         chip.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
+    updateThemeToggleButton();
     saveToStorage();
 }
 
@@ -1721,6 +1955,7 @@ function saveToStorage() {
     const data = {
         currentPlatform,
         currentTheme,
+        currentLanguage,
         promptHistory,
         savedPrompts
     };
@@ -1742,6 +1977,7 @@ function loadFromStorage() {
         const data = JSON.parse(stored);
         currentPlatform = data.currentPlatform || 'natural_language';
         currentTheme = data.currentTheme || 'cyberpunk_neon';
+        currentLanguage = data.currentLanguage || 'en';
         promptHistory = data.promptHistory || [];
         savedPrompts = data.savedPrompts || [];
 

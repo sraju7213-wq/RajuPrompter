@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="styles/components/forms.css">
     <link rel="stylesheet" href="styles/components/chips.css">
     <link rel="stylesheet" href="styles/components/tabs.css">
+    <link rel="stylesheet" href="styles/components/quick-actions.css">
     <link rel="stylesheet" href="styles/components/cards.css">
     <link rel="stylesheet" href="styles/components/panels.css">
     <link rel="stylesheet" href="styles/components/dropzone.css">
@@ -114,6 +115,123 @@
                 <a class="btn btn--outline btn--compact" id="mini-generator-link" href="#" data-header-mini>
                     <i class="fas fa-bolt" aria-hidden="true"></i> Quick Gen
                 </a>
+            </div>
+        </section>
+
+        <section class="quick-actions" aria-labelledby="quick-actions-title">
+            <div class="quick-actions__intro">
+                <p class="workspace-eyebrow">Start Here</p>
+                <h2 id="quick-actions-title">Choose a workflow</h2>
+                <p class="quick-actions__summary">Buttons are grouped by task so you can open the right workspace with a single tap.</p>
+            </div>
+            <div class="quick-actions__grid">
+                <article class="quick-actions__group" aria-labelledby="quick-actions-prompt">
+                    <header class="quick-actions__header">
+                        <h3 id="quick-actions-prompt">Prompt Generation Tools</h3>
+                        <p>Build, iterate, and compare prompts before you export them.</p>
+                    </header>
+                    <div class="quick-actions__buttons" role="group" aria-label="Prompt generation shortcuts">
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-tab-target="prompt-builder" data-focus-target="#prompt-textarea" data-tooltip="Open the prompt builder workspace" data-tooltip-base="Open the prompt builder workspace">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-pen-nib"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Generate Prompt</span>
+                                    <span class="quick-action__description">Jump straight into the main editor to craft a new prompt.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-tab-target="more-tools" data-focus-target="#batch-base-prompt" data-scroll-target="#batch-base-prompt" data-tooltip="Open the batch generator for rapid variations" data-tooltip-base="Open the batch generator for rapid variations">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Batch Prompt Generator</span>
+                                    <span class="quick-action__description">Create multiple variations of a base prompt for testing.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-tab-target="more-tools" data-focus-target="#batch-results" data-scroll-target="#batch-results" data-tooltip="Review your prompt experiments side-by-side" data-tooltip-base="Review your prompt experiments side-by-side">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-vials"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">A/B Testing Lab</span>
+                                    <span class="quick-action__description">Compare generated results and send winners back to the editor.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                <article class="quick-actions__group" aria-labelledby="quick-actions-image">
+                    <header class="quick-actions__header">
+                        <h3 id="quick-actions-image">Image Handling</h3>
+                        <p>Analyse existing art or transform visuals into ready-to-use prompts.</p>
+                    </header>
+                    <div class="quick-actions__buttons" role="group" aria-label="Image workflow shortcuts">
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-tab-target="image-to-prompt" data-focus-target="#image-upload" data-scroll-target="#image-upload" data-tooltip="Upload an image for instant analysis" data-tooltip-base="Upload an image for instant analysis">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-upload"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Upload Image</span>
+                                    <span class="quick-action__description">Open the upload panel to extract descriptive prompts from an image.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-tab-target="image-to-prompt" data-focus-target="#hf-image-to-prompt-container" data-scroll-target="#hf-image-to-prompt-container" data-tooltip="Launch the image-to-prompt converter" data-tooltip-base="Launch the image-to-prompt converter">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-image"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Image to Prompt</span>
+                                    <span class="quick-action__description">Scroll directly to the AI assistant that translates images into text prompts.</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                <article class="quick-actions__group" aria-labelledby="quick-actions-preferences">
+                    <header class="quick-actions__header">
+                        <h3 id="quick-actions-preferences">Settings &amp; Preferences</h3>
+                        <p>Personalise the workspace so it matches your creative flow.</p>
+                    </header>
+                    <div class="quick-actions__buttons" role="group" aria-label="Preference shortcuts">
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-action="toggle-theme" data-tooltip="Switch between light and dark workspaces" data-tooltip-base="Switch between light and dark workspaces">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-moon" data-theme-icon></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Theme Toggle</span>
+                                    <span class="quick-action__description">Toggle the interface between bright focus mode and dark studio mode.</span>
+                                    <span class="quick-action__status" data-theme-label aria-live="polite"></span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                        </div>
+                        <div class="quick-actions__item">
+                            <button class="quick-action" type="button" data-action="open-language" aria-expanded="false" aria-controls="language-preferences-panel" data-tooltip="Adjust interface language" data-tooltip-base="Adjust interface language">
+                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-language"></i></span>
+                                <span class="quick-action__content">
+                                    <span class="quick-action__label">Language Preferences</span>
+                                    <span class="quick-action__description">Pick the language used for helper text and generated hints.</span>
+                                    <span class="quick-action__status" data-language-label aria-live="polite">English</span>
+                                </span>
+                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+                            </button>
+                            <div class="quick-action__panel" id="language-preferences-panel" hidden tabindex="-1" role="region" aria-label="Language preference" aria-hidden="true">
+                                <label for="language-select">Interface language</label>
+                                <select id="language-select" class="form-control">
+                                    <option value="en">English</option>
+                                    <option value="es">Español</option>
+                                    <option value="fr">Français</option>
+                                    <option value="de">Deutsch</option>
+                                    <option value="hi">हिन्दी</option>
+                                </select>
+                                <p class="quick-action__panel-helper">We use this to tune interface copy and generated previews.</p>
+                            </div>
+                        </div>
+                    </div>
+                </article>
             </div>
         </section>
 
@@ -364,7 +482,7 @@
                             </article>
                         </div>
 
-                        <div id="hf-image-to-prompt-container" class="hf-embed">
+                        <div id="hf-image-to-prompt-container" class="hf-embed" tabindex="-1">
                             <iframe
                                 src="https://huggingface.co/spaces/ovi054/image-to-prompt"
                                 sandbox="allow-scripts allow-same-origin"
@@ -426,8 +544,9 @@
                                         <i class="fas fa-magic" aria-hidden="true"></i> Generate Batch
                                     </button>
                                 </div>
-                                <div class="batch-results" id="batch-results" aria-live="polite">
-                                    <!-- Generated variations will appear here -->
+                                <div class="batch-results" id="batch-results" aria-live="polite" tabindex="-1">
+                                    <p class="empty-state" id="batch-results-empty">Enter a base prompt above and generate to start comparing variations.</p>
+                                    <div id="batch-results-list"></div>
                                 </div>
                             </article>
 
