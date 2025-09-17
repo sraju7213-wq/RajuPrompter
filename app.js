@@ -27,6 +27,7 @@ let lastFocusedElement = null;
 let activeModal = null;
 let activeDrawer = null;
 let disclosureResizeTimer = null;
+let notificationTimer = null;
 
 const LANGUAGE_LABELS = {
     en: 'English',
@@ -473,8 +474,8 @@ function setupEventListeners() {
             const text = document.getElementById('generated-prompt-text')?.value || '';
             if (!text) return;
             copyTextToClipboard(text)
-                .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
+                .then(() => showNotification('Prompt copied to clipboard!', 'success'))
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.', 'warning'));
         });
     }
 
@@ -765,7 +766,7 @@ function setupQuickActions() {
     if (languageSelect) {
         languageSelect.addEventListener('change', (event) => {
             setLanguage(event.target.value);
-            showNotification(`Language updated to ${LANGUAGE_LABELS[currentLanguage] || 'English'}`);
+            showNotification(`Language updated to ${LANGUAGE_LABELS[currentLanguage] || 'English'}`, 'success');
             if (languageButton && languagePanel) {
                 closeLanguagePanel(languageButton, languagePanel);
                 languageButton.focus();
@@ -816,7 +817,7 @@ function activateQuickAction(button) {
 
                 if (!handled) {
                     console.warn('Quick action target not found for', tabName);
-                    showNotification('Section loaded. Scroll to view the updated workspace.');
+                    showNotification('Section loaded. Scroll to view the updated workspace.', 'info');
                 }
 
                 resolve();
@@ -922,7 +923,8 @@ function updateThemeUI() {
     if (indicator) {
         if (activeSwatch) {
             const mode = activeSwatch.dataset.themeMode === 'light' ? 'Light mode' : 'Dark mode';
-            indicator.textContent = `${mode} • ${activeSwatch.querySelector('.theme-swatch__label')?.textContent || ''}`.trim();
+            const themeLabel = activeSwatch.dataset.themeLabel || activeSwatch.getAttribute('aria-label') || '';
+            indicator.textContent = [mode, themeLabel.replace(/apply\s*/i, '').trim()].filter(Boolean).join(' • ');
         } else {
             indicator.textContent = DARK_THEMES.has(currentTheme) ? 'Dark mode active' : 'Light mode active';
         }
@@ -1164,32 +1166,49 @@ function updateQualityScore() {
 function calculateQualityScore(prompt) {
     if (!prompt) return 0;
 
-    let score = 0;
-    const words = prompt.split(/\s+/).filter(word => word.length > 0);
+    const normalized = prompt.trim();
+    if (!normalized) return 0;
 
-    // Length score (0-25 points)
-    if (words.length >= 5 && words.length <= 75) {
-        score += Math.min(25, (words.length / 75) * 25);
-    }
+    const words = normalized.split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+    if (!wordCount) return 0;
 
-    // Descriptiveness score (0-25 points)
-    const descriptiveWords = ['beautiful', 'stunning', 'detailed', 'masterpiece', 'professional', 'artistic'];
-    const descriptiveCount = descriptiveWords.filter(word => prompt.toLowerCase().includes(word)).length;
-    score += Math.min(25, descriptiveCount * 5);
+    const cleanedWords = words.map(word => word.replace(/[^a-z0-9-]/gi, '').toLowerCase()).filter(Boolean);
+    const uniqueWordCount = new Set(cleanedWords).size;
+    const promptLower = normalized.toLowerCase();
 
-    // Style presence (0-25 points)
-    const hasStyle = Object.values(wordLibrary.styles).some(styleArray => 
-        styleArray.some(style => prompt.toLowerCase().includes(style.toLowerCase()))
-    );
-    if (hasStyle) score += 25;
+    const targetWords = Math.max(8, Math.round(desiredPromptLength / 6));
+    const lengthDifference = Math.abs(wordCount - targetWords);
+    const lengthScore = Math.max(0, 30 - Math.min(30, (lengthDifference / targetWords) * 30));
 
-    // Lighting presence (0-25 points)
-    const hasLighting = Object.values(wordLibrary.lighting).some(lightingArray => 
-        lightingArray.some(lighting => prompt.toLowerCase().includes(lighting.toLowerCase()))
-    );
-    if (hasLighting) score += 25;
+    const diversityRatio = wordCount ? Math.min(1, uniqueWordCount / wordCount) : 0;
+    const diversityScore = Math.round(diversityRatio * 18);
 
-    return Math.round(score);
+    const descriptiveWords = ['beautiful', 'stunning', 'detailed', 'masterpiece', 'professional', 'artistic', 'cinematic', 'hyperrealistic', 'vibrant', 'dramatic', 'immersive', 'ornate', 'photorealistic'];
+    const descriptorMatches = descriptiveWords.filter(word => promptLower.includes(word)).length;
+    const descriptorScore = Math.min(14, descriptorMatches * 2);
+
+    const punctuationCount = (normalized.match(/[,;:]/g) || []).length;
+    const structureScore = Math.min(8, punctuationCount * 2);
+
+    const styleMatches = Object.values(wordLibrary.styles).reduce((total, group) => {
+        return total + (group.some(style => promptLower.includes(style.toLowerCase())) ? 1 : 0);
+    }, 0);
+    const styleScore = Math.min(12, styleMatches * 4);
+
+    const lightingMatches = Object.values(wordLibrary.lighting).reduce((total, group) => {
+        return total + (group.some(light => promptLower.includes(light.toLowerCase())) ? 1 : 0);
+    }, 0);
+    const lightingScore = Math.min(8, lightingMatches * 4);
+
+    let platformScore = 0;
+    if (/\b(--ar|aspect\s+ratio)\b/i.test(normalized)) platformScore += 4;
+    if (/\b(--stylize|--s|--q|cfg\s*scale|guidance|seed)\b/i.test(normalized)) platformScore += 3;
+    if (/(4k|8k|high\s+resolution|ultra\s+detail|hdr)/i.test(normalized)) platformScore += 3;
+    platformScore = Math.min(10, platformScore);
+
+    const rawScore = lengthScore + diversityScore + descriptorScore + structureScore + styleScore + lightingScore + platformScore;
+    return Math.max(0, Math.min(100, Math.round(rawScore)));
 }
 
 function updatePlatformBadge() {
@@ -1686,7 +1705,8 @@ async function generateBatch(event) {
         emptyState.hidden = false;
         resultsContainer.removeAttribute('aria-busy');
         updateBatchFeedback('Add a base prompt to generate variations.', 'error');
-        showNotification('Add a base prompt to generate variations.');
+        showNotification('Add a base prompt to generate variations.', 'error');
+        setButtonLoading(trigger, false);
         return;
     }
 
@@ -1702,10 +1722,12 @@ async function generateBatch(event) {
         const variation = buildPromptVariation(base, type, variations.size + 1);
         variations.add(variation);
         attempts += 1;
-        if (attempts % 10 === 0) {
+        if (attempts % 5 === 0) {
             await waitForFrame();
         }
     }
+
+    await waitForFrame();
 
     if (variations.size === 0) {
         updateBatchFeedback('No variations could be generated. Try expanding your base prompt.', 'error');
@@ -1739,7 +1761,7 @@ async function generateBatch(event) {
     } else {
         updateBatchFeedback(`Generated ${variations.size} unique prompt ${variations.size === 1 ? 'variation' : 'variations'}.`, 'success');
     }
-    showNotification(`Generated ${variations.size} prompt ${variations.size === 1 ? 'variation' : 'variations'}.`);
+    showNotification(`Generated ${variations.size} prompt ${variations.size === 1 ? 'variation' : 'variations'}.`, 'success');
 
     setButtonLoading(trigger, false);
 }
@@ -1801,8 +1823,13 @@ async function expandPrompt(base, minLength) {
             }
         }
     }
+    let guard = 0;
     while (result.length < minLength) {
         result += `, ${getRandomWord('styles', 'visual_styles')} ${getRandomWord('lighting', 'qualities')} lighting`;
+        guard += 1;
+        if (guard % 3 === 0) {
+            await waitForFrame();
+        }
     }
     return result;
 }
@@ -1896,7 +1923,7 @@ function copyToClipboard() {
     copyTextToClipboard(currentPrompt)
         .then(() => {
             setActionFeedback('Prompt copied to clipboard.', 'success');
-            showNotification('Prompt copied to clipboard!');
+            showNotification('Prompt copied to clipboard!', 'success');
         })
         .catch(() => {
             setActionFeedback('Unable to copy automatically. Please copy manually.', 'warning');
@@ -1969,7 +1996,7 @@ function confirmSavePrompt() {
 
     saveToStorage();
     updateSavedPromptsDisplay();
-    showNotification('Prompt saved successfully!');
+    showNotification('Prompt saved successfully!', 'success');
     setActionFeedback('Prompt saved to your library.', 'success');
 
     if (modal) {
@@ -2041,8 +2068,8 @@ function updateHistoryDisplay() {
         copyBtn.textContent = 'Copy';
         copyBtn.addEventListener('click', () => {
             copyTextToClipboard(item.prompt)
-                .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
+                .then(() => showNotification('Prompt copied to clipboard!', 'success'))
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.', 'warning'));
         });
 
         actions.append(useBtn, copyBtn);
@@ -2099,8 +2126,8 @@ function updateSavedPromptsDisplay() {
         copyBtn.textContent = 'Copy';
         copyBtn.addEventListener('click', () => {
             copyTextToClipboard(item.prompt)
-                .then(() => showNotification('Prompt copied to clipboard!'))
-                .catch(() => showNotification('Unable to copy automatically. Please copy manually.'));
+                .then(() => showNotification('Prompt copied to clipboard!', 'success'))
+                .catch(() => showNotification('Unable to copy automatically. Please copy manually.', 'warning'));
         });
 
         actions.append(useBtn, copyBtn);
@@ -2184,32 +2211,33 @@ function updateFooterYear() {
     }
 }
 
-function showNotification(message) {
-    // Simple notification - you can enhance this
-    const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: var(--theme-primary, #3b82f6);
-        color: white;
-        padding: 12px 24px;
-        border-radius: 8px;
-        z-index: 10000;
-        animation: fadeIn 0.3s ease;
-    `;
-    notification.textContent = message;
+function showNotification(message, type = 'info') {
+    if (!message) {
+        return;
+    }
 
-    document.body.appendChild(notification);
+    let toast = document.querySelector('.app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'app-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toast);
+    }
 
-    setTimeout(() => {
-        notification.style.animation = 'fadeOut 0.3s ease';
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
+    toast.textContent = message;
+    toast.dataset.type = type;
+    toast.classList.add('is-visible');
+
+    clearTimeout(notificationTimer);
+    notificationTimer = window.setTimeout(() => {
+        toast.classList.remove('is-visible');
+        notificationTimer = window.setTimeout(() => {
+            if (toast && toast.parentNode && !toast.classList.contains('is-visible')) {
+                toast.parentNode.removeChild(toast);
             }
         }, 300);
-    }, 3000);
+    }, 3200);
 }
 
 function waitForFrame() {

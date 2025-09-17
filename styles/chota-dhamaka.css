@@ -1,0 +1,214 @@
+/* Chota Dhamaka mini generator styling */
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-primary, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+  background: var(--theme-background, #111111);
+  color: var(--theme-text, #f5f7f8);
+  display: flex;
+  justify-content: center;
+  padding: clamp(1rem, 2vw, 2.5rem);
+}
+
+.container {
+  width: min(100%, 900px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg, 1.5rem);
+}
+
+.main-content {
+  display: grid;
+  gap: var(--space-lg, 1.5rem);
+}
+
+.card {
+  background: var(--theme-elevated, rgba(30, 30, 30, 0.92));
+  border: 1px solid var(--theme-border, rgba(255, 255, 255, 0.12));
+  border-radius: 20px;
+  box-shadow: var(--shadow-lg, 0 16px 30px rgba(0, 0, 0, 0.25));
+  overflow: hidden;
+}
+
+.card__header,
+.card__body {
+  padding: clamp(1rem, 3vw, 1.75rem);
+  display: grid;
+  gap: var(--space-sm, 0.75rem);
+}
+
+.card__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.card h2,
+.card h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.form-group {
+  display: grid;
+  gap: var(--space-xs, 0.5rem);
+}
+
+.prompt-input {
+  min-height: 160px;
+  resize: vertical;
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm, 0.75rem);
+}
+
+.quick-command-buttons {
+  flex-wrap: wrap;
+}
+
+.quick-command-buttons .btn {
+  flex: 1 1 160px;
+}
+
+.prompts-container {
+  display: grid;
+  gap: var(--space-lg, 1.5rem);
+}
+
+.prompt-box {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.prompt-box .card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm, 0.75rem);
+}
+
+.prompt-meta {
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--theme-text-muted, rgba(180, 184, 188, 0.9));
+}
+
+.code-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 14px;
+  padding: var(--space-md, 1rem);
+}
+
+.prompt-code {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  line-height: 1.6;
+}
+
+.copy-btn {
+  position: absolute;
+  inset-inline-end: var(--space-sm, 0.75rem);
+  inset-block-start: var(--space-sm, 0.75rem);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform var(--transition-fast, 200ms ease), background var(--transition-fast, 200ms ease);
+}
+
+.copy-btn:hover,
+.copy-btn:focus-visible {
+  background: var(--theme-primary, #1db954);
+  color: var(--theme-secondary, #0b0b0b);
+  transform: translateY(-2px);
+}
+
+.copy-feedback {
+  display: block;
+  margin-top: var(--space-xs, 0.5rem);
+  font-size: var(--text-sm, 0.85rem);
+  color: var(--theme-success, #1db954);
+  min-height: 1.2em;
+}
+
+.output-section[style*='display: none'],
+.history-section[style*='display: none'],
+.favorites-section[style*='display: none'] {
+  display: none !important;
+}
+
+.history-container,
+.favorites-container {
+  display: grid;
+  gap: var(--space-sm, 0.75rem);
+}
+
+.history-container .card,
+.favorites-container .card {
+  padding: var(--space-sm, 0.75rem);
+}
+
+#toast {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-end: 1.5rem;
+  margin-inline: auto;
+  width: min(90%, 320px);
+  padding: var(--space-sm, 0.75rem) var(--space-md, 1rem);
+  border-radius: var(--radius-md, 12px);
+  text-align: center;
+  background: var(--theme-primary, #1db954);
+  color: var(--theme-secondary, #0b0b0b);
+  box-shadow: var(--shadow-md, 0 8px 20px rgba(0, 0, 0, 0.16));
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity var(--transition-fast, 200ms ease), transform var(--transition-fast, 200ms ease);
+}
+
+#toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+#toast.hidden {
+  display: none;
+}
+
+@media (min-width: 56rem) {
+  .prompts-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action-buttons {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 40rem) {
+  body {
+    padding: var(--space-md, 1rem);
+  }
+
+  .copy-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .prompt-box .card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
