@@ -129,10 +129,11 @@
   gap: var(--space-lg);
   padding: var(--space-lg);
   border-radius: 16px;
-  background: linear-gradient(145deg, rgba(36, 36, 36, 0.9), rgba(18, 18, 18, 0.95));
+  background: var(--surface-gradient, var(--theme-elevated));
   border: 1px solid var(--theme-border);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.28), 0 0 0 1px var(--surface-outline, transparent);
   position: relative;
+  transition: background var(--transition-slow), border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .control-strip__pill {
@@ -153,10 +154,6 @@
   display: grid;
   align-items: start;
   gap: var(--space-xs);
-}
-
-.control-strip__group--platform {
-  margin-top: var(--space-sm);
 }
 
 .control-strip__label {
@@ -235,10 +232,6 @@
   .control-strip__actions {
     justify-content: flex-end;
   }
-}
-
-.control-strip__group--platform {
-  margin-top: 0;
 }
 
 @media (max-width: 40rem) {

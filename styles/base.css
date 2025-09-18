@@ -57,148 +57,48 @@
 }
 
 /* Theme palettes applied via data-theme attribute */
-[data-theme='cyberpunk_neon'] {
-  --theme-primary: #1db954;
-  --theme-secondary: #0b0b0b;
-  --theme-accent: var(--accent-blue);
-  --theme-background: #111111;
-  --theme-surface: #1e1e1e;
-  --theme-elevated: #242424;
-  --theme-text: #f5f7f8;
-  --theme-text-muted: #b0b6ba;
-  --theme-border: rgba(255, 255, 255, 0.08);
-  --theme-focus: rgba(29, 185, 84, 0.6);
-  --theme-success: #1db954;
-  --theme-warning: #ffb02e;
-  --theme-error: #ff4d8d;
-  --word-chip-bg: rgba(29, 185, 84, 0.18);
-  --word-chip-border: rgba(29, 185, 84, 0.4);
-}
-
-[data-theme='dark_professional'] {
+[data-theme='dark'] {
   --theme-primary: #3b82f6;
-  --theme-secondary: #1e293b;
+  --theme-secondary: #0b1220;
   --theme-accent: #60a5fa;
-  --theme-background: #0b1220;
-  --theme-surface: #15203a;
-  --theme-elevated: rgba(15, 23, 42, 0.92);
+  --theme-background: #050914;
+  --theme-surface: #14213d;
+  --theme-elevated: rgba(13, 22, 43, 0.95);
   --theme-text: #f8fafc;
   --theme-text-muted: #cbd5f5;
-  --theme-border: rgba(148, 163, 184, 0.3);
+  --theme-border: rgba(148, 163, 184, 0.28);
   --theme-focus: rgba(59, 130, 246, 0.65);
   --theme-success: #10b981;
   --theme-warning: #f59e0b;
   --theme-error: #ef4444;
   --word-chip-bg: rgba(59, 130, 246, 0.2);
-  --word-chip-border: rgba(59, 130, 246, 0.4);
+  --word-chip-border: rgba(59, 130, 246, 0.38);
+  --surface-gradient: linear-gradient(145deg, rgba(27, 40, 76, 0.88), rgba(10, 18, 36, 0.95));
+  --card-gradient: linear-gradient(160deg, rgba(59, 130, 246, 0.14), rgba(59, 130, 246, 0.04));
+  --surface-outline: rgba(59, 130, 246, 0.24);
+  --surface-glow: rgba(59, 130, 246, 0.12);
 }
 
-[data-theme='light_modern'] {
-  --theme-primary: #0284c7;
-  --theme-secondary: #ffffff;
-  --theme-accent: #0ea5e9;
-  --theme-background: #f4f7fb;
-  --theme-surface: #ffffff;
-  --theme-elevated: rgba(255, 255, 255, 0.9);
-  --theme-text: #1e293b;
-  --theme-text-muted: #475569;
-  --theme-border: rgba(148, 163, 184, 0.4);
-  --theme-focus: rgba(14, 165, 233, 0.55);
-  --theme-success: #0ea5e9;
-  --theme-warning: #d97706;
-  --theme-error: #dc2626;
-  --word-chip-bg: rgba(15, 23, 42, 0.08);
-  --word-chip-border: rgba(15, 23, 42, 0.18);
-}
-
-[data-theme='warm_autumn'] {
-  --theme-primary: #d97706;
-  --theme-secondary: #1f1309;
-  --theme-accent: #f59e0b;
-  --theme-background: #1a1006;
-  --theme-surface: #281307;
-  --theme-elevated: rgba(39, 19, 7, 0.92);
-  --theme-text: #f7d7aa;
-  --theme-text-muted: #facc75;
-  --theme-border: rgba(250, 204, 117, 0.35);
-  --theme-focus: rgba(245, 158, 11, 0.6);
-  --theme-success: #65a30d;
-  --theme-warning: #f59e0b;
-  --theme-error: #dc2626;
-  --word-chip-bg: rgba(217, 119, 6, 0.22);
-  --word-chip-border: rgba(217, 119, 6, 0.4);
-}
-
-[data-theme='ocean_blue'] {
+[data-theme='bright'] {
   --theme-primary: #0ea5e9;
-  --theme-secondary: #082f49;
-  --theme-accent: #38bdf8;
-  --theme-background: #041724;
-  --theme-surface: #0b2b3f;
-  --theme-elevated: rgba(8, 47, 73, 0.92);
-  --theme-text: #e0f2fe;
-  --theme-text-muted: #94d5ff;
-  --theme-border: rgba(14, 165, 233, 0.35);
-  --theme-focus: rgba(14, 165, 233, 0.55);
-  --theme-success: #06b6d4;
-  --theme-warning: #f59e0b;
-  --theme-error: #ef4444;
-  --word-chip-bg: rgba(14, 165, 233, 0.2);
-  --word-chip-border: rgba(14, 165, 233, 0.4);
-}
-
-[data-theme='pastel_dreams'] {
-  --theme-primary: #a855f7;
-  --theme-secondary: #fdf4ff;
-  --theme-accent: #c084fc;
-  --theme-background: #fffdf7;
-  --theme-surface: #fef4ff;
-  --theme-elevated: rgba(253, 244, 255, 0.92);
-  --theme-text: #581c87;
-  --theme-text-muted: #7c3aed;
-  --theme-border: rgba(168, 85, 247, 0.35);
-  --theme-focus: rgba(168, 85, 247, 0.4);
+  --theme-secondary: #ffffff;
+  --theme-accent: #0284c7;
+  --theme-background: #f3f7fb;
+  --theme-surface: #ffffff;
+  --theme-elevated: rgba(255, 255, 255, 0.95);
+  --theme-text: #0f172a;
+  --theme-text-muted: #475569;
+  --theme-border: rgba(148, 163, 184, 0.35);
+  --theme-focus: rgba(14, 165, 233, 0.5);
   --theme-success: #22c55e;
-  --theme-warning: #f97316;
-  --theme-error: #ef4444;
-  --word-chip-bg: rgba(168, 85, 247, 0.18);
-  --word-chip-border: rgba(168, 85, 247, 0.35);
-}
-
-[data-theme='forest_green'] {
-  --theme-primary: #10b981;
-  --theme-secondary: #022c22;
-  --theme-accent: #34d399;
-  --theme-background: #011712;
-  --theme-surface: #063826;
-  --theme-elevated: rgba(6, 56, 38, 0.92);
-  --theme-text: #d1fae5;
-  --theme-text-muted: #a7f3d0;
-  --theme-border: rgba(16, 185, 129, 0.35);
-  --theme-focus: rgba(16, 185, 129, 0.6);
-  --theme-success: #34d399;
   --theme-warning: #f59e0b;
   --theme-error: #ef4444;
-  --word-chip-bg: rgba(16, 185, 129, 0.18);
-  --word-chip-border: rgba(16, 185, 129, 0.4);
-}
-
-[data-theme='sunset_gradient'] {
-  --theme-primary: #fb923c;
-  --theme-secondary: #441908;
-  --theme-accent: #fbbf24;
-  --theme-background: #2a0a02;
-  --theme-surface: #441908;
-  --theme-elevated: rgba(68, 25, 8, 0.92);
-  --theme-text: #fee2b3;
-  --theme-text-muted: #fdba74;
-  --theme-border: rgba(251, 146, 60, 0.35);
-  --theme-focus: rgba(251, 146, 60, 0.55);
-  --theme-success: #65a30d;
-  --theme-warning: #f97316;
-  --theme-error: #dc2626;
-  --word-chip-bg: rgba(251, 146, 60, 0.22);
-  --word-chip-border: rgba(251, 146, 60, 0.45);
+  --word-chip-bg: rgba(15, 23, 42, 0.08);
+  --word-chip-border: rgba(15, 23, 42, 0.16);
+  --surface-gradient: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(222, 242, 255, 0.94));
+  --card-gradient: linear-gradient(160deg, rgba(14, 165, 233, 0.12), rgba(14, 165, 233, 0.04));
+  --surface-outline: rgba(14, 116, 201, 0.18);
+  --surface-glow: rgba(14, 165, 233, 0.18);
 }
 
 /* CSS Reset inspired by modern-normalize */
@@ -313,6 +213,34 @@ a:focus {
 :focus-visible {
   outline: 3px solid var(--theme-focus);
   outline-offset: 3px;
+}
+
+[data-animate] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity var(--transition-slow),
+    transform var(--transition-slow),
+    box-shadow var(--transition-fast);
+  transition-delay: var(--animate-delay, 0ms);
+  will-change: transform, opacity;
+}
+
+[data-animate].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-animate].is-visible[data-animate='tilt'] {
+  transform: rotateX(0deg) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate] {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .visually-hidden {
