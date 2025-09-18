@@ -311,6 +311,12 @@
                                 </div>
                                 <p class="upload-guidance">Supports JPG, PNG, WebP up to 10MB</p>
                                 <div class="upload-status" id="upload-status" aria-live="polite"></div>
+                            <div class="ai-upload-actions">
+                                <button class="btn btn--primary btn--full-width" id="describe-image-ai" type="button" disabled>
+                                    <i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i> Describe with AI
+                                </button>
+                                <p class="status-message" id="describe-ai-status" role="status" aria-live="polite"></p>
+                            </div>
 
                                 <div class="description-card">
                                     <div class="description-card__header">
@@ -356,12 +362,20 @@
                                     </div>
                                     <textarea id="generated-prompt-text" class="form-control" rows="4"></textarea>
                                     <div class="generated-actions">
+                                        <button class="btn btn--secondary btn--full-width" id="generate-ai-variations" type="button">
+                                            <i class="fas fa-magic" aria-hidden="true"></i> Generate AI Variations
+                                        </button>
                                         <button class="btn btn--primary btn--full-width" id="use-generated-prompt" type="button">
                                             <i class="fas fa-check" aria-hidden="true"></i> Use This Prompt
                                         </button>
                                         <button class="btn btn--outline btn--full-width" id="copy-generated-prompt" type="button">
                                             <i class="fas fa-copy" aria-hidden="true"></i> Copy Prompt
                                         </button>
+                                    </div>
+                                    <p class="status-message" id="ai-generate-status" role="status" aria-live="polite"></p>
+                                    <div class="ai-variations" id="ai-variations" hidden>
+                                        <h4 class="ai-variations__title">AI Variations</h4>
+                                        <div class="ai-variations__list" id="ai-variations-list"></div>
                                     </div>
                                 </div>
                             </article>

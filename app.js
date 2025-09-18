@@ -11,6 +11,7 @@ let textGenerator = null;
 let imageCaptioner = null;
 let lastImageTags = [];
 let lastColorHex = '';
+let uploadedImageData = { base64: '', mimeType: '' };
 let desiredPromptLength = 300;
 let currentAspectRatio = '1:1';
 let currentDescriptionMode = 'describe-detail';
@@ -468,6 +469,28 @@ function setupEventListeners() {
                 .catch(() => showNotification('Unable to copy automatically. Please copy manually.', 'warning'));
         });
     }
+
+    const describeAiBtn = document.getElementById('describe-image-ai');
+    if (describeAiBtn) {
+        describeAiBtn.addEventListener('click', describeImageWithGemini);
+    }
+
+    const generateAiBtn = document.getElementById('generate-ai-variations');
+    if (generateAiBtn) {
+        generateAiBtn.addEventListener('click', generatePromptVariations);
+    }
+
+    const aiVariationsList = document.getElementById('ai-variations-list');
+    if (aiVariationsList) {
+        aiVariationsList.addEventListener('click', handleVariationAction);
+    }
+
+    const generatedPromptTextarea = document.getElementById('generated-prompt-text');
+    if (generatedPromptTextarea) {
+        generatedPromptTextarea.addEventListener('input', syncGenerateButtonState);
+    }
+
+    syncGenerateButtonState();
 
     const batchBtn = document.getElementById('generate-batch');
     if (batchBtn) {
@@ -1239,6 +1262,16 @@ async function handleImageUpload(event) {
 
         const previewImage = await loadPreviewImage(dataUrl);
 
+        uploadedImageData = {
+            base64: base64Image,
+            mimeType: (serverValidation && serverValidation.detectedType) || file.type || 'image/png'
+        };
+        const describeBtn = document.getElementById('describe-image-ai');
+        if (describeBtn) {
+            describeBtn.disabled = false;
+        }
+        syncGenerateButtonState();
+
         displayUploadStatus(validationWarning ? 'Analyzing image locally…' : 'Analyzing image…', validationWarning ? 'warning' : 'info');
 
         const [hfPrompt] = await Promise.all([
@@ -1351,6 +1384,30 @@ function setActionFeedback(message = '', type = 'info') {
     }
 }
 
+function updateStatusMessage(elementId, message = '', type = 'info') {
+    const el = document.getElementById(elementId);
+    if (!el) {
+        return;
+    }
+
+    el.textContent = message || '';
+    el.className = 'status-message';
+
+    if (!message) {
+        el.style.display = 'none';
+        return;
+    }
+
+    el.style.display = '';
+    if (type === 'success') {
+        el.classList.add('status-message--success');
+    } else if (type === 'error') {
+        el.classList.add('status-message--error');
+    } else if (type === 'warning') {
+        el.classList.add('status-message--warning');
+    }
+}
+
 function resetImageAnalysis(clearPreview = false) {
     const analysisResults = document.getElementById('analysis-results');
     const tagContainer = document.getElementById('analysis-tags');
@@ -1366,6 +1423,16 @@ function resetImageAnalysis(clearPreview = false) {
 
     lastImageTags = [];
     lastColorHex = '';
+    uploadedImageData = { base64: '', mimeType: '' };
+    clearAIVariations();
+    updateStatusMessage('describe-ai-status', '');
+    updateStatusMessage('ai-generate-status', '');
+    const describeBtn = document.getElementById('describe-image-ai');
+    if (describeBtn) {
+        setButtonLoading(describeBtn, false);
+        describeBtn.disabled = true;
+    }
+    syncGenerateButtonState();
 }
 
 function readFileAsDataURL(file) {
@@ -1502,6 +1569,307 @@ function addColorTags(img, tags) {
         analysisResults.hidden = false;
     }
 }
+function clearAIVariations() {
+    const container = document.getElementById('ai-variations');
+    const list = document.getElementById('ai-variations-list');
+    if (list) {
+        list.innerHTML = '';
+    }
+    if (container) {
+        container.hidden = true;
+    }
+}
+
+function renderAIVariations(variations = []) {
+    const container = document.getElementById('ai-variations');
+    const list = document.getElementById('ai-variations-list');
+    clearAIVariations();
+
+    if (!container || !list || !Array.isArray(variations) || variations.length === 0) {
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    variations.forEach((variation, index) => {
+        const prompt = (variation?.prompt || '').trim();
+        if (!prompt) {
+            return;
+        }
+
+        const card = document.createElement('article');
+        card.className = 'ai-variation';
+        card.dataset.prompt = prompt;
+
+        const title = document.createElement('h5');
+        title.className = 'ai-variation__title';
+        title.textContent = variation?.title || `Variation ${index + 1}`;
+        card.appendChild(title);
+
+        const body = document.createElement('p');
+        body.className = 'ai-variation__body';
+        body.textContent = prompt;
+        card.appendChild(body);
+
+        const actions = document.createElement('div');
+        actions.className = 'ai-variation__actions';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn btn--outline';
+        copyBtn.dataset.action = 'copy';
+        copyBtn.textContent = 'Copy';
+        actions.appendChild(copyBtn);
+
+        const useBtn = document.createElement('button');
+        useBtn.type = 'button';
+        useBtn.className = 'btn btn--primary';
+        useBtn.dataset.action = 'use';
+        useBtn.textContent = 'Use in Builder';
+        actions.appendChild(useBtn);
+
+        card.appendChild(actions);
+        fragment.appendChild(card);
+    });
+
+    if (!fragment.childNodes.length) {
+        return;
+    }
+
+    list.appendChild(fragment);
+    container.hidden = false;
+}
+
+function syncGenerateButtonState() {
+    const generateBtn = document.getElementById('generate-ai-variations');
+    if (!generateBtn) {
+        return;
+    }
+    const generatedPrompt = document.getElementById('generated-prompt-text')?.value.trim();
+    const manualPrompt = document.getElementById('prompt-textarea')?.value.trim();
+    generateBtn.disabled = !(generatedPrompt || manualPrompt);
+}
+
+async function callGeminiEndpoint(payload) {
+    const response = await fetch('/.netlify/functions/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    let data;
+    try {
+        data = await response.json();
+    } catch (error) {
+        if (!response.ok) {
+            throw new Error(`Gemini proxy error (${response.status}).`);
+        }
+        throw new Error('Unexpected response from Gemini proxy.');
+    }
+
+    if (!response.ok) {
+        throw new Error(data?.message || `Gemini proxy error (${response.status}).`);
+    }
+
+    if (data?.success !== true) {
+        throw new Error(data?.message || 'Gemini proxy returned an error.');
+    }
+
+    return data.data || {};
+}
+
+function buildDescribeInstruction() {
+    const aspect = currentAspectRatio || '1:1';
+    const customQuestionInput = document.getElementById('custom-question-input');
+    const customQuestion = customQuestionInput ? customQuestionInput.value.trim() : '';
+
+    const hints = [];
+    if (lastImageTags.length) {
+        hints.push(`Keywords: ${lastImageTags.slice(0, 15).join(', ')}.`);
+    }
+    if (lastColorHex) {
+        hints.push(`Dominant color: ${lastColorHex}.`);
+    }
+    const hintText = hints.length ? ` ${hints.join(' ')}` : '';
+
+    switch (currentDescriptionMode) {
+        case 'describe-brief':
+            return `Summarize this image in two sentences, highlighting the main subject and mood.${hintText}`;
+        case 'person-description':
+            return `Describe the person in the image, covering pose, facial features, clothing, emotions, and surroundings.${hintText}`;
+        case 'object-recognition':
+            return `List the primary objects and elements visible in the image as a comma-separated sequence.${hintText}`;
+        case 'art-style':
+            return `Analyze the artistic style, medium, color palette, and composition so it can be reused as a prompt.${hintText}`;
+        case 'text-extraction':
+            return 'Extract any legible text in the image. If no text is present, state that clearly.';
+        case 'midjourney': {
+            const base = `Rewrite the scene as a Midjourney prompt with vivid detail, style, lighting, and camera notes. Target aspect ratio ${aspect}.`;
+            return hintText ? `${base}${hintText}` : base;
+        }
+        case 'stable-diffusion': {
+            const base = `Rewrite the scene as a Stable Diffusion prompt, noting detail, style, lighting, and aspect ratio ${aspect}. Suggest a concise negative prompt if helpful.`;
+            return hintText ? `${base}${hintText}` : base;
+        }
+        case 'custom-question':
+            if (!customQuestion) {
+                throw new Error('Add a custom question before running Describe with AI.');
+            }
+            return hintText ? `${customQuestion} ${hintText}` : customQuestion;
+        case 'describe-detail':
+        default: {
+            const base = 'Provide a richly detailed description covering subjects, environment, style, lighting, mood, and camera perspective.';
+            return hintText ? `${base}${hintText}` : base;
+        }
+    }
+}
+
+async function describeImageWithGemini() {
+    const describeBtn = document.getElementById('describe-image-ai');
+    if (!uploadedImageData.base64) {
+        updateStatusMessage('describe-ai-status', 'Upload an image first.', 'error');
+        return;
+    }
+
+    let instruction;
+    try {
+        instruction = buildDescribeInstruction();
+    } catch (error) {
+        updateStatusMessage('describe-ai-status', error.message, 'error');
+        return;
+    }
+
+    setButtonLoading(describeBtn, true, 'Describing...');
+    updateStatusMessage('describe-ai-status', 'Analyzing image with Gemini...', 'info');
+
+    try {
+        const result = await callGeminiEndpoint({
+            mode: 'describe-image',
+            prompt: instruction,
+            image: uploadedImageData,
+            metadata: {
+                descriptionMode: currentDescriptionMode,
+                tags: lastImageTags,
+                dominantColor: lastColorHex
+            }
+        });
+
+        const description = (result?.description || result?.text || '').trim();
+        if (!description) {
+            throw new Error('Gemini did not return a description.');
+        }
+
+        const textarea = document.getElementById('generated-prompt-text');
+        if (textarea) {
+            textarea.value = description;
+        }
+        const analysisResults = document.getElementById('analysis-results');
+        if (analysisResults) {
+            analysisResults.hidden = false;
+        }
+        updateStatusMessage('describe-ai-status', 'Description generated.', 'success');
+        clearAIVariations();
+        syncGenerateButtonState();
+    } catch (error) {
+        console.error('Gemini describe error', error);
+        updateStatusMessage('describe-ai-status', error.message || 'Unable to describe the image right now.', 'error');
+    } finally {
+        setButtonLoading(describeBtn, false);
+    }
+}
+
+async function generatePromptVariations() {
+    const generateBtn = document.getElementById('generate-ai-variations');
+    if (!generateBtn) {
+        return;
+    }
+
+    const generatedText = document.getElementById('generated-prompt-text')?.value.trim();
+    const manualText = document.getElementById('prompt-textarea')?.value.trim();
+    const basePrompt = generatedText || manualText || '';
+
+    if (!basePrompt) {
+        updateStatusMessage('ai-generate-status', 'Add a prompt before generating variations.', 'error');
+        return;
+    }
+
+    setButtonLoading(generateBtn, true, 'Generating...');
+    updateStatusMessage('ai-generate-status', 'Crafting variations with Gemini...', 'info');
+    clearAIVariations();
+
+    try {
+        const data = await callGeminiEndpoint({
+            mode: 'prompt-variations',
+            prompt: basePrompt,
+            platform: currentPlatform,
+            platformLabel: platformData[currentPlatform]?.name || currentPlatform,
+            aspectRatio: currentAspectRatio,
+            desiredLength: desiredPromptLength,
+            tags: lastImageTags,
+            dominantColor: lastColorHex,
+            magicEnhance: magicEnhanceEnabled,
+            fromImage: Boolean(uploadedImageData.base64)
+        });
+
+        const variations = Array.isArray(data?.variations) ? data.variations : [];
+        if (!variations.length) {
+            updateStatusMessage('ai-generate-status', 'Gemini did not return any variations.', 'warning');
+            return;
+        }
+
+        renderAIVariations(variations);
+        updateStatusMessage('ai-generate-status', `Generated ${variations.length} variation${variations.length === 1 ? '' : 's'}.`, 'success');
+    } catch (error) {
+        console.error('Gemini variation error', error);
+        updateStatusMessage('ai-generate-status', error.message || 'Unable to generate variations right now.', 'error');
+    } finally {
+        setButtonLoading(generateBtn, false);
+        syncGenerateButtonState();
+    }
+}
+
+async function handleVariationAction(event) {
+    const button = event.target.closest('button[data-action]');
+    if (!button) {
+        return;
+    }
+
+    const card = button.closest('.ai-variation');
+    if (!card) {
+        return;
+    }
+
+    const prompt = (card.dataset.prompt || '').trim();
+    if (!prompt) {
+        showNotification('Prompt unavailable for this variation.', 'error');
+        return;
+    }
+
+    const action = button.dataset.action;
+
+    if (action === 'copy') {
+        const originalLabel = button.textContent;
+        try {
+            await copyTextToClipboard(prompt);
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalLabel;
+            }, 1500);
+            showNotification('Prompt copied to clipboard!', 'success');
+        } catch (error) {
+            console.error('Copy variation error', error);
+            showNotification('Unable to copy automatically. Please copy manually.', 'warning');
+        }
+        return;
+    }
+
+    if (action === 'use') {
+        await setPrompt(prompt);
+        switchTab('prompt-builder');
+        showNotification('Variation loaded into the builder.', 'success');
+    }
+}
+
 
 function rgbToHex(r, g, b) {
     return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
