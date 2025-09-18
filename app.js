@@ -3,7 +3,7 @@ console.log('🚀 AI Prompt Generator v2.0 Starting...');
 
 // Global state
 let currentPlatform = 'natural_language';
-let currentTheme = 'cyberpunk_neon';
+let currentTheme = 'dark';
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
@@ -20,6 +20,8 @@ let optimizeTimer = null;
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const deferredTabCache = new Set();
+let motionObserver = null;
+let interactiveFeedbackBound = false;
 
 const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input:not([type="hidden"]), select, [tabindex]:not([tabindex="-1"])';
@@ -30,14 +32,7 @@ let disclosureResizeTimer = null;
 let notificationTimer = null;
 
 
-const DARK_THEMES = new Set([
-    'cyberpunk_neon',
-    'dark_professional',
-    'warm_autumn',
-    'ocean_blue',
-    'forest_green',
-    'sunset_gradient'
-]);
+const DARK_THEMES = new Set(['dark']);
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -141,33 +136,9 @@ const wordLibrary = {
 
 // Platform configurations
 const platformData = {
-    midjourney: {
-        name: 'Midjourney',
-        optimalLength: '20-75 words',
-        supportsNegative: false,
-        parameters: ['ar', 's', 'q', 'seed']
-    },
-    stable_diffusion: {
-        name: 'Stable Diffusion',
-        optimalLength: '10-150 words',
-        supportsNegative: true,
-        parameters: ['steps', 'cfg_scale', 'seed']
-    },
-    flux_ai: {
-        name: 'Flux AI',
-        optimalLength: '15-100 words',
-        supportsNegative: false,
-        parameters: ['model', 'guidance']
-    },
-    dall_e: {
-        name: 'DALL-E',
-        optimalLength: '10-80 words',
-        supportsNegative: false,
-        parameters: ['size', 'quality', 'style']
-    },
     natural_language: {
-        name: 'Natural Language',
-        optimalLength: '5-200 words',
+        name: 'Prompt Suite',
+        optimalLength: '8-200 words',
         supportsNegative: false,
         parameters: []
     }
@@ -175,46 +146,27 @@ const platformData = {
 
 // Theme configurations
 const themes = {
-    dark_professional: {
-        name: 'Dark Professional',
+    dark: {
+        name: 'Dark',
         primary: '#3b82f6',
-        background: '#0f172a'
+        background: '#050914'
     },
-    light_modern: {
-        name: 'Light Modern',
+    bright: {
+        name: 'Bright',
         primary: '#0ea5e9',
-        background: '#ffffff'
-    },
-    cyberpunk_neon: {
-        name: 'Cyberpunk Neon',
-        primary: '#00ff88',
-        background: '#000000'
-    },
-    warm_autumn: {
-        name: 'Warm Autumn',
-        primary: '#d97706',
-        background: '#1c1917'
-    },
-    ocean_blue: {
-        name: 'Ocean Blue',
-        primary: '#0284c7',
-        background: '#082f49'
-    },
-    pastel_dreams: {
-        name: 'Pastel Dreams',
-        primary: '#a855f7',
-        background: '#fefce8'
-    },
-    forest_green: {
-        name: 'Forest Green',
-        primary: '#059669',
-        background: '#022c22'
-    },
-    sunset_gradient: {
-        name: 'Sunset Gradient',
-        primary: '#f59e0b',
-        background: '#431407'
+        background: '#f3f7fb'
     }
+};
+
+const LEGACY_THEME_MAP = {
+    cyberpunk_neon: 'dark',
+    dark_professional: 'dark',
+    warm_autumn: 'dark',
+    ocean_blue: 'dark',
+    forest_green: 'dark',
+    sunset_gradient: 'dark',
+    light_modern: 'bright',
+    pastel_dreams: 'bright'
 };
 
 // Initialize app when DOM loads
@@ -233,7 +185,7 @@ function initializeApp() {
     // Respect system color preference on first load
     if (!hasStoredData) {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        currentTheme = prefersDark ? 'dark_professional' : 'light_modern';
+        currentTheme = prefersDark ? 'dark' : 'bright';
     }
 
     // Apply theme
@@ -248,6 +200,7 @@ function initializeApp() {
 
     // Setup event listeners
     setupEventListeners();
+    setupInteractiveFeedback();
 
     // Initialize UI
     initializeWordBank();
@@ -266,6 +219,7 @@ function setupResponsiveEnhancements() {
     setupThemeSwatches();
     setupDisclosures();
     setupModalControls();
+    setupMotionEffects();
     document.querySelectorAll('.tab-content').forEach(content => {
         if (!content.classList.contains('active')) {
             content.setAttribute('hidden', '');
@@ -274,20 +228,93 @@ function setupResponsiveEnhancements() {
     updateDisclosureStates();
 }
 
+function setupMotionEffects() {
+    const animatedElements = document.querySelectorAll('[data-animate]');
+    if (!animatedElements.length) {
+        return;
+    }
+
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const supportsIntersection = typeof IntersectionObserver !== 'undefined';
+
+    if (prefersReduced || !supportsIntersection) {
+        animatedElements.forEach(element => {
+            if (element.dataset.animateInitialized !== 'true') {
+                const delayValue = parseInt(element.dataset.animateDelay || '0', 10);
+                if (!Number.isNaN(delayValue) && delayValue >= 0) {
+                    element.style.setProperty('--animate-delay', `${delayValue}ms`);
+                }
+                element.dataset.animateInitialized = 'true';
+            }
+            element.classList.add('is-visible');
+        });
+        return;
+    }
+
+    if (!motionObserver) {
+        motionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    if (entry.target.dataset.animateRepeat !== 'true') {
+                        motionObserver.unobserve(entry.target);
+                    }
+                } else if (entry.target.dataset.animateRepeat === 'true') {
+                    entry.target.classList.remove('is-visible');
+                }
+            });
+        }, { threshold: 0.15 });
+    }
+
+    animatedElements.forEach(element => {
+        if (element.dataset.animateInitialized === 'true') {
+            return;
+        }
+
+        const delayValue = parseInt(element.dataset.animateDelay || '0', 10);
+        if (!Number.isNaN(delayValue) && delayValue >= 0) {
+            element.style.setProperty('--animate-delay', `${delayValue}ms`);
+        }
+
+        element.dataset.animateInitialized = 'true';
+        motionObserver.observe(element);
+    });
+}
+
+function setupInteractiveFeedback() {
+    if (interactiveFeedbackBound) {
+        return;
+    }
+
+    const selector = '.quick-action, .btn';
+
+    document.addEventListener('pointerdown', event => {
+        const target = event.target.closest(selector);
+        if (target) {
+            target.classList.add('is-pressed');
+        }
+    });
+
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(eventName => {
+        document.addEventListener(eventName, event => {
+            const target = event.target.closest(selector);
+            if (target) {
+                target.classList.remove('is-pressed');
+            }
+        }, true);
+    });
+
+    document.addEventListener('blur', event => {
+        if (event.target && event.target.matches(selector)) {
+            event.target.classList.remove('is-pressed');
+        }
+    }, true);
+
+    interactiveFeedbackBound = true;
+}
+
 function setupEventListeners() {
     console.log('🔗 Setting up event listeners...');
-
-    // Platform selector
-    const platformSelect = document.getElementById('platform-select');
-    if (platformSelect) {
-        platformSelect.addEventListener('change', function(e) {
-            currentPlatform = e.target.value;
-            updatePlatformBadge();
-            updatePromptPreview();
-            saveToStorage();
-            console.log('🔄 Platform changed to:', currentPlatform);
-        });
-    }
 
     const lengthSlider = document.getElementById('prompt-length');
     if (lengthSlider) {
@@ -1017,15 +1044,6 @@ function updatePromptPreview() {
     if (preview) {
         let formattedPrompt = currentPrompt || 'Start building your prompt...';
 
-        // Add platform-specific formatting
-        if (currentPrompt) {
-            if (currentPlatform === 'midjourney') {
-                formattedPrompt += ` --ar ${currentAspectRatio} --s 100 --q 1`;
-            } else if (currentPlatform === 'stable_diffusion') {
-                formattedPrompt += ` | aspect ratio ${currentAspectRatio}`;
-            }
-        }
-
         preview.textContent = formattedPrompt;
     }
 }
@@ -1149,8 +1167,9 @@ function calculateQualityScore(prompt) {
 
 function updatePlatformBadge() {
     const badge = document.getElementById('platform-badge');
-    if (badge && platformData[currentPlatform]) {
-        badge.textContent = platformData[currentPlatform].name;
+    if (badge) {
+        const label = platformData[currentPlatform]?.name || 'Prompt Suite';
+        badge.textContent = label;
     }
 }
 
@@ -2154,6 +2173,7 @@ function switchTab(tabName) {
     });
 
     loadDeferredEmbeds(tabName);
+    setupMotionEffects();
 }
 
 // Theme system
@@ -2162,13 +2182,17 @@ function applyTheme(themeName) {
         return;
     }
 
-    currentTheme = themeName;
-    document.body.setAttribute('data-theme', themeName);
-
-    if (themes[themeName]) {
-        document.documentElement.style.setProperty('--theme-primary', themes[themeName].primary);
-        document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
+    const resolvedTheme = LEGACY_THEME_MAP[themeName] || themeName;
+    if (!themes[resolvedTheme]) {
+        console.warn('Unknown theme requested:', themeName);
+        return;
     }
+
+    currentTheme = resolvedTheme;
+    document.body.setAttribute('data-theme', resolvedTheme);
+
+    document.documentElement.style.setProperty('--theme-primary', themes[resolvedTheme].primary);
+    document.documentElement.style.setProperty('--theme-background', themes[resolvedTheme].background);
 
     updateThemeUI();
     saveToStorage();
@@ -2555,15 +2579,14 @@ function loadFromStorage() {
         }
 
         const data = JSON.parse(stored);
-        currentPlatform = data.currentPlatform || 'natural_language';
-        currentTheme = data.currentTheme || 'cyberpunk_neon';
+        const storedPlatform = data.currentPlatform;
+        currentPlatform = platformData[storedPlatform] ? storedPlatform : 'natural_language';
+        const storedTheme = data.currentTheme;
+        const mappedTheme = LEGACY_THEME_MAP[storedTheme] || storedTheme;
+        currentTheme = themes[mappedTheme] ? mappedTheme : 'dark';
         promptHistory = data.promptHistory || [];
         savedPrompts = data.savedPrompts || [];
-
-        const platformSelect = document.getElementById('platform-select');
-    if (platformSelect) platformSelect.value = currentPlatform;
-
-    updateHistoryDisplay();
+        updateHistoryDisplay();
         updateSavedPromptsDisplay();
         return true;
     } catch (e) {
