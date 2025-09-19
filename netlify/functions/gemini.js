@@ -24,18 +24,27 @@ function wait(ms) {
 }
 
 async function callGemini(model, body, attempt = 0) {
-  const url = ${BASE_URL}/:generateContent?key=;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
+  const safeModel = sanitizePrompt(model) || DEFAULT_TEXT_MODEL;
+  const url = `${BASE_URL}/${encodeURIComponent(safeModel)}:generateContent?key=${API_KEY}`;
+
+  let response;
+  try {
+    response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } catch (error) {
+    const err = new Error('Failed to reach Gemini API.');
+    err.statusCode = 503;
+    throw err;
+  }
 
   let json;
   try {
     json = await response.json();
   } catch (error) {
-    const err = new Error(Gemini response parsing failed ().);
+    const err = new Error('Gemini response parsing failed.');
     err.statusCode = response.status;
     throw err;
   }
@@ -43,9 +52,9 @@ async function callGemini(model, body, attempt = 0) {
   if (!response.ok) {
     if (response.status === 429 && attempt < 2) {
       await wait(300 * Math.pow(2, attempt));
-      return callGemini(model, body, attempt + 1);
+      return callGemini(safeModel, body, attempt + 1);
     }
-    const err = new Error(json?.error?.message || Gemini API error ().);
+    const err = new Error(json?.error?.message || 'Gemini API error.');
     err.statusCode = response.status;
     throw err;
   }
@@ -108,10 +117,16 @@ function buildVariationPromptPayload(payload) {
 
   const contextSegments = [];
   if (payload.platformLabel || payload.platform) {
-    contextSegments.push(Target platform: .);
+    const platform = sanitizePrompt(payload.platformLabel || payload.platform);
+    if (platform) {
+      contextSegments.push(`Target platform: ${platform}.`);
+    }
   }
   if (payload.aspectRatio) {
-    contextSegments.push(Preferred aspect ratio: .);
+    const ratio = sanitizePrompt(payload.aspectRatio);
+    if (ratio) {
+      contextSegments.push(`Preferred aspect ratio: ${ratio}.`);
+    }
   }
   if (Array.isArray(payload.tags) && payload.tags.length) {
     const tags = payload.tags
@@ -120,11 +135,14 @@ function buildVariationPromptPayload(payload) {
       .slice(0, 15)
       .join(', ');
     if (tags) {
-      contextSegments.push(Image keywords: .);
+      contextSegments.push(`Image keywords: ${tags}.`);
     }
   }
   if (payload.dominantColor) {
-    contextSegments.push(Dominant color: .);
+    const color = sanitizePrompt(payload.dominantColor);
+    if (color) {
+      contextSegments.push(`Dominant color: ${color}.`);
+    }
   }
   if (payload.fromImage) {
     contextSegments.push('The base prompt originated from an image description.');
@@ -133,7 +151,7 @@ function buildVariationPromptPayload(payload) {
     contextSegments.push('Enhancement mode is enabled; preserve clarity and structure.');
   }
 
-  const userPrompt = [Base prompt: "".]
+  const userPrompt = [`Base prompt: "${basePrompt}".`]
     .concat(contextSegments)
     .join(' ')
     .trim();
@@ -190,7 +208,7 @@ function parseVariationsPayload(rawText) {
   const variations = Array.isArray(parsed?.variations) ? parsed.variations : [];
   return variations
     .map((item, index) => {
-      const title = sanitizePrompt(item?.title) || Variation ;
+      const title = sanitizePrompt(item?.title) || `Variation ${index + 1}`;
       const prompt = sanitizePrompt(item?.prompt);
       if (!prompt) {
         return null;
