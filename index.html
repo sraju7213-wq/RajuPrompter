@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="styles/components/dropzone.css">
     <link rel="stylesheet" href="styles/components/modal.css">
 </head>
-<body data-theme="cyberpunk_neon">
+<body data-theme="dark">
     <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <header class="app-header" role="banner">
@@ -33,149 +33,79 @@
     </header>
 
     <div class="app-shell">
-        <section class="control-strip" aria-label="Workspace controls">
+        <section class="control-strip" aria-label="Workspace controls" data-animate="fade-up">
             <span class="control-strip__pill" aria-hidden="true">Workspace</span>
-            <div class="control-strip__group control-strip__group--platform">
-                <label class="control-strip__label" for="platform-select"><i class="fas fa-cogs" aria-hidden="true"></i> Platform</label>
-                <div class="select-field">
-                    <select id="platform-select" class="form-control">
-                        <option value="natural_language">Natural Language</option>
-                        <option value="midjourney">Midjourney v6.1</option>
-                        <option value="stable_diffusion">SDXL</option>
-                        <option value="flux_ai">Flux AI Pro</option>
-                        <option value="dall_e">DALL-E 3</option>
-                    </select>
-                </div>
-            </div>
             <div class="control-strip__group control-strip__group--themes">
                 <span class="control-strip__label"><i class="fas fa-palette" aria-hidden="true"></i> Theme Presets</span>
                 <div class="theme-dial" role="radiogroup" aria-label="Theme presets">
-                    <button class="theme-swatch is-active" type="button" role="radio" aria-checked="true" aria-label="Apply Neon dark theme" data-theme="cyberpunk_neon" data-theme-mode="dark" data-theme-label="Neon">
+                    <button class="theme-swatch is-active" type="button" role="radio" aria-checked="true" aria-label="Apply Dark theme" data-theme="dark" data-theme-mode="dark" data-theme-label="Dark">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label visually-hidden">Neon dark theme</span>
+                        <span class="theme-swatch__label visually-hidden">Dark theme</span>
                     </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Midnight dark theme" data-theme="dark_professional" data-theme-mode="dark" data-theme-label="Midnight">
+                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Bright theme" data-theme="bright" data-theme-mode="light" data-theme-label="Bright">
                         <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label visually-hidden">Midnight dark theme</span>
-                    </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Daylight light theme" data-theme="light_modern" data-theme-mode="light" data-theme-label="Daylight">
-                        <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label visually-hidden">Daylight light theme</span>
-                    </button>
-                    <button class="theme-swatch" type="button" role="radio" aria-checked="false" aria-label="Apply Breeze light theme" data-theme="pastel_dreams" data-theme-mode="light" data-theme-label="Breeze">
-                        <span class="theme-swatch__dot" aria-hidden="true"></span>
-                        <span class="theme-swatch__label visually-hidden">Breeze light theme</span>
+                        <span class="theme-swatch__label visually-hidden">Bright theme</span>
                     </button>
                 </div>
-                <p class="control-strip__helper" id="theme-mode-indicator" aria-live="polite">Dark mode • Neon</p>
+                <p class="control-strip__helper" id="theme-mode-indicator" aria-live="polite">Dark mode • Dark</p>
             </div>
         </section>
 
-        <section class="quick-actions" aria-labelledby="quick-actions-title">
+        <section class="quick-actions" aria-labelledby="quick-actions-title" data-animate="fade-up">
             <div class="quick-actions__intro">
                 <p class="workspace-eyebrow">Start Here</p>
                 <h2 id="quick-actions-title">Choose a workflow</h2>
-                <p class="quick-actions__summary">Buttons are grouped by task so you can open the right workspace with a single tap.</p>
+                <p class="quick-actions__summary">Launch the workspace you need in a single tap and stay focused on crafting standout prompts.</p>
             </div>
             <div class="quick-actions__grid">
-                <article class="quick-actions__group" aria-labelledby="quick-actions-prompt">
+                <article class="quick-actions__group" aria-labelledby="quick-actions-prompt" data-animate="fade-up">
                     <header class="quick-actions__header">
                         <h3 id="quick-actions-prompt">Prompt Generation Tools</h3>
-                        <p>Build, iterate, and compare prompts before you export them.</p>
+                        <p>Jump directly into the editor to build, enhance, and polish your prompt.</p>
                     </header>
-                    <div class="quick-actions__buttons" role="group" aria-label="Prompt generation shortcuts">
+                    <div class="quick-actions__buttons" role="group" aria-label="Prompt builder shortcut">
                         <div class="quick-actions__item">
                             <button class="quick-action" type="button" data-tab-target="prompt-builder" data-focus-target="#prompt-textarea">
                                 <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-pen-nib"></i></span>
                                 <span class="quick-action__content">
-                                    <span class="quick-action__label">Generate Prompt</span>
-                                    <span class="quick-action__description">Jump straight into the main editor to craft a new prompt.</span>
+                                    <span class="quick-action__label">Open Prompt Builder</span>
+                                    <span class="quick-action__description">Start crafting a new prompt with smart suggestions and live feedback.</span>
                                 </span>
                                 <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
                             </button>
                         </div>
+                    </div>
+                </article>
+                <article class="quick-actions__group" aria-labelledby="quick-actions-batch" data-animate="fade-up" data-animate-delay="120">
+                    <header class="quick-actions__header">
+                        <h3 id="quick-actions-batch">Batch Prompt Generator</h3>
+                        <p>Create tailored variations from a single idea and compare them side-by-side.</p>
+                    </header>
+                    <div class="quick-actions__buttons" role="group" aria-label="Batch generator shortcut">
                         <div class="quick-actions__item">
                             <button class="quick-action" type="button" data-tab-target="more-tools" data-focus-target="#batch-base-prompt" data-scroll-target="#batch-base-prompt">
                                 <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-layer-group"></i></span>
                                 <span class="quick-action__content">
-                                    <span class="quick-action__label">Batch Prompt Generator</span>
-                                    <span class="quick-action__description">Create multiple variations of a base prompt for testing.</span>
-                                </span>
-                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
-                            </button>
-                        </div>
-                        <div class="quick-actions__item">
-                            <button class="quick-action" type="button" data-tab-target="more-tools" data-focus-target="#batch-results" data-scroll-target="#batch-results">
-                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-vials"></i></span>
-                                <span class="quick-action__content">
-                                    <span class="quick-action__label">A/B Testing Lab</span>
-                                    <span class="quick-action__description">Compare generated results and send winners back to the editor.</span>
+                                    <span class="quick-action__label">Launch Batch Workspace</span>
+                                    <span class="quick-action__description">Generate multiple high-quality options for testing and iteration.</span>
                                 </span>
                                 <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
                             </button>
                         </div>
                     </div>
                 </article>
-                <article class="quick-actions__group" aria-labelledby="quick-actions-image">
+                <article class="quick-actions__group" aria-labelledby="quick-actions-image" data-animate="fade-up" data-animate-delay="200">
                     <header class="quick-actions__header">
-                        <h3 id="quick-actions-image">Image Handling</h3>
-                        <p>Analyse existing art or transform visuals into ready-to-use prompts.</p>
+                        <h3 id="quick-actions-image">Image to Prompt</h3>
+                        <p>Transform reference visuals into polished prompts with one streamlined flow.</p>
                     </header>
-                    <div class="quick-actions__buttons" role="group" aria-label="Image workflow shortcuts">
+                    <div class="quick-actions__buttons" role="group" aria-label="Image to prompt shortcut">
                         <div class="quick-actions__item">
                             <button class="quick-action" type="button" data-tab-target="image-to-prompt" data-focus-target="#image-upload" data-scroll-target="#image-upload">
-                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-upload"></i></span>
-                                <span class="quick-action__content">
-                                    <span class="quick-action__label">Upload Image</span>
-                                    <span class="quick-action__description">Open the upload panel to extract descriptive prompts from an image.</span>
-                                </span>
-                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
-                            </button>
-                        </div>
-                        <div class="quick-actions__item">
-                            <button class="quick-action" type="button" data-tab-target="image-to-prompt" data-focus-target="#hf-image-to-prompt-container" data-scroll-target="#hf-image-to-prompt-container">
                                 <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-image"></i></span>
                                 <span class="quick-action__content">
-                                    <span class="quick-action__label">Image to Prompt</span>
-                                    <span class="quick-action__description">Scroll directly to the AI assistant that translates images into text prompts.</span>
-                                </span>
-                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
-                            </button>
-                        </div>
-                    </div>
-                </article>
-                <article class="quick-actions__group" aria-labelledby="quick-actions-help">
-                    <header class="quick-actions__header">
-                        <h3 id="quick-actions-help">Help &amp; Resources</h3>
-                        <p>Get guidance, review policies, and reach out when you need a hand.</p>
-                    </header>
-                    <div class="quick-actions__buttons" role="group" aria-label="Help shortcuts">
-                        <div class="quick-actions__item">
-                            <button class="quick-action" type="button" data-open-modal="help-modal">
-                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-life-ring"></i></span>
-                                <span class="quick-action__content">
-                                    <span class="quick-action__label">Help Center</span>
-                                    <span class="quick-action__description">Open curated walkthroughs and troubleshooting steps without leaving the app.</span>
-                                </span>
-                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
-                            </button>
-                        </div>
-                        <div class="quick-actions__item">
-                            <button class="quick-action" type="button" data-open-url="privacy.html" data-open-target="_blank">
-                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-shield-heart"></i></span>
-                                <span class="quick-action__content">
-                                    <span class="quick-action__label">Privacy Policy</span>
-                                    <span class="quick-action__description">Understand data handling, retention, and your rights in one concise document.</span>
-                                </span>
-                                <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
-                            </button>
-                        </div>
-                        <div class="quick-actions__item">
-                            <button class="quick-action" type="button" data-open-url="mailto:hello@rajuprompter.app">
-                                <span class="quick-action__icon" aria-hidden="true"><i class="fas fa-envelope-open-text"></i></span>
-                                <span class="quick-action__content">
-                                    <span class="quick-action__label">Contact Support</span>
-                                    <span class="quick-action__description">Drop us a note—responses land directly in your inbox.</span>
+                                    <span class="quick-action__label">Open Image Workspace</span>
+                                    <span class="quick-action__description">Upload an image and let the assistant translate it into a ready-to-use prompt.</span>
                                 </span>
                                 <span class="quick-action__loader" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
                             </button>
@@ -191,7 +121,7 @@
 
                 <section class="app-main main-content" aria-label="Prompt builder">
                     <section class="tab-content active" id="prompt-builder-tab" role="tabpanel" aria-labelledby="tab-prompt-builder" tabindex="0">
-                        <article class="prompt-workspace">
+                        <article class="prompt-workspace" data-animate="fade-up" data-animate-delay="80">
                             <header class="workspace-header">
                                 <div>
                                     <p class="workspace-eyebrow">Prompt Builder</p>
@@ -253,7 +183,7 @@
                                     <span class="status-pill" id="word-count">0 words</span>
                                     <span class="status-pill" id="quality-indicator">Quality: 0%</span>
                                     <span class="status-pill status-pill--accent" id="platform-compatibility">
-                                        <i class="fas fa-check-circle" aria-hidden="true"></i> Platform Optimized
+                                        <i class="fas fa-check-circle" aria-hidden="true"></i> Prompt Ready
                                     </span>
                                 </div>
                             </div>
@@ -283,14 +213,11 @@
                                 </div>
                             </section>
 
-                            <div class="platform-specific-controls" id="platform-controls">
-                                <!-- Controls populated dynamically based on platform -->
-                            </div>
                         </article>
                     </section>
 
                     <section class="tab-content" id="image-to-prompt-tab" role="tabpanel" aria-labelledby="tab-image-to-prompt" tabindex="0">
-                        <div class="image-prompt-grid">
+                        <div class="image-prompt-grid" data-animate="fade-up">
                             <article class="upload-card">
                                 <header class="card-header">
                                     <div>
@@ -348,7 +275,7 @@
                                 </div>
                             </article>
 
-                            <article class="analysis-card" id="analysis-results" hidden>
+                            <article class="analysis-card" id="analysis-results" hidden data-animate="fade-up" data-animate-delay="120">
                                 <header class="card-header">
                                     <h3>AI Analysis Results</h3>
                                 </header>
@@ -381,7 +308,7 @@
                             </article>
                         </div>
 
-                        <div id="hf-image-to-prompt-container" class="hf-embed" tabindex="-1">
+                        <div id="hf-image-to-prompt-container" class="hf-embed" tabindex="-1" data-animate="fade-up" data-animate-delay="200">
                             <iframe
                                 data-deferred-tab="image-to-prompt"
                                 data-src="https://huggingface.co/spaces/ovi054/image-to-prompt"
@@ -396,7 +323,7 @@
                     </section>
 
                     <section class="tab-content" id="image-generator-tab" role="tabpanel" aria-labelledby="tab-image-generator" tabindex="0">
-                        <article class="embed-card">
+                        <article class="embed-card" data-animate="fade-up">
                             <header class="card-header">
                                 <p class="workspace-eyebrow">Quick Ideas</p>
                                 <h2>Chota Dhamaka</h2>
@@ -408,7 +335,7 @@
 
                     <section class="tab-content" id="more-tools-tab" role="tabpanel" aria-labelledby="tab-more-tools" tabindex="0">
                         <div class="more-tools-grid">
-                            <article class="batch-section">
+                            <article class="batch-section" data-animate="fade-up">
                                 <header class="card-header">
                                     <p class="workspace-eyebrow">Batch Tools</p>
                                     <h2>Batch Prompt Generator</h2>
@@ -451,7 +378,7 @@
                                 </div>
                             </article>
 
-                            <article class="actions-card">
+                            <article class="actions-card" data-animate="fade-up" data-animate-delay="120">
                                 <header class="card-header">
                                     <p class="workspace-eyebrow">Prompt Actions</p>
                                     <h2>Quick Actions</h2>
@@ -467,7 +394,7 @@
                                 <p class="status-message" id="action-feedback" role="status" aria-live="polite"></p>
                             </article>
 
-                            <article class="helper-card">
+                            <article class="helper-card" data-animate="fade-up" data-animate-delay="200">
                                 <header class="card-header">
                                     <p class="workspace-eyebrow">Workflow Helpers</p>
                                     <h2>Inspiration &amp; History</h2>
@@ -522,10 +449,10 @@
                 </section>
 
                 <aside class="app-secondary right-panel" aria-label="Insights and actions">
-                    <details class="panel panel--disclosure preview-panel" id="preview-panel" data-breakpoint="md">
+                    <details class="panel panel--disclosure preview-panel" id="preview-panel" data-breakpoint="md" data-animate="fade-up">
                         <summary class="panel__summary">
                             <span class="panel__title"><i class="fas fa-eye" aria-hidden="true"></i> Live Preview</span>
-                            <div class="platform-badge" id="platform-badge">Midjourney</div>
+                            <div class="platform-badge" id="platform-badge">Prompt Suite</div>
                         </summary>
                         <div class="panel__body">
                             <div class="prompt-preview">
@@ -550,7 +477,7 @@
                         </div>
                     </details>
 
-                    <section class="panel" aria-labelledby="saved-prompts-heading">
+                    <section class="panel" aria-labelledby="saved-prompts-heading" data-animate="fade-up" data-animate-delay="120">
                         <div class="panel__header">
                             <h3 id="saved-prompts-heading"><i class="fas fa-bookmark" aria-hidden="true"></i> Saved Prompts</h3>
                         </div>
@@ -571,7 +498,7 @@
             <div class="app-footer__meta">
                 <span>&copy; <span id="footer-year"></span> Raju Prompt Suite</span>
                 <a href="privacy.html">Privacy Policy</a>
-                <button class="app-footer__link" type="button" data-modal-open="help-modal">Help Center</button>
+                <a class="app-footer__link" href="mailto:hello@rajuprompter.app">Contact Support</a>
             </div>
             <p class="app-footer__disclaimer">All prompt generation happens in your browser. Uploaded images are validated securely and never stored after analysis.</p>
         </div>
@@ -643,45 +570,6 @@
             </div>
             <footer class="modal__footer">
                 <button class="btn btn--outline" type="button" data-modal-close>Close</button>
-            </footer>
-        </div>
-    </div>
-
-    <div class="modal hidden" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-modal-title" aria-describedby="help-modal-description">
-        <div class="modal__container">
-            <header class="modal__header">
-                <h3 id="help-modal-title"><i class="fas fa-life-ring" aria-hidden="true"></i> Help Center</h3>
-                <button class="icon-button" type="button" data-modal-close>
-                    <span class="icon-button__label">Close</span>
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                </button>
-            </header>
-            <div class="modal__body" id="help-modal-description">
-                <section>
-                    <h4>Quick Start</h4>
-                    <ul class="help-list">
-                        <li><strong>Prompt Builder:</strong> Add subjects, styles, and lighting keywords. Toggle <em>Magic Enhance</em> to auto-extend prompts.</li>
-                        <li><strong>Image to Prompt:</strong> Upload JPG, PNG, or WebP images up to 10&nbsp;MB. We validate files before processing.</li>
-                        <li><strong>Batch Generator:</strong> Enter a base idea and let the generator craft unique variations for testing.</li>
-                    </ul>
-                </section>
-                <section>
-                    <h4>Data &amp; Privacy</h4>
-                    <p>Uploads are validated on a secured serverless function and never written to disk. Prompts stay in your browser unless you choose to share them.</p>
-                    <a class="policy-link" href="privacy.html" target="_blank" rel="noopener">Read the full privacy policy</a>
-                </section>
-                <section>
-                    <h4>Need More Help?</h4>
-                    <p>Reach our support team at <a href="mailto:hello@rajuprompter.app">hello@rajuprompter.app</a> for workflow questions or feature requests.</p>
-                </section>
-            </div>
-            <footer class="modal__footer">
-                <a class="btn btn--outline" href="privacy.html" target="_blank" rel="noopener">
-                    <i class="fas fa-lock" aria-hidden="true"></i> Privacy Policy
-                </a>
-                <button class="btn btn--primary" type="button" data-modal-close>
-                    <i class="fas fa-check" aria-hidden="true"></i> Got it
-                </button>
             </footer>
         </div>
     </div>
