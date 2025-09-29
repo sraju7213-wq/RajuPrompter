@@ -17,6 +17,7 @@ let currentAspectRatio = '1:1';
 let currentDescriptionMode = 'describe-detail';
 let magicEnhanceEnabled = false;
 let optimizeTimer = null;
+let isPromptEnhancementRunning = false;
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const deferredTabCache = new Set();
@@ -1678,6 +1679,44 @@ async function callGeminiEndpoint(payload) {
     return data.data || {};
 }
 
+async function callOpenRouterEnhancer(promptText) {
+    const trimmedPrompt = typeof promptText === 'string' ? promptText.trim() : '';
+    if (!trimmedPrompt) {
+        throw new Error('Enter a prompt to enhance.');
+    }
+
+    const response = await fetch('/.netlify/functions/enhance-prompt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: trimmedPrompt })
+    });
+
+    let data;
+    try {
+        data = await response.json();
+    } catch (error) {
+        if (!response.ok) {
+            throw new Error(`OpenRouter proxy error (${response.status}).`);
+        }
+        throw new Error('Unexpected response from OpenRouter proxy.');
+    }
+
+    if (!response.ok) {
+        throw new Error(data?.message || `OpenRouter proxy error (${response.status}).`);
+    }
+
+    if (data?.success !== true) {
+        throw new Error(data?.message || 'OpenRouter proxy returned an error.');
+    }
+
+    const refined = data?.data?.enhancedPrompt || data?.data?.prompt;
+    if (!refined) {
+        throw new Error('OpenRouter proxy returned an empty prompt.');
+    }
+
+    return refined;
+}
+
 function buildDescribeInstruction() {
     const aspect = currentAspectRatio || '1:1';
     const customQuestionInput = document.getElementById('custom-question-input');
@@ -2126,15 +2165,34 @@ function debounceOptimize() {
 
 async function optimizePrompt() {
     const textarea = document.getElementById('prompt-textarea');
-    if (!textarea) return;
+    const enhanceBtn = document.getElementById('optimize-prompt');
+    if (!textarea || isPromptEnhancementRunning) return;
+
     const base = textarea.value.trim();
-    if (!base) return;
-    const optimized = await expandPrompt(base, desiredPromptLength);
-    textarea.value = optimized;
-    currentPrompt = optimized;
-    updatePromptPreview();
-    updateWordCount();
-    updateQualityScore();
+    if (!base) {
+        setActionFeedback('Enter a prompt before enhancing.', 'warning');
+        return;
+    }
+
+    setActionFeedback('Enhancing prompt with OpenRouter…', 'info');
+    setButtonLoading(enhanceBtn, true, 'Enhancing…');
+    isPromptEnhancementRunning = true;
+
+    try {
+        const optimized = await callOpenRouterEnhancer(base);
+        textarea.value = optimized;
+        currentPrompt = optimized;
+        updatePromptPreview();
+        updateWordCount();
+        updateQualityScore();
+        setActionFeedback('Prompt enhanced successfully.', 'success');
+    } catch (error) {
+        console.error('OpenRouter enhance error:', error);
+        setActionFeedback(error.message || 'Failed to enhance prompt. Please try again later.', 'error');
+    } finally {
+        setButtonLoading(enhanceBtn, false);
+        isPromptEnhancementRunning = false;
+    }
 }
 
 // Tab switching

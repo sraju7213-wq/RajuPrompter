@@ -2,6 +2,15 @@
 
 This refactor delivers a fully responsive, mobile-first experience for the AI Prompt Generator. The UI gracefully adapts from 320px wide phones to large desktop displays while keeping every workflow accessible: manual prompt creation, AI-assisted editing, image analysis, and batch generation.
 
+## 🔐 Environment Variables
+
+Netlify Functions rely on the following runtime configuration values:
+
+- `OPENROUTER_API_KEY` – required. Set this to your OpenRouter API key (e.g. `sk-or-...`).
+- `OPENROUTER_API_URL` – optional override for the OpenRouter endpoint. Defaults to `https://openrouter.ai/qwen/qwen3-coder:free/api`.
+- `OPENROUTER_APP_NAME` – optional label passed to OpenRouter for analytics. Defaults to `AI Prompt Generator`.
+- `SITE_URL` – optional. Used as the HTTP referer header when contacting OpenRouter.
+
 ## 📐 Layout Breakpoints
 
 | Breakpoint | Width | Layout Summary |
