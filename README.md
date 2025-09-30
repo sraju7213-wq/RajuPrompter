@@ -1,13 +1,13 @@
 # AI Prompt Generator v2.0 – Responsive Front-End
 
-This refactor delivers a fully responsive, mobile-first experience for the AI Prompt Generator. The UI gracefully adapts from 320px wide phones to large desktop displays while keeping every workflow accessible: manual prompt creation, AI-assisted editing, image analysis, and batch generation.
+This refactor delivers a fully responsive, mobile-first experience for the AI Prompt Generator. The UI gracefully adapts from 320px wide phones to large desktop displays while keeping every workflow accessible: manual prompt creation, AI-assisted editing, image analysis, and creative toolkit support.
 
 ## 📐 Layout Breakpoints
 
 | Breakpoint | Width | Layout Summary |
 | ---------- | ----- | -------------- |
 | **XS** | ≤ 360px | Single-column stack. Sticky header with hamburger menu, horizontal chip carousels with scroll snap. Collapsible panels default to closed. |
-| **SM** | 361–480px | Single-column layout with persistent primary actions (Build, AI Suggestions, Upload). Tabs and chip carousels remain horizontally scrollable. |
+| **SM** | 361–480px | Single-column layout with persistent primary actions (Build, AI Suggestions, Toolkit). Tabs and chip carousels remain horizontally scrollable. |
 | **MD** | 481–768px | Tall single column with selective two-column groupings where space allows. Live Preview and AI Suggestions remain collapsible and opt-in for screen space. |
 | **LG** | 769–1024px | Two-column grid: sidebar + main content on the left, analysis/actions on the right. Collapsible panels stay open by default. |
 | **XL** | ≥ 1025px | Desktop layout with constrained max-width for readability (≈72ch). Sticky sidebars on both sides keep assistive tools visible during scrolling. |
@@ -20,12 +20,8 @@ This refactor delivers a fully responsive, mobile-first experience for the AI Pr
   - On ≥864px (`54rem`), quick actions reappear inline in the header.
 
 - **Controls Strip**
-  - Houses the “Advanced” label, platform selector, theme chips, and desktop-only Collaborate/Chota actions.
-  - Chip rows use horizontal scrolling with snap on mobile and wrap on larger screens.
-
-- **Theme Chips**
-  - Touch targets are ≥44×44px and expose `aria-selected` state changes.
-  - Hidden `<select>` remains available for assistive tech.
+  - Houses the “Advanced” label, platform selector, and desktop-only Collaborate/Chota actions.
+  - Layout adapts from stacked sections on small screens to multi-column groupings on larger displays.
 
 - **AI Suggestions Panel**
   - Rendered as a `<details>` disclosure. Closed by default on mobile, automatically open on ≥768px.
@@ -43,12 +39,12 @@ This refactor delivers a fully responsive, mobile-first experience for the AI Pr
   - Textarea minimum height is `36vh` on mobile and remains resizable. Counters are grouped inside a status bar beneath the editor.
 
 - **AI-Powered Image Analysis**
-  - Full-width drop zone that doubles as a label for the file input on touch devices.
-  - Preview area and analysis results share consistent `hidden` toggling to avoid layout jumps.
+  - Text-first workflow that refines pasted descriptions with accessible contrast across all themes.
+  - Embedded Hugging Face assistant loads on demand to keep initial render light.
 
-- **Batch Prompt Generator**
-  - Vertical form by default, split into two columns from 30rem upward.
-  - Generate button becomes full-width on narrow viewports.
+- **Creative Toolkit**
+  - Random prompt shortcuts and recent prompt access live inside collapsible disclosures.
+  - Controls inherit elevated-surface theming for consistent readability.
 
 - **Live Preview**
   - Collapsible `<details>` component. Closed by default on ≤768px, open on larger screens.
@@ -61,26 +57,6 @@ This refactor delivers a fully responsive, mobile-first experience for the AI Pr
 - **Save Prompt Modal**
   - Full-screen on ≤768px with sticky header/footer.
   - `Esc`, backdrop click, and Cancel button all close the modal while returning focus to the trigger.
-
-## 🌈 Adding a New Theme Chip
-
-1. **Update the Theme Catalog**
-   - Open `app.js` and extend the `themes` object with the new key, primary color, and background.
-
-2. **Add the Chip**
-   - In `index.html`, add a button within the `.chip-carousel` container:
-     ```html
-     <button class="chip theme-chip" type="button" role="option" data-theme="your_theme">Label</button>
-     ```
-   - Add a matching option to the hidden `<select id="theme-select">` for assistive technologies.
-
-3. **Styling**
-   - If the theme needs custom accents, append CSS variables to `styles/base.css` under a `[data-theme='your_theme']` block.
-
-4. **Optional Platform Mapping**
-   - If the theme requires bespoke platform behavior, adjust `applyTheme` or supporting logic in `app.js`.
-
-The JS initialization automatically wires new chips: `setupThemeChips()` binds click handlers and `applyTheme()` handles `aria-selected` state updates plus persistence.
 
 ## ♿ Accessibility & Performance Highlights
 

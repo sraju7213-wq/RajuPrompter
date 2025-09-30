@@ -9,8 +9,8 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.25rem;
   padding: 0.5rem clamp(1rem, 4vw, 2rem);
-  background: rgba(12, 12, 12, 0.95);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--theme-elevated);
+  border-top: 1px solid var(--theme-border);
   backdrop-filter: blur(18px);
 }
 
@@ -48,7 +48,7 @@
 }
 
 .tab:hover {
-  color: #ffffff;
+  color: var(--theme-text);
 }
 
 .tab-content {
@@ -64,7 +64,6 @@
 }
 
 .prompt-workspace,
-.batch-section,
 .image-prompt-grid,
 .embed-card,
 .actions-card {

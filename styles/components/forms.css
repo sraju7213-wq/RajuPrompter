@@ -8,7 +8,7 @@ select {
   padding-block: 0.75rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--theme-border);
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--theme-elevated);
   color: var(--theme-text);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
@@ -17,7 +17,7 @@ select {
 textarea:focus,
 select:focus {
   border-color: var(--theme-primary);
-  box-shadow: 0 0 0 4px rgba(0, 255, 136, 0.15);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
   outline: none;
 }
 
@@ -79,77 +79,6 @@ textarea {
   gap: var(--space-xs);
 }
 
-.batch-settings {
-  display: grid;
-  gap: var(--space-sm);
-}
-
-.batch-results {
-  position: relative;
-  display: grid;
-  gap: var(--space-sm);
-}
-
-.batch-results[aria-busy='true']::after {
-  content: 'Generating…';
-  position: absolute;
-  inset-inline-end: var(--space-sm);
-  top: -1.8rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  font-size: var(--text-sm);
-  color: var(--theme-text-muted);
-}
-
-.batch-results[aria-busy='true']::before {
-  content: '';
-  position: absolute;
-  inset-inline-end: calc(var(--space-sm) + 5.5rem);
-  top: -1.5rem;
-  width: 0.8rem;
-  height: 0.8rem;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: transparent;
-  border-radius: 999px;
-  animation: spin var(--transition-slow) linear infinite;
-}
-
-.batch-item {
-  display: inline-flex;
-  width: 100%;
-  text-align: left;
-  padding: var(--space-sm);
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: inherit;
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-}
-
-.batch-item:hover,
-.batch-item:focus-visible {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  transform: translateY(-1px);
-}
-
-.batch-item:focus-visible {
-  outline: 3px solid var(--theme-focus);
-  outline-offset: 2px;
-}
-
-.batch-item:active {
-  transform: translateY(0);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .editor-status {
   display: flex;
   flex-wrap: wrap;
@@ -165,8 +94,8 @@ textarea {
 .prompt-textarea__wrapper {
   position: relative;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-elevated);
   padding: var(--space-sm);
 }
 
@@ -190,40 +119,10 @@ textarea {
   outline: none;
 }
 
-.upload-guidance {
-  font-size: var(--text-sm);
-  color: var(--theme-text-muted);
-  margin-block: var(--space-xs);
-}
-
-.upload-status {
-  display: none;
-  min-height: 1.5rem;
+.form-helper {
   margin-top: var(--space-xs);
   font-size: var(--text-sm);
   color: var(--theme-text-muted);
-}
-
-.upload-status:not(:empty) {
-  display: block;
-}
-
-.upload-status--success {
-  color: var(--theme-success);
-}
-
-.upload-status--error {
-  color: var(--theme-error);
-}
-
-.upload-status--warning {
-  color: var(--theme-warning);
-}
-
-@media (min-width: 30rem) {
-  .batch-settings {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 @media (min-width: 64rem) {

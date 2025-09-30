@@ -69,7 +69,7 @@
 
 .btn--outline {
   background: transparent;
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--theme-border);
 }
 
 .btn--full-width {
@@ -166,7 +166,7 @@
   padding-inline: var(--space-sm);
   padding-block: 0.35rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--theme-elevated);
   border: 1px solid var(--theme-border);
   font-size: var(--text-sm);
   white-space: nowrap;

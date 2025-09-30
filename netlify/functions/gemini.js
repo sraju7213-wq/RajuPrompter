@@ -100,6 +100,108 @@ async function handleDescribeImage(payload) {
   return { description };
 }
 
+
+async function handleRefineDescription(payload) {
+  const source = sanitizePrompt(payload.source);
+  if (!source) {
+    throw new Error('Missing description to refine.');
+  }
+
+  const mode = sanitizePrompt(payload.descriptionMode) || 'describe-detail';
+  const aspect = sanitizePrompt(payload.aspectRatio) || '1:1';
+  const naturalLanguage = Boolean(payload.naturalLanguage);
+  const customQuestion = sanitizePrompt(payload.customQuestion || '');
+
+  if (mode === 'custom-question' && !customQuestion) {
+    throw new Error('Missing custom question.');
+  }
+
+  let modeInstruction;
+  switch (mode) {
+    case 'describe-brief':
+      modeInstruction = 'Summarize the key visual elements in two sentences, highlighting the main subject and mood.';
+      break;
+    case 'person-description':
+      modeInstruction = 'Describe the person, covering pose, facial features, clothing, emotions, and surroundings.';
+      break;
+    case 'object-recognition':
+      modeInstruction = 'List the primary objects and elements visible, noting materials, shapes, and placement.';
+      break;
+    case 'art-style':
+      modeInstruction = 'Analyse the artistic style, medium, colour palette, and composition so it can inspire a new prompt.';
+      break;
+    case 'text-extraction':
+      modeInstruction = 'Extract and transcribe any legible text. If none exists, state that clearly.';
+      break;
+    case 'midjourney':
+      modeInstruction = `Rewrite the idea as a Midjourney-ready prompt with vivid detail, style, lighting, and camera notes. Target aspect ratio ${aspect}.`;
+      break;
+    case 'stable-diffusion':
+      modeInstruction = `Rewrite the idea as a Stable Diffusion prompt, including style, lighting, and aspect ratio ${aspect}. Suggest a concise negative prompt if helpful.`;
+      break;
+    case 'custom-question':
+      modeInstruction = customQuestion;
+      break;
+    case 'describe-detail':
+    default:
+      modeInstruction = 'Provide a richly detailed description covering subjects, environment, style, lighting, mood, and camera perspective.';
+      break;
+  }
+
+  const instructions = [
+    `Base description:
+"""${source}"""`,
+    modeInstruction
+  ];
+
+  if (mode !== 'text-extraction' && mode !== 'custom-question') {
+    instructions.push(`Target aspect ratio: ${aspect}.`);
+  }
+
+  instructions.push(
+    naturalLanguage
+      ? 'Respond in natural language paragraphs that read clearly to humans.'
+      : 'Respond with a single text-to-image prompt optimised for creative generation. Include style, lighting, composition, and mood details.'
+  );
+
+  instructions.push('Keep the response concise and focused.');
+
+  const userPrompt = instructions
+    .filter(Boolean)
+    .join('
+
+')
+    .trim();
+
+  const systemInstruction = 'You are an expert prompt engineer. Refine the provided description according to the instructions while preserving factual accuracy.';
+
+  const requestBody = {
+    systemInstruction: {
+      parts: [{ text: systemInstruction }]
+    },
+    contents: [
+      {
+        parts: [{ text: userPrompt }]
+      }
+    ],
+    generationConfig: {
+      temperature: naturalLanguage ? 0.8 : 0.6,
+      topP: 0.9,
+      maxOutputTokens: naturalLanguage ? 512 : 256
+    }
+  };
+
+  const model = sanitizePrompt(payload.model) || DEFAULT_TEXT_MODEL;
+  const response = await callGemini(model, requestBody);
+  const description = extractTextFromCandidates(response);
+
+  if (!description) {
+    throw new Error('Gemini did not return a description.');
+  }
+
+  return { description };
+}
+
 function buildVariationPromptPayload(payload) {
   const basePrompt = sanitizePrompt(payload.prompt);
   if (!basePrompt) {
@@ -239,14 +341,19 @@ exports.handler = async (event) => {
   }
 
   const mode = sanitizePrompt(payload.mode);
-  if (mode !== 'describe-image' && mode !== 'prompt-variations') {
+  if (mode !== 'describe-image' && mode !== 'prompt-variations' && mode !== 'refine-description') {
     return jsonResponse(400, { success: false, message: 'Unsupported mode requested.' });
   }
 
   try {
-    const data = mode === 'describe-image'
-      ? await handleDescribeImage(payload)
-      : await handlePromptVariations(payload);
+    let data;
+    if (mode === 'describe-image') {
+      data = await handleDescribeImage(payload);
+    } else if (mode === 'prompt-variations') {
+      data = await handlePromptVariations(payload);
+    } else {
+      data = await handleRefineDescription(payload);
+    }
     return jsonResponse(200, { success: true, data });
   } catch (error) {
     console.error('Gemini proxy error', error);
