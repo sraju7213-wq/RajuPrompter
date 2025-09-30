@@ -8,21 +8,37 @@ import { usePromptEngine } from '../hooks/usePromptEngine';
 const promptTemplates = [
   'Transform this concept into a cinematic narrative blueprint with visual, emotional, and thematic layers.',
   'Design a cross-platform campaign prompt optimized for TikTok, Instagram, and newsletter storytelling.',
-  'Craft a multi-shot AI art prompt blending photoreal portraiture with surreal architectural motifs.',
+  'Craft a multi-shot art prompt blending photoreal portraiture with surreal architectural motifs.',
 ];
 
-const reasoningSteps = [
+const defaultReasoning = [
   'Clarify ultimate intent and deliverables.',
   'List inspiration sources, reference styles, and guardrails.',
-  'Draft candidate prompt variations across 3 creativity levels.',
-  'Simulate model response, stress test for bias or ambiguity.',
+  'Draft candidate prompt variations across three creativity levels.',
+  'Simulate response, stress test for bias or ambiguity.',
   'Deliver final prompt with optimization notes and next steps.',
 ];
+
+const agentStatusStyles: Record<string, string> = {
+  success: 'bg-emerald-500/10 text-emerald-300',
+  loading: 'bg-primary/10 text-primary',
+  error: 'bg-rose-500/10 text-rose-300',
+  skipped: 'bg-slate-700/40 text-slate-300',
+};
+
+const agentStatusLabels: Record<string, string> = {
+  success: 'Ready',
+  loading: 'Processing',
+  error: 'Fallback',
+  skipped: 'Idle',
+};
 
 const PromptWorkspace = () => {
   const { prompt, setPrompt, pushHistory } = usePromptStore();
   const [activeTab, setActiveTab] = useState<'composer' | 'chain' | 'audit'>('composer');
   const blueprint = usePromptEngine();
+  const chainSteps = blueprint.reasoning.length > 0 ? blueprint.reasoning : defaultReasoning;
+  const agentStatuses = blueprint.agents;
 
   const helperText = useMemo(() => {
     if (!prompt) {
@@ -141,16 +157,31 @@ const PromptWorkspace = () => {
 
           {activeTab === 'composer' && (
             <div className="space-y-3 text-sm text-slate-200">
+              {blueprint.error && (
+                <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-xs text-rose-200">
+                  {blueprint.error}
+                </div>
+              )}
               <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-4">
                 <p className="font-medium text-white">Optimized Prompt</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {blueprint.isLoading ? 'Coordinating partner engines...' : 'Latest weave delivered.'}
+                </p>
                 <p className="mt-2 whitespace-pre-line text-xs text-slate-300">{blueprint.optimizedPrompt}</p>
               </div>
+              {blueprint.imagePrompt && (
+                <div className="rounded-2xl border border-primary/30 bg-primary/5 p-4">
+                  <p className="font-medium text-white">Visual Brief</p>
+                  <p className="mt-1 text-xs text-slate-400">Nebula Sketch rendering cue.</p>
+                  <p className="mt-2 text-xs text-slate-300">{blueprint.imagePrompt}</p>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === 'chain' && (
             <div className="space-y-3 text-sm text-slate-200">
-              {reasoningSteps.map((step, index) => (
+              {chainSteps.map((step, index) => (
                 <div key={step} className="rounded-2xl border border-white/5 bg-slate-900/40 p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
@@ -158,7 +189,7 @@ const PromptWorkspace = () => {
                     </div>
                     <div>
                       <p className="font-medium text-white">{step}</p>
-                      <p className="text-xs text-slate-400">AI guidance for this checkpoint.</p>
+                      <p className="text-xs text-slate-400">Engine guidance for this checkpoint.</p>
                     </div>
                   </div>
                 </div>
@@ -197,13 +228,38 @@ const PromptWorkspace = () => {
                 <div>
                   <p className="font-semibold text-white">Platform Notes</p>
                   <p>
-                    Auto-adjusts syntax for Midjourney, Stable Diffusion, and GPT-based models. Run cross-platform comparison to
-                    verify nuance fidelity.
+                    Auto-adjusts syntax for Aurora Loom, Silk Verse Oracle, Prism Forge, and Nebula Sketch call flows. Run
+                    cross-engine checks to confirm nuance fidelity.
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          <div className="mt-4 space-y-3 border-t border-white/10 pt-4">
+            <div className="flex items-center justify-between">
+              <p className="font-display text-sm text-white">Engine Delegation</p>
+              <span className="text-xs text-slate-400">{blueprint.isLoading ? 'Running orchestration' : 'Synced'}</span>
+            </div>
+            <div className="space-y-2 text-xs">
+              {agentStatuses.map((agent) => (
+                <div key={agent.id} className="rounded-2xl border border-white/10 bg-slate-900/40 p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-white">{agent.name}</p>
+                    <span
+                      className={`rounded-full px-2 py-1 text-[10px] uppercase tracking-wide ${
+                        agentStatusStyles[agent.status] ?? 'bg-white/5 text-slate-300'
+                      }`}
+                    >
+                      {agentStatusLabels[agent.status] ?? 'Idle'}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">{agent.role}</p>
+                  <p className="mt-2 text-xs text-slate-300">{agent.summary}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

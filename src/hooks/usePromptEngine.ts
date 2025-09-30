@@ -1,65 +1,130 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import usePromptStore from '../state/usePromptStore';
-import { runOptimization } from '../utils/promptOptimizer';
+import { orchestratePrompt, type AgentStatus } from '../utils/modelOrchestrator';
 
-interface PromptBlueprint {
+export interface PromptBlueprint {
   optimizedPrompt: string;
   reasoning: string[];
   checkpoints: string[];
   score: number;
   insights: string[];
+  imagePrompt: string;
+  agents: AgentStatus[];
+  isLoading: boolean;
+  error?: string;
 }
 
-const applyChainOfThought = (prompt: string): string[] => [
-  'Frame the intent and desired outcome.',
-  'Enumerate constraints, tone, and success metrics.',
-  'Outline generation stages and required outputs.',
-  'Review for ambiguity, bias, or missing context.',
-  `Finalize: ${prompt.slice(0, 80)}...`,
+const BASE_AGENTS: AgentStatus[] = [
+  {
+    id: 'aurora-loom',
+    name: 'Aurora Loom',
+    role: 'Blueprint Weaver',
+    status: 'skipped',
+    summary: 'Awaiting prompt input.',
+  },
+  {
+    id: 'silk-oracle',
+    name: 'Silk Verse Oracle',
+    role: 'Persona Alchemist',
+    status: 'skipped',
+    summary: 'Awaiting prompt input.',
+  },
+  {
+    id: 'prism-forge',
+    name: 'Prism Forge Architect',
+    role: 'Insight Cartographer',
+    status: 'skipped',
+    summary: 'Awaiting prompt input.',
+  },
+  {
+    id: 'nebula-foundry',
+    name: 'Nebula Sketch Foundry',
+    role: 'Imagery Conductor',
+    status: 'skipped',
+    summary: 'Awaiting prompt input.',
+  },
 ];
 
-const enrichPrompt = (prompt: string, persona: string, tone: string, styles: string[]): string => {
-  const styleDescriptor = styles.length > 0 ? `Blend styles: ${styles.join(', ')}.` : '';
-  const personaDescriptor = persona ? `Adopt persona: ${persona}.` : '';
-  const toneDescriptor = tone ? `Tone target: ${tone}.` : '';
-
-  return [
-    'System: You are an elite prompt architect optimizing for cross-model compatibility.',
-    personaDescriptor,
-    toneDescriptor,
-    styleDescriptor,
-    'Deliver the final prompt after validating coherence, bias safety, and actionable clarity.',
-    '',
-    prompt,
-  ]
-    .filter(Boolean)
-    .join('\n');
+const LOADING_SUMMARIES: Record<string, string> = {
+  'aurora-loom': 'Weaving structured blueprint...',
+  'silk-oracle': 'Balancing persona cadence...',
+  'prism-forge': 'Mapping optimization insights...',
+  'nebula-foundry': 'Forging visual brief...',
 };
+
+const createEmptyBlueprint = (): PromptBlueprint => ({
+  optimizedPrompt: '',
+  reasoning: [],
+  checkpoints: [],
+  score: 0,
+  insights: [],
+  imagePrompt: '',
+  agents: BASE_AGENTS.map((agent) => ({ ...agent })),
+  isLoading: false,
+  error: undefined,
+});
 
 export const usePromptEngine = (): PromptBlueprint => {
   const { prompt, persona, tone, styleFusion } = usePromptStore();
+  const [blueprint, setBlueprint] = useState<PromptBlueprint>(() => createEmptyBlueprint());
 
-  return useMemo(() => {
-    if (!prompt) {
-      return {
-        optimizedPrompt: '',
-        reasoning: [],
-        checkpoints: [],
-        score: 0,
-        insights: [],
-      };
+  useEffect(() => {
+    const trimmedPrompt = prompt.trim();
+
+    if (!trimmedPrompt) {
+      setBlueprint(createEmptyBlueprint());
+      return;
     }
 
-    const reasoning = applyChainOfThought(prompt);
-    const optimization = runOptimization(prompt);
+    let cancelled = false;
+    setBlueprint((previous) => ({
+      ...previous,
+      isLoading: true,
+      error: undefined,
+      agents: previous.agents.map((agent) => ({
+        ...agent,
+        status: 'loading',
+        summary: LOADING_SUMMARIES[agent.id] ?? 'Orchestrating update...',
+      })),
+    }));
 
-    return {
-      optimizedPrompt: enrichPrompt(prompt, persona, tone, styleFusion),
-      reasoning,
-      checkpoints: optimization.layers.map((layer) => layer.title),
-      score: Math.round(optimization.score),
-      insights: optimization.layers.map((layer) => layer.insight),
+    const handler = setTimeout(() => {
+      orchestratePrompt({ prompt: trimmedPrompt, persona, tone, styles: styleFusion })
+        .then((result) => {
+          if (!cancelled) {
+            setBlueprint({
+              ...result,
+              isLoading: false,
+              error: undefined,
+            });
+          }
+        })
+        .catch((error: unknown) => {
+          if (!cancelled) {
+            setBlueprint((previous) => ({
+              ...previous,
+              isLoading: false,
+              error: error instanceof Error ? error.message : 'Unable to orchestrate prompt.',
+              agents: previous.agents.map((agent) =>
+                agent.status === 'loading'
+                  ? {
+                      ...agent,
+                      status: 'error',
+                      summary: 'Fallback heuristics applied.',
+                    }
+                  : agent,
+              ),
+            }));
+          }
+        });
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(handler);
     };
   }, [prompt, persona, tone, styleFusion]);
+
+  return useMemo(() => blueprint, [blueprint]);
 };

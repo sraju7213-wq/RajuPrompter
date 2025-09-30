@@ -55,7 +55,7 @@ const AnalyticsPanel = () => {
             <AreaChart className="h-5 w-5 text-primary" />
             <div>
               <p className="font-semibold text-white">Prompt Quality Trend</p>
-              <p className="text-xs text-slate-400">Rolling 30-day analysis across AI models.</p>
+              <p className="text-xs text-slate-400">Rolling 30-day analysis across partner engines.</p>
             </div>
           </div>
           <div className="mt-4 h-40 rounded-2xl border border-white/10 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10" />

@@ -18,7 +18,7 @@ const PlatformMatrix = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-display text-2xl font-semibold text-white">Multi-Platform Orchestrator</h2>
-          <p className="text-sm text-slate-400">Monitor status, adjust parameters, and prep prompts for 15+ AI providers.</p>
+          <p className="text-sm text-slate-400">Monitor status, adjust parameters, and prep prompts for the orchestration squad.</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <SignalHigh className="h-4 w-4 text-primary" />
@@ -79,22 +79,26 @@ const PlatformMatrix = () => {
           <div className="flex items-center gap-3">
             <Activity className="h-5 w-5 text-primary" />
             <div>
-              <h3 className="font-display text-xl text-white">Open Router Signal</h3>
-              <p className="text-xs text-slate-400">Smart model switching and rate limit harmonization.</p>
+              <h3 className="font-display text-xl text-white">Orchestration Signal</h3>
+              <p className="text-xs text-slate-400">Live latency balancing across partner engines.</p>
             </div>
           </div>
           <div className="mt-4 grid gap-3 text-xs text-slate-300">
             <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
-              <span>GPT-4o mini (fast)</span>
+              <span>Aurora Loom Blueprint</span>
               <span className="text-emerald-400">32% load</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
-              <span>Claude 3.5 Sonnet</span>
-              <span className="text-amber-300">62% load</span>
+              <span>Silk Verse Oracle</span>
+              <span className="text-amber-300">58% load</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
-              <span>Gemini 1.5 Flash</span>
+              <span>Prism Forge Architect</span>
               <span className="text-rose-300">Rate limited</span>
+            </div>
+            <div className="flex items-center justify-between rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
+              <span>Nebula Sketch Foundry</span>
+              <span className="text-sky-300">Visual queue stable</span>
             </div>
           </div>
         </div>
@@ -109,7 +113,7 @@ const PlatformMatrix = () => {
           </div>
           <ul className="mt-4 space-y-2 text-xs text-slate-300">
             <li className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-4 py-3">
-              Emotional intensity flagged for Midjourney — consider moderation guidelines.
+              Emotional intensity flagged for Nebula Sketch — consider moderation guidelines.
             </li>
             <li className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
               Check for inclusive language in demographic descriptors.

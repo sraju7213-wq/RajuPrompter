@@ -1,16 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type PlatformId =
-  | 'openai'
-  | 'anthropic'
-  | 'gemini'
-  | 'midjourney'
-  | 'stable-diffusion'
-  | 'flux'
-  | 'replicate'
-  | 'huggingface'
-  | 'open-router';
+export type PlatformId = 'aurora-loom' | 'silk-oracle' | 'prism-forge' | 'nebula-foundry';
 
 export interface PromptDraft {
   id: string;
@@ -61,7 +52,7 @@ const usePromptStore = create<PromptStoreState>()(
       persona: '',
       tone: 'balanced',
       styleFusion: [],
-      activePlatform: 'openai',
+      activePlatform: 'aurora-loom',
       isMagicEnhanceOn: true,
       drafts: [],
       history: [],
