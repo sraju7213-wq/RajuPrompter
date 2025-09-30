@@ -1,29 +1,31 @@
 import { BookmarkPlus, Filter, FolderKanban, Link2, Star } from 'lucide-react';
+import { useMemo } from 'react';
 
-import usePromptStore, { PromptDraft } from '../state/usePromptStore';
 import { nanoid } from 'nanoid/non-secure';
 import { motion } from 'framer-motion';
+import { PLATFORM_CONFIG } from '../data/platforms';
+import usePromptStore, { PromptDraft } from '../state/usePromptStore';
 
 const categories = ['Art', 'Writing', 'Marketing', 'Technical'];
 
 const featuredPrompts: PromptDraft[] = [
   {
     id: nanoid(),
-    title: 'Flux Hybrid Visual Storyboard',
+    title: 'Aurora Loom Narrative Blueprint',
     prompt:
-      'System: Orchestrate a Flux Pro cinematic storyboard. Step 1: establish subject silhouette and lighting anchors. Step 2: iterate 4 camera angles blending Solarpunk + Techno Mysticism. Step 3: deliver final prompt with lens, texture, and mood directives.',
-    model: 'flux',
-    tags: ['visual', 'solarpunk', 'cinematic'],
+      'System: Invoke Aurora Loom to craft a multi-stage product launch brief. Stage 1: frame the ambition and audience. Stage 2: list tonal cues and sensory anchors. Stage 3: deliver numbered directives with success metrics and guardrails.',
+    model: 'aurora-loom',
+    tags: ['strategy', 'launch', 'structured'],
     lastUpdated: new Date().toISOString(),
     rating: 4.9,
   },
   {
     id: nanoid(),
-    title: 'GPT-4o Thought Leadership Article',
+    title: 'Nebula Sketch Panorama Cue',
     prompt:
-      'Write a 1200-word industry brief on regenerative design. Include trend analysis, expert quotes, and a 3-step action framework. Close with optimistic call-to-action tied to measurable KPIs.',
-    model: 'openai',
-    tags: ['writing', 'strategy'],
+      'Compose a single-shot visual brief for Nebula Sketch Foundry. Highlight camera lens, lighting mood, and texture layers blending Solarpunk with Techno Mysticism. Include one line of negative cues to avoid clutter.',
+    model: 'nebula-foundry',
+    tags: ['visual', 'solarpunk', 'mood'],
     lastUpdated: new Date().toISOString(),
     rating: 4.8,
   },
@@ -31,6 +33,13 @@ const featuredPrompts: PromptDraft[] = [
 
 const PromptLibrary = () => {
   const { drafts, addDraft } = usePromptStore();
+  const platformNames = useMemo(
+    () =>
+      Object.fromEntries(
+        PLATFORM_CONFIG.map((platform) => [platform.id, platform.name]),
+      ) as Record<string, string>,
+    [],
+  );
 
   return (
     <section id="library" className="space-y-6">
@@ -50,7 +59,7 @@ const PromptLibrary = () => {
           <div key={category} className="bento-card p-4 text-sm text-slate-200">
             <FolderKanban className="mb-2 h-5 w-5 text-primary" />
             <p className="font-semibold text-white">{category}</p>
-            <p className="mt-1 text-xs text-slate-400">Curated prompts + AI suggested variations.</p>
+            <p className="mt-1 text-xs text-slate-400">Curated prompts + engine suggested variations.</p>
           </div>
         ))}
       </div>
@@ -60,7 +69,9 @@ const PromptLibrary = () => {
           <motion.div key={prompt.id} layout className="bento-card p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{prompt.model}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
+                  {platformNames[prompt.model] ?? prompt.model}
+                </p>
                 <h3 className="mt-2 font-display text-xl text-white">{prompt.title}</h3>
               </div>
               <div className="flex items-center gap-1 text-amber-300">

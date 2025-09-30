@@ -126,7 +126,7 @@ const CreativeEnhancerPanel = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-display text-xl text-white">Style Fusion Matrix</h3>
-              <p className="text-xs text-slate-400">Blend up to four movements to guide visual AI prompts.</p>
+              <p className="text-xs text-slate-400">Blend up to four movements to guide visual prompts.</p>
             </div>
             <Sparkles className="h-5 w-5 text-primary" />
           </div>
