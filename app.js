@@ -2,23 +2,17 @@
 console.log('🚀 AI Prompt Generator v2.0 Starting...');
 
 // Global state
+const DEFAULT_THEME = 'dark_professional';
 let currentPlatform = 'natural_language';
-let currentTheme = 'cyberpunk_neon';
+let currentTheme = DEFAULT_THEME;
 let currentPrompt = '';
 let promptHistory = [];
 let savedPrompts = [];
-let textGenerator = null;
-let imageCaptioner = null;
-let lastImageTags = [];
-let lastColorHex = '';
-let uploadedImageData = { base64: '', mimeType: '' };
 let desiredPromptLength = 300;
 let currentAspectRatio = '1:1';
 let currentDescriptionMode = 'describe-detail';
 let magicEnhanceEnabled = false;
 let optimizeTimer = null;
-const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
-const SUPPORTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const deferredTabCache = new Set();
 
 const DISCLOSURE_BREAKPOINTS = { sm: 480, md: 768, lg: 1024 };
@@ -29,15 +23,6 @@ let activeDrawer = null;
 let disclosureResizeTimer = null;
 let notificationTimer = null;
 
-
-const DARK_THEMES = new Set([
-    'cyberpunk_neon',
-    'dark_professional',
-    'warm_autumn',
-    'ocean_blue',
-    'forest_green',
-    'sunset_gradient'
-]);
 
 // Word Library Data - Complete with 1000+ words
 const wordLibrary = {
@@ -173,50 +158,6 @@ const platformData = {
     }
 };
 
-// Theme configurations
-const themes = {
-    dark_professional: {
-        name: 'Dark Professional',
-        primary: '#3b82f6',
-        background: '#0f172a'
-    },
-    light_modern: {
-        name: 'Light Modern',
-        primary: '#0ea5e9',
-        background: '#ffffff'
-    },
-    cyberpunk_neon: {
-        name: 'Cyberpunk Neon',
-        primary: '#00ff88',
-        background: '#000000'
-    },
-    warm_autumn: {
-        name: 'Warm Autumn',
-        primary: '#d97706',
-        background: '#1c1917'
-    },
-    ocean_blue: {
-        name: 'Ocean Blue',
-        primary: '#0284c7',
-        background: '#082f49'
-    },
-    pastel_dreams: {
-        name: 'Pastel Dreams',
-        primary: '#a855f7',
-        background: '#fefce8'
-    },
-    forest_green: {
-        name: 'Forest Green',
-        primary: '#059669',
-        background: '#022c22'
-    },
-    sunset_gradient: {
-        name: 'Sunset Gradient',
-        primary: '#f59e0b',
-        background: '#431407'
-    }
-};
-
 // Initialize app when DOM loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM loaded, initializing app...');
@@ -227,17 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeApp() {
     console.log('🎯 Initializing AI Prompt Generator...');
 
-    // Load saved data
-    const hasStoredData = loadFromStorage();
-
-    // Respect system color preference on first load
-    if (!hasStoredData) {
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        currentTheme = prefersDark ? 'dark_professional' : 'light_modern';
-    }
-
-    // Apply theme
-    applyTheme(currentTheme);
+    // Load saved data and apply default theme
+    loadFromStorage();
+    applyTheme(currentTheme || DEFAULT_THEME);
 
 
     // Load shared prompt from URL if present
@@ -251,7 +184,6 @@ function initializeApp() {
 
     // Initialize UI
     initializeWordBank();
-    initImageAnalyzer();
     updatePromptPreview();
     updateQualityScore();
     updatePlatformBadge();
@@ -263,7 +195,6 @@ function initializeApp() {
 
 function setupResponsiveEnhancements() {
     setupDrawer();
-    setupThemeSwatches();
     setupDisclosures();
     setupModalControls();
     document.querySelectorAll('.tab-content').forEach(content => {
@@ -406,14 +337,11 @@ function setupEventListeners() {
         confirmSaveBtn.addEventListener('click', confirmSavePrompt);
     }
 
-    const imageUpload = document.getElementById('image-upload');
-    if (imageUpload) {
-        imageUpload.addEventListener('change', handleImageUpload);
-    }
-
     const naturalToggle = document.getElementById('natural-language-toggle');
     if (naturalToggle) {
-        naturalToggle.addEventListener('change', updateGeneratedPrompt);
+        naturalToggle.addEventListener('change', () => {
+            updateStatusMessage('describe-ai-status', '');
+        });
     }
 
     const descriptionGrid = document.getElementById('description-grid');
@@ -429,7 +357,7 @@ function setupEventListeners() {
             if (customField) {
                 customField.hidden = currentDescriptionMode !== 'custom-question';
             }
-            updateGeneratedPrompt();
+            updateStatusMessage('describe-ai-status', '');
         });
     }
 
@@ -445,8 +373,16 @@ function setupEventListeners() {
     if (customQuestionInput) {
         customQuestionInput.addEventListener('input', () => {
             if (currentDescriptionMode === 'custom-question') {
-                updateGeneratedPrompt();
+                updateStatusMessage('describe-ai-status', '');
             }
+        });
+    }
+
+    const descriptionInput = document.getElementById('image-description-input');
+    if (descriptionInput) {
+        descriptionInput.addEventListener('input', () => {
+            updateStatusMessage('describe-ai-status', '');
+            syncGenerateButtonState();
         });
     }
 
@@ -492,14 +428,17 @@ function setupEventListeners() {
 
     syncGenerateButtonState();
 
-    const batchBtn = document.getElementById('generate-batch');
-    if (batchBtn) {
-        batchBtn.addEventListener('click', generateBatch);
-    }
-
     // Listen for messages from the Hugging Face iframe
     window.addEventListener('message', function(e) {
         if (e.origin === 'https://huggingface.co' && typeof e.data === 'string') {
+            const incoming = e.data.trim();
+            if (incoming) {
+                const descriptionInput = document.getElementById('image-description-input');
+                if (descriptionInput) {
+                    descriptionInput.value = incoming;
+                    descriptionInput.dispatchEvent(new Event('input'));
+                }
+            }
             console.log('HF Image to Prompt:', e.data);
         }
     });
@@ -579,24 +518,6 @@ function closeDrawer() {
     if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
         lastFocusedElement.focus();
     }
-}
-
-function setupThemeSwatches() {
-    const swatches = document.querySelectorAll('.theme-swatch');
-    if (!swatches.length) {
-        return;
-    }
-
-    swatches.forEach(swatch => {
-        swatch.addEventListener('click', () => {
-            const theme = swatch.dataset.theme;
-            if (theme) {
-                applyTheme(theme);
-            }
-        });
-    });
-
-    updateThemeUI();
 }
 
 function setupDisclosures() {
@@ -742,8 +663,6 @@ function setupQuickActions() {
             });
         }
     });
-
-    updateThemeUI();
 }
 
 function activateQuickAction(button) {
@@ -841,50 +760,6 @@ function loadDeferredEmbeds(tabName) {
     deferredTabCache.add(tabName);
 }
 
-
-function updateThemeUI() {
-    const swatches = document.querySelectorAll('.theme-swatch');
-    let activeSwatch = null;
-
-    swatches.forEach(swatch => {
-        const isActive = swatch.dataset.theme === currentTheme;
-        swatch.classList.toggle('is-active', isActive);
-        swatch.setAttribute('aria-checked', isActive ? 'true' : 'false');
-        if (isActive) {
-            activeSwatch = swatch;
-        }
-    });
-
-    const indicator = document.getElementById('theme-mode-indicator');
-    if (indicator) {
-        if (activeSwatch) {
-            const mode = activeSwatch.dataset.themeMode === 'light' ? 'Light mode' : 'Dark mode';
-            const themeLabel = activeSwatch.dataset.themeLabel || activeSwatch.getAttribute('aria-label') || '';
-            indicator.textContent = [mode, themeLabel.replace(/apply\s*/i, '').trim()].filter(Boolean).join(' • ');
-        } else {
-            indicator.textContent = DARK_THEMES.has(currentTheme) ? 'Dark mode active' : 'Light mode active';
-        }
-    }
-}
-
-function initImageAnalyzer() {
-    if (typeof window.transformers === 'undefined') {
-        console.warn('Transformers.js not loaded; image analysis disabled');
-        return;
-    }
-    window.transformers.pipeline('image-to-text', 'Xenova/blip-image-captioning-large')
-        .then(model => {
-            imageCaptioner = model;
-            console.log('📸 Image captioner ready');
-        })
-        .catch(err => console.error('Image captioner load error', err));
-    window.transformers.pipeline('text-generation', 'Xenova/gpt2')
-        .then(model => {
-            textGenerator = model;
-            console.log('📝 Text generator ready');
-        })
-        .catch(err => console.error('Text generator load error', err));
-}
 
 // Random prompt generators
 function generateRandomPrompt(category) {
@@ -1223,143 +1098,6 @@ function filterWordBank(query = '') {
     }
 }
 
-async function handleImageUpload(event) {
-    const file = event.target?.files ? event.target.files[0] : null;
-    if (!file) {
-        return;
-    }
-
-    resetImageAnalysis(true);
-    displayUploadStatus('');
-
-    const validation = validateUploadFile(file);
-    if (!validation.valid) {
-        displayUploadStatus(validation.message, 'error');
-        event.target.value = '';
-        return;
-    }
-
-    displayUploadStatus('Validating upload...', 'info');
-
-    try {
-        setLoadingOverlay(true, 'Analyzing your image…');
-        const dataUrl = await readFileAsDataURL(file);
-        const base64Image = dataUrl.split(',')[1];
-
-        const serverValidation = await validateUploadOnServer(file, base64Image);
-        if (serverValidation && serverValidation.valid === false) {
-            displayUploadStatus(serverValidation.message || 'Upload blocked for security reasons.', 'error');
-            event.target.value = '';
-            return;
-        }
-
-        const validationWarning = serverValidation && serverValidation.warning;
-        if (validationWarning) {
-            displayUploadStatus(`${serverValidation.message} Preparing preview…`, 'warning');
-        } else {
-            displayUploadStatus('Upload validated. Preparing preview…', 'info');
-        }
-
-        const previewImage = await loadPreviewImage(dataUrl);
-
-        uploadedImageData = {
-            base64: base64Image,
-            mimeType: (serverValidation && serverValidation.detectedType) || file.type || 'image/png'
-        };
-        const describeBtn = document.getElementById('describe-image-ai');
-        if (describeBtn) {
-            describeBtn.disabled = false;
-        }
-        syncGenerateButtonState();
-
-        displayUploadStatus(validationWarning ? 'Analyzing image locally…' : 'Analyzing image…', validationWarning ? 'warning' : 'info');
-
-        const [hfPrompt] = await Promise.all([
-            fetchHFPrompt(base64Image),
-            analyzeImage(previewImage)
-        ]);
-
-        if (hfPrompt) {
-            const textarea = document.getElementById('generated-prompt-text');
-            if (textarea && !textarea.value.trim()) {
-                textarea.value = hfPrompt;
-            }
-        }
-
-        displayUploadStatus('Image processed successfully.', 'success');
-    } catch (error) {
-        console.error('Image upload error', error);
-        const message = error?.message || 'We could not process that image. Please try a different file.';
-        displayUploadStatus(message, 'error');
-        resetImageAnalysis(true);
-        event.target.value = '';
-    } finally {
-        setLoadingOverlay(false);
-    }
-}
-
-function validateUploadFile(file) {
-    const extension = file.name ? file.name.split('.').pop().toLowerCase() : '';
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
-
-    if (!SUPPORTED_IMAGE_TYPES.includes(file.type) && !allowedExtensions.includes(extension)) {
-        return { valid: false, message: 'Unsupported file type. Use JPG, PNG, or WebP images.' };
-    }
-
-    if (file.size > MAX_UPLOAD_SIZE) {
-        return { valid: false, message: 'File size too large. Please choose an image under 10MB.' };
-    }
-
-    return { valid: true };
-}
-
-function displayUploadStatus(message, type = 'info') {
-    const status = document.getElementById('upload-status');
-    if (!status) {
-        return;
-    }
-
-    status.textContent = message || '';
-    status.className = 'upload-status';
-    if (!message) {
-        status.style.display = 'none';
-        return;
-    }
-
-    status.style.display = '';
-    if (type === 'success') {
-        status.classList.add('upload-status--success');
-    } else if (type === 'error') {
-        status.classList.add('upload-status--error');
-    } else if (type === 'warning') {
-        status.classList.add('upload-status--warning');
-    }
-}
-
-function updateBatchFeedback(message, type = 'info') {
-    const feedback = document.getElementById('batch-feedback');
-    if (!feedback) {
-        return;
-    }
-
-    feedback.textContent = message || '';
-    feedback.className = 'status-message';
-
-    if (!message) {
-        feedback.style.display = 'none';
-        return;
-    }
-
-    feedback.style.display = '';
-    if (type === 'success') {
-        feedback.classList.add('status-message--success');
-    } else if (type === 'error') {
-        feedback.classList.add('status-message--error');
-    } else if (type === 'warning') {
-        feedback.classList.add('status-message--warning');
-    }
-}
-
 function setActionFeedback(message = '', type = 'info') {
     const feedback = document.getElementById('action-feedback');
     if (!feedback) {
@@ -1408,167 +1146,6 @@ function updateStatusMessage(elementId, message = '', type = 'info') {
     }
 }
 
-function resetImageAnalysis(clearPreview = false) {
-    const analysisResults = document.getElementById('analysis-results');
-    const tagContainer = document.getElementById('analysis-tags');
-    const textarea = document.getElementById('generated-prompt-text');
-    const previewContainer = document.getElementById('preview-container');
-    const uploadImg = document.getElementById('uploaded-img');
-
-    if (analysisResults) analysisResults.hidden = true;
-    if (tagContainer) tagContainer.innerHTML = '';
-    if (textarea) textarea.value = '';
-    if (previewContainer && clearPreview) previewContainer.hidden = true;
-    if (uploadImg && clearPreview) uploadImg.removeAttribute('src');
-
-    lastImageTags = [];
-    lastColorHex = '';
-    uploadedImageData = { base64: '', mimeType: '' };
-    clearAIVariations();
-    updateStatusMessage('describe-ai-status', '');
-    updateStatusMessage('ai-generate-status', '');
-    const describeBtn = document.getElementById('describe-image-ai');
-    if (describeBtn) {
-        setButtonLoading(describeBtn, false);
-        describeBtn.disabled = true;
-    }
-    syncGenerateButtonState();
-}
-
-function readFileAsDataURL(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === 'string') {
-                resolve(reader.result);
-            } else {
-                reject(new Error('Could not read file contents.'));
-            }
-        };
-        reader.onerror = () => reject(new Error('Could not read file contents.'));
-        reader.readAsDataURL(file);
-    });
-}
-
-function loadPreviewImage(dataUrl) {
-    return new Promise((resolve, reject) => {
-        const img = document.getElementById('uploaded-img');
-        const previewContainer = document.getElementById('preview-container');
-        const analysisResults = document.getElementById('analysis-results');
-        if (!img) {
-            reject(new Error('Preview element missing.'));
-            return;
-        }
-
-        img.onload = () => {
-            if (previewContainer) previewContainer.hidden = false;
-            if (analysisResults) analysisResults.hidden = true;
-            resolve(img);
-        };
-
-        img.onerror = () => reject(new Error('We could not display this image. Try a different file.'));
-        img.src = dataUrl;
-    });
-}
-
-async function validateUploadOnServer(file, base64Image) {
-    try {
-        const response = await fetch('/.netlify/functions/validate-upload', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                data: base64Image
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error('Server validation failed. Using local checks.');
-        }
-
-        const payload = await response.json();
-        if (typeof payload.valid === 'boolean') {
-            return payload;
-        }
-
-        return { valid: true, warning: true, message: 'Continuing with local validation.' };
-    } catch (error) {
-        console.warn('Server-side validation unavailable', error);
-        return { valid: true, warning: true, message: 'Server validation unavailable. Continuing with local checks.' };
-    }
-}
-
-async function fetchHFPrompt(imageBase64) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
-    try {
-        const res = await fetch('https://hf.space/embed/ovi054/image-to-prompt/+/api/predict/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ data: [imageBase64] }),
-            mode: 'cors',
-            signal: controller.signal
-        });
-        clearTimeout(timeout);
-        if (!res.ok) throw new Error('Network response was not ok');
-        const result = await res.json();
-        return result.data ? result.data[0] : '';
-    } catch (err) {
-        console.error('HF API error', err);
-        return '';
-    }
-}
-
-async function analyzeImage(img) {
-    const tags = [];
-    const tagContainer = document.getElementById('analysis-tags');
-    tagContainer.innerHTML = '';
-
-    if (imageCaptioner) {
-        try {
-            const result = await imageCaptioner(img);
-            const caption = result[0].generated_text || '';
-            caption.split(/[,\s]+/).forEach(t => { if (t) tags.push(t); });
-        } catch (err) {
-            console.error('captioning error', err);
-        }
-    }
-    addColorTags(img, tags);
-}
-
-function addColorTags(img, tags) {
-    let colorHex = '';
-    try {
-        const colorThief = new ColorThief();
-        const color = colorThief.getColor(img);
-        if (color) {
-            colorHex = rgbToHex(color[0], color[1], color[2]);
-            tags.push(`dominant color ${colorHex}`);
-        }
-    } catch (err) {
-        console.warn('Color extraction failed', err);
-    }
-    const tagContainer = document.getElementById('analysis-tags');
-    tagContainer.innerHTML = '';
-    tags.forEach(t => {
-        const span = document.createElement('span');
-        span.className = 'tag';
-        span.textContent = t;
-        tagContainer.appendChild(span);
-    });
-    lastImageTags = tags.filter(t => !t.startsWith('dominant color'));
-    lastColorHex = colorHex;
-    updateGeneratedPrompt();
-    const analysisResults = document.getElementById('analysis-results');
-    if (analysisResults) {
-        analysisResults.hidden = false;
-    }
-}
 function clearAIVariations() {
     const container = document.getElementById('ai-variations');
     const list = document.getElementById('ai-variations-list');
@@ -1642,12 +1219,17 @@ function renderAIVariations(variations = []) {
 
 function syncGenerateButtonState() {
     const generateBtn = document.getElementById('generate-ai-variations');
-    if (!generateBtn) {
-        return;
+    if (generateBtn) {
+        const generatedPrompt = document.getElementById('generated-prompt-text')?.value.trim();
+        const manualPrompt = document.getElementById('prompt-textarea')?.value.trim();
+        generateBtn.disabled = !(generatedPrompt || manualPrompt);
     }
-    const generatedPrompt = document.getElementById('generated-prompt-text')?.value.trim();
-    const manualPrompt = document.getElementById('prompt-textarea')?.value.trim();
-    generateBtn.disabled = !(generatedPrompt || manualPrompt);
+
+    const describeBtn = document.getElementById('describe-image-ai');
+    if (describeBtn) {
+        const sourceText = document.getElementById('image-description-input')?.value.trim();
+        describeBtn.disabled = !sourceText;
+    }
 }
 
 async function callGeminiEndpoint(payload) {
@@ -1678,80 +1260,50 @@ async function callGeminiEndpoint(payload) {
     return data.data || {};
 }
 
-function buildDescribeInstruction() {
-    const aspect = currentAspectRatio || '1:1';
-    const customQuestionInput = document.getElementById('custom-question-input');
-    const customQuestion = customQuestionInput ? customQuestionInput.value.trim() : '';
-
-    const hints = [];
-    if (lastImageTags.length) {
-        hints.push(`Keywords: ${lastImageTags.slice(0, 15).join(', ')}.`);
+function getDescriptionPreferences() {
+    const naturalToggle = document.getElementById('natural-language-toggle');
+    const naturalLanguage = naturalToggle ? naturalToggle.checked : true;
+    const customInput = document.getElementById('custom-question-input');
+    const customQuestion = customInput ? customInput.value.trim() : '';
+    if (currentDescriptionMode === 'custom-question' && !customQuestion) {
+        throw new Error('Add a custom question before enhancing the description.');
     }
-    if (lastColorHex) {
-        hints.push(`Dominant color: ${lastColorHex}.`);
-    }
-    const hintText = hints.length ? ` ${hints.join(' ')}` : '';
-
-    switch (currentDescriptionMode) {
-        case 'describe-brief':
-            return `Summarize this image in two sentences, highlighting the main subject and mood.${hintText}`;
-        case 'person-description':
-            return `Describe the person in the image, covering pose, facial features, clothing, emotions, and surroundings.${hintText}`;
-        case 'object-recognition':
-            return `List the primary objects and elements visible in the image as a comma-separated sequence.${hintText}`;
-        case 'art-style':
-            return `Analyze the artistic style, medium, color palette, and composition so it can be reused as a prompt.${hintText}`;
-        case 'text-extraction':
-            return 'Extract any legible text in the image. If no text is present, state that clearly.';
-        case 'midjourney': {
-            const base = `Rewrite the scene as a Midjourney prompt with vivid detail, style, lighting, and camera notes. Target aspect ratio ${aspect}.`;
-            return hintText ? `${base}${hintText}` : base;
-        }
-        case 'stable-diffusion': {
-            const base = `Rewrite the scene as a Stable Diffusion prompt, noting detail, style, lighting, and aspect ratio ${aspect}. Suggest a concise negative prompt if helpful.`;
-            return hintText ? `${base}${hintText}` : base;
-        }
-        case 'custom-question':
-            if (!customQuestion) {
-                throw new Error('Add a custom question before running Describe with AI.');
-            }
-            return hintText ? `${customQuestion} ${hintText}` : customQuestion;
-        case 'describe-detail':
-        default: {
-            const base = 'Provide a richly detailed description covering subjects, environment, style, lighting, mood, and camera perspective.';
-            return hintText ? `${base}${hintText}` : base;
-        }
-    }
+    return { naturalLanguage, customQuestion };
 }
 
 async function describeImageWithGemini() {
     const describeBtn = document.getElementById('describe-image-ai');
-    if (!uploadedImageData.base64) {
-        updateStatusMessage('describe-ai-status', 'Upload an image first.', 'error');
+    if (!describeBtn) {
         return;
     }
 
-    let instruction;
+    const sourceInput = document.getElementById('image-description-input');
+    const sourceText = sourceInput?.value.trim() || '';
+
+    if (!sourceText) {
+        updateStatusMessage('describe-ai-status', 'Paste an image description first.', 'error');
+        return;
+    }
+
+    let prefs;
     try {
-        instruction = buildDescribeInstruction();
+        prefs = getDescriptionPreferences();
     } catch (error) {
         updateStatusMessage('describe-ai-status', error.message, 'error');
         return;
     }
 
-    setButtonLoading(describeBtn, true, 'Describing...');
-    updateStatusMessage('describe-ai-status', 'Analyzing image with Gemini...', 'info');
+    setButtonLoading(describeBtn, true, 'Enhancing...');
+    updateStatusMessage('describe-ai-status', 'Enhancing description with Gemini...', 'info');
 
     try {
         const result = await callGeminiEndpoint({
-            mode: 'describe-image',
-            prompt: instruction,
-            image: uploadedImageData,
-            metadata: {
-                descriptionMode: currentDescriptionMode,
-                tags: lastImageTags,
-                dominantColor: lastColorHex
-            }
+            mode: 'refine-description',
+            source: sourceText,
+            descriptionMode: currentDescriptionMode,
+            naturalLanguage: prefs.naturalLanguage,
+            customQuestion: prefs.customQuestion,
+            aspectRatio: currentAspectRatio
         });
 
         const description = (result?.description || result?.text || '').trim();
@@ -1763,16 +1315,17 @@ async function describeImageWithGemini() {
         if (textarea) {
             textarea.value = description;
         }
-        const analysisResults = document.getElementById('analysis-results');
-        if (analysisResults) {
-            analysisResults.hidden = false;
-        }
+
         updateStatusMessage('describe-ai-status', 'Description generated.', 'success');
         clearAIVariations();
         syncGenerateButtonState();
     } catch (error) {
         console.error('Gemini describe error', error);
-        updateStatusMessage('describe-ai-status', error.message || 'Unable to describe the image right now.', 'error');
+        updateStatusMessage(
+            'describe-ai-status',
+            error.message || 'Unable to enhance the description right now.',
+            'error'
+        );
     } finally {
         setButtonLoading(describeBtn, false);
     }
@@ -1805,10 +1358,8 @@ async function generatePromptVariations() {
             platformLabel: platformData[currentPlatform]?.name || currentPlatform,
             aspectRatio: currentAspectRatio,
             desiredLength: desiredPromptLength,
-            tags: lastImageTags,
-            dominantColor: lastColorHex,
             magicEnhance: magicEnhanceEnabled,
-            fromImage: Boolean(uploadedImageData.base64)
+            naturalLanguage: document.getElementById('natural-language-toggle')?.checked === true
         });
 
         const variations = Array.isArray(data?.variations) ? data.variations : [];
@@ -1871,239 +1422,8 @@ async function handleVariationAction(event) {
 }
 
 
-function rgbToHex(r, g, b) {
-    return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-}
-
-async function updateGeneratedPrompt() {
-    const textarea = document.getElementById('generated-prompt-text');
-    if (!textarea) return;
-    const useNatural = document.getElementById('natural-language-toggle')?.checked;
-    const customQuestion = document.getElementById('custom-question-input')?.value.trim() || '';
-    const base = useNatural
-        ? generateNaturalLanguageDescription(lastImageTags, lastColorHex, currentDescriptionMode, customQuestion)
-        : generateDetailedPrompt(lastImageTags, lastColorHex, currentDescriptionMode, customQuestion);
-    const shouldExpand = !['text-extraction', 'custom-question'].includes(currentDescriptionMode);
-    const output = shouldExpand ? await expandPrompt(base, desiredPromptLength) : base;
-    textarea.value = output;
-}
-
-function generateDetailedPrompt(tags, colorHex, mode = 'describe-detail', customQuestion = '') {
-    const subject = tags[0] || 'scene';
-    const extras = tags.slice(1).join(', ');
-    const style = getRandomWord('styles', 'visual_styles');
-    const lighting = getRandomWord('lighting', 'qualities');
-    const mood = getRandomWord('moods', 'positive');
-    let prompt = `a ${style} ${subject}${extras ? ', ' + extras : ''}, ${lighting} lighting, ${mood} mood`;
-    if (colorHex) prompt += `, ${colorHex} tones`;
-    let suffix = ', highly detailed, 4k';
-
-    switch (mode) {
-        case 'describe-brief':
-            prompt = `${subject}${extras ? ', ' + extras : ''}, ${style}, ${lighting}`;
-            suffix = '';
-            break;
-        case 'person-description':
-            prompt = `portrait of ${subject}${extras ? ', ' + extras : ''}, ${style} style, ${lighting} lighting, ${mood} atmosphere`;
-            break;
-        case 'object-recognition':
-            prompt = `detailed product shot of ${subject}${extras ? ', ' + extras : ''}, ${lighting}, studio background`;
-            suffix = ', ultra sharp, product photography';
-            break;
-        case 'art-style':
-            prompt = `${style} illustration of ${subject}${extras ? ', ' + extras : ''}, ${mood} tone, ${lighting} lighting`;
-            break;
-        case 'text-extraction':
-            return `Identify and transcribe any visible text from ${subject}${extras ? ', ' + extras : ''} with clear formatting.`;
-        case 'midjourney':
-            prompt += ` --ar ${currentAspectRatio} --stylize 100`;
-            break;
-        case 'stable-diffusion':
-            prompt += `, aspect ratio ${currentAspectRatio}, DSLR sharp focus`;
-            break;
-        case 'custom-question':
-            return customQuestion || `Describe the key elements of ${subject}.`;
-        default:
-            break;
-    }
-
-    return suffix ? `${prompt}${suffix}` : prompt;
-}
-
-function generateNaturalLanguageDescription(tags, colorHex, mode = 'describe-detail', customQuestion = '') {
-    const primary = tags[0] || 'a scene';
-    const extras = tags.slice(1).join(', ');
-    let sentence = `The image shows ${primary}`;
-    if (extras) sentence += `, ${extras}`;
-    if (colorHex) sentence += ` with dominant ${colorHex} tones`;
-    sentence += `.`;
-    sentence += ` It features ${getRandomWord('lighting', 'qualities')} lighting and evokes a ${getRandomWord('moods', 'positive')} mood.`;
-
-    switch (mode) {
-        case 'describe-brief':
-            return `A quick look at ${primary}${extras ? ' with ' + extras : ''}.`;
-        case 'person-description':
-            return `Portrait of ${primary}${extras ? ', ' + extras : ''}, highlighting facial features, clothing, and mood.`;
-        case 'object-recognition':
-            return `Focus on the main objects: ${primary}${extras ? ', ' + extras : ''}. Describe materials, shapes, and placement.`;
-        case 'art-style':
-            return `${sentence} Describe the artistic style, medium, and techniques apparent in the composition.`;
-        case 'text-extraction':
-            return `Extract and transcribe any legible text found in the image of ${primary}.`;
-        case 'midjourney':
-            return `${sentence} Provide a Midjourney-ready prompt emphasizing ${currentAspectRatio} composition.`;
-        case 'stable-diffusion':
-            return `${sentence} Craft a Stable Diffusion prompt mentioning aspect ratio ${currentAspectRatio}.`;
-        case 'custom-question':
-            return customQuestion || sentence;
-        default:
-            break;
-    }
-
-    return sentence;
-}
-
-async function generateBatch(event) {
-    const baseField = document.getElementById('batch-base-prompt');
-    const count = parseInt(document.getElementById('batch-count').value, 10);
-    const type = document.getElementById('variation-type').value;
-    const resultsContainer = document.getElementById('batch-results');
-    const resultsList = document.getElementById('batch-results-list');
-    const emptyState = document.getElementById('batch-results-empty');
-    const trigger = event?.currentTarget instanceof HTMLElement ? event.currentTarget : document.getElementById('generate-batch');
-
-    if (!baseField || !resultsContainer || !resultsList || !emptyState) {
-        console.warn('Batch generator UI is incomplete.');
-        return;
-    }
-
-    const base = baseField.value.trim();
-    resultsContainer.setAttribute('aria-busy', 'true');
-    resultsList.innerHTML = '';
-    updateBatchFeedback('');
-
-    if (!base) {
-        emptyState.hidden = false;
-        resultsContainer.removeAttribute('aria-busy');
-        updateBatchFeedback('Add a base prompt to generate variations.', 'error');
-        showNotification('Add a base prompt to generate variations.', 'error');
-        setButtonLoading(trigger, false);
-        return;
-    }
-
-    emptyState.hidden = true;
-    updateBatchFeedback('Generating variations…', 'info');
-    setButtonLoading(trigger, true, 'Generating…');
-
-    const variations = new Set();
-    const maxAttempts = count * 6;
-    let attempts = 0;
-
-    while (variations.size < count && attempts < maxAttempts) {
-        const variation = buildPromptVariation(base, type, variations.size + 1);
-        variations.add(variation);
-        attempts += 1;
-        if (attempts % 5 === 0) {
-            await waitForFrame();
-        }
-    }
-
-    await waitForFrame();
-
-    if (variations.size === 0) {
-        updateBatchFeedback('No variations could be generated. Try expanding your base prompt.', 'error');
-        resultsContainer.removeAttribute('aria-busy');
-        setButtonLoading(trigger, false);
-        return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    variations.forEach(variation => {
-        const item = document.createElement('button');
-        item.type = 'button';
-        item.className = 'batch-item';
-        item.textContent = variation;
-        item.addEventListener('click', () => {
-            setPrompt(variation);
-            switchTab('prompt-builder');
-        });
-        fragment.appendChild(item);
-    });
-
-    resultsList.appendChild(fragment);
-    resultsContainer.removeAttribute('aria-busy');
-    if (typeof resultsContainer.focus === 'function') {
-        resultsContainer.focus({ preventScroll: true });
-    }
-
-    const difference = count - variations.size;
-    if (difference > 0) {
-        updateBatchFeedback(`Generated ${variations.size} unique prompt ${variations.size === 1 ? 'variation' : 'variations'}. Some duplicates were filtered out.`, 'warning');
-    } else {
-        updateBatchFeedback(`Generated ${variations.size} unique prompt ${variations.size === 1 ? 'variation' : 'variations'}.`, 'success');
-    }
-    showNotification(`Generated ${variations.size} prompt ${variations.size === 1 ? 'variation' : 'variations'}.`, 'success');
-
-    setButtonLoading(trigger, false);
-}
-
-function buildPromptVariation(basePrompt, type, index = 1) {
-    const trimmedBase = basePrompt.replace(/\s+/g, ' ').trim();
-    const styleMovement = getRandomWord('styles', 'art_movements');
-    const artisticStyle = getRandomWord('styles', 'artistic_styles');
-    const visualStyle = getRandomWord('styles', 'visual_styles');
-    const lightingQuality = getRandomWord('lighting', 'qualities');
-    const naturalLighting = getRandomWord('lighting', 'natural');
-    const compositionAngle = getRandomWord('composition', 'camera_angles');
-    const compositionFrame = getRandomWord('composition', 'framing');
-    const warmColor = getRandomWord('colors', 'warm');
-    const coolColor = getRandomWord('colors', 'cool');
-    const moodCategory = index % 2 === 0 ? 'positive' : 'negative';
-    const moodWord = getRandomWord('moods', moodCategory);
-
-    const lensDescriptors = [
-        'captured with a 35mm lens',
-        'macro focus with shallow depth of field',
-        'ultra-wide cinematic perspective',
-        'telephoto compression for dramatic scale',
-        'tilt-shift depth cues'
-    ];
-    const timeOfDay = ['at golden hour', 'during blue hour', 'beneath neon night lights', 'at dawn', 'under stormy skies'];
-    const textureDetails = ['rich texture mapping', 'soft gradient background', 'volumetric lighting', 'high contrast shadows', 'cinematic atmosphere'];
-    const detailFinish = ['ultra detailed', 'studio quality', 'hyper realistic finish', 'painterly rendering', 'illustrative detail'];
-
-    const lens = lensDescriptors[Math.floor(Math.random() * lensDescriptors.length)];
-    const time = timeOfDay[Math.floor(Math.random() * timeOfDay.length)];
-    const texture = textureDetails[Math.floor(Math.random() * textureDetails.length)];
-    const finish = detailFinish[Math.floor(Math.random() * detailFinish.length)];
-
-    switch (type) {
-        case 'style':
-            return `${trimmedBase}, ${artisticStyle} style, ${styleMovement} influence, ${finish}`;
-        case 'lighting':
-            return `${trimmedBase}, ${lightingQuality} lighting, ${naturalLighting} ambiance, ${time}, ${texture}`;
-        case 'composition':
-            return `${trimmedBase}, ${compositionAngle} perspective, ${compositionFrame} framing, ${lens}`;
-        case 'color':
-            return `${trimmedBase}, ${warmColor} and ${coolColor} palette, ${moodWord} mood, color graded for ${finish}`;
-        default:
-            return `${trimmedBase}, ${visualStyle} aesthetic, ${lightingQuality} lighting, ${compositionAngle} composition, ${warmColor} accents, ${moodWord} mood, ${lens}`;
-    }
-}
-
 async function expandPrompt(base, minLength) {
     let result = base || '';
-    if (textGenerator) {
-        const needed = Math.max(0, Math.ceil((minLength - result.length) / 4));
-        if (needed > 0) {
-            try {
-                const gen = await textGenerator(result, { max_new_tokens: needed });
-                result = gen[0].generated_text;
-            } catch (e) {
-                console.error('text generation error', e);
-            }
-        }
-    }
     let guard = 0;
     while (result.length < minLength) {
         result += `, ${getRandomWord('styles', 'visual_styles')} ${getRandomWord('lighting', 'qualities')} lighting`;
@@ -2158,19 +1478,9 @@ function switchTab(tabName) {
 
 // Theme system
 function applyTheme(themeName) {
-    if (!themeName) {
-        return;
-    }
-
-    currentTheme = themeName;
-    document.body.setAttribute('data-theme', themeName);
-
-    if (themes[themeName]) {
-        document.documentElement.style.setProperty('--theme-primary', themes[themeName].primary);
-        document.documentElement.style.setProperty('--theme-background', themes[themeName].background);
-    }
-
-    updateThemeUI();
+    const theme = themeName || DEFAULT_THEME;
+    currentTheme = theme;
+    document.body.setAttribute('data-theme', theme);
     saveToStorage();
 }
 
@@ -2556,7 +1866,7 @@ function loadFromStorage() {
 
         const data = JSON.parse(stored);
         currentPlatform = data.currentPlatform || 'natural_language';
-        currentTheme = data.currentTheme || 'cyberpunk_neon';
+        currentTheme = data.currentTheme || DEFAULT_THEME;
         promptHistory = data.promptHistory || [];
         savedPrompts = data.savedPrompts || [];
 

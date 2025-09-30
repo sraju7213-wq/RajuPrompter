@@ -2,8 +2,8 @@
 
 .prompt-preview {
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-elevated);
   padding: var(--space-md);
   min-height: 160px;
 }
@@ -29,8 +29,8 @@
   padding-inline: var(--space-sm);
   padding-block: 0.45rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-elevated);
   min-width: 100px;
   text-align: center;
 }
@@ -71,29 +71,15 @@
   padding-inline: var(--space-sm);
   padding-block: 0.35rem;
   border-radius: var(--radius-pill);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--theme-elevated);
   font-size: var(--text-sm);
-}
-
-.uploaded-image .image-container {
-  width: 100%;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--theme-border);
-  overflow: hidden;
-  max-height: 40vh;
-}
-
-.uploaded-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
 }
 
 .hf-embed {
   margin-top: var(--space-lg);
   border-radius: 20px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--theme-border);
   box-shadow: 0 24px 55px rgba(0, 0, 0, 0.45);
 }
 
@@ -102,10 +88,10 @@
   border: none;
   min-height: 60vh;
   border-radius: 20px;
-  background: rgba(24, 24, 24, 0.85);
+  background: var(--theme-surface);
 }
 
-.ai-upload-actions {
+.analysis-actions {
   display: grid;
   gap: var(--space-2xs);
   margin-top: var(--space-sm);
@@ -115,8 +101,8 @@
   margin-top: var(--space-md);
   padding: var(--space-md);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-elevated);
   display: grid;
   gap: var(--space-sm);
 }
@@ -135,8 +121,8 @@
 .ai-variation {
   padding: var(--space-sm);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--theme-border);
+  background: var(--theme-elevated);
   display: grid;
   gap: var(--space-2xs);
 }
